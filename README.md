@@ -3,6 +3,13 @@ FlatBuffers library for Lua.
 
 (Not ready.)
 
+Build
+------
+Need submodule:
+```sh
+ $ git submodule update --init
+```
+
 Usage Example
 --------------
 ```sh
