@@ -16,6 +16,27 @@ static void test()
 	std::cout << "test...\n";
 }
 
+// FlatBuffers Schema
+class Schema
+{
+public:
+	explicit Schema(const std::string& sBfbsFilePath);
+	~Schema();
+};  // class Schema
+
+Schema::Schema(const std::string& sBfbsFilePath)
+{
+	if (sBfbsFilePath.empty())
+		std::cout << "empty path!\n";
+	else
+		std::cout << sBfbsFilePath << "\n";
+}
+
+Schema::~Schema()
+{
+	std::cout << "~Schema()\n";
+}
+
 extern "C"
 #if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__CODEGEARC__)
 __declspec(dllexport)
@@ -24,9 +45,11 @@ int luaopen_flatbuffers(lua_State* L)
 {
 	using namespace LuaIntf;
 	LuaRef mod = LuaRef::createTable(L);
-	LuaBinding(mod).beginModule("ttt")
+	LuaBinding(mod)
 		.addFunction("test", &test)
-	.endModule();
+		.beginClass<Schema>("Schema")
+			.addConstructor(LUA_ARGS(_opt<std::string>))
+		.endClass();
 	mod.pushToStack();
 	return 1;
 }
