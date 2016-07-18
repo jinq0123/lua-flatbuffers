@@ -16,7 +16,11 @@ static void test()
 	std::cout << "test...\n";
 }
 
-extern "C" int luaopen_flatbuffers(lua_State* L)
+extern "C"
+#if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__CODEGEARC__)
+__declspec(dllexport)
+#endif
+int luaopen_flatbuffers(lua_State* L)
 {
 	using namespace LuaIntf;
 	LuaRef mod = LuaRef::createTable(L);
