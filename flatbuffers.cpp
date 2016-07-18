@@ -8,3 +8,21 @@
 
 // #define LUAINTF_LINK_LUA_COMPILED_IN_CXX 0
 #include "LuaIntf/LuaIntf.h"
+
+#include <iostream>
+
+static void test()
+{
+	std::cout << "test...\n";
+}
+
+extern "C" int luaopen_flatbuffers(lua_State* L)
+{
+	using namespace LuaIntf;
+	LuaRef mod = LuaRef::createTable(L);
+	LuaBinding(mod).beginModule("ttt")
+		.addFunction("test", &test)
+	.endModule();
+	mod.pushToStack();
+	return 1;
+}
