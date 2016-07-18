@@ -10,6 +10,7 @@ workspace "flatbuffers"
 	targetdir "../bin/%{cfg.buildcfg}"
 	includedirs {
 		"../lua-intf",
+		"../lua532",
 	}
 	flags {
 		"C++11",

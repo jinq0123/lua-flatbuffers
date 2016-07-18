@@ -12,6 +12,14 @@ Need submodule:
 
 Use premake5 to generate VS solution and linux Makefile. See premake5.bat.
 
+By default, it expect the Lua library to build under C++.
+If you really want to use Lua library compiled under C,
+you can define LUAINTF_LINK_LUA_COMPILED_IN_CXX to 0.
+<br>See: https://github.com/SteveKChiu/lua-intf
+
+```C++
+// #define LUAINTF_LINK_LUA_COMPILED_IN_CXX 0
+```
 
 Usage Example
 --------------

@@ -16,7 +16,7 @@ ifeq ($(config),debug)
   TARGET = $(TARGETDIR)/libflatbuffers.so
   OBJDIR = obj/Debug
   DEFINES +=
-  INCLUDES += -I../lua-intf
+  INCLUDES += -I../lua-intf -I../lua532
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -fPIC
@@ -43,7 +43,7 @@ ifeq ($(config),release)
   TARGET = $(TARGETDIR)/libflatbuffers.so
   OBJDIR = obj/Release
   DEFINES += -DNDEBUG
-  INCLUDES += -I../lua-intf
+  INCLUDES += -I../lua-intf -I../lua532
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC
