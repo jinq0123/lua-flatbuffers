@@ -22,10 +22,16 @@ class Schema
 public:
 	explicit Schema(const std::string& sBfbsFilePath);
 	~Schema();
+
+public:
+	void LoadFromBfbs(const std::string& sBfbs);
+	void LoadFromFile(const std::string& sFilePath);
 };  // class Schema
 
 Schema::Schema(const std::string& sBfbsFilePath)
 {
+	LoadFromFile(sBfbsFilePath);
+
 	if (sBfbsFilePath.empty())
 		std::cout << "empty path!\n";
 	else
@@ -35,6 +41,16 @@ Schema::Schema(const std::string& sBfbsFilePath)
 Schema::~Schema()
 {
 	std::cout << "~Schema()\n";
+}
+
+void Schema::LoadFromBfbs(const std::string& sBfbs)
+{
+	// XXX
+}
+
+void Schema::LoadFromFile(const std::string& sFilePath)
+{
+	// XXX
 }
 
 extern "C"
