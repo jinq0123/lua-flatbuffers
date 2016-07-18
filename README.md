@@ -10,6 +10,9 @@ Need submodule:
  $ git submodule update --init
 ```
 
+Use premake5 to generate VS solution and linux Makefile. See premake5.bat.
+
+
 Usage Example
 --------------
 ```sh

@@ -27,3 +27,8 @@
 *.exe
 *.out
 *.app
+/bin
+/build/.vs
+/build/obj
+/build/flatbuffers.VC.opendb
+/build/flatbuffers.sdf
