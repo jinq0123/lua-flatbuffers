@@ -5,12 +5,25 @@ Usage:
 	linux:  premake5.exe --os=linux gmake
 ]]
 
+local lua_include_dir = "../lua532/include"
+local lua_lib_dir = "../lua532/lib"
+
 workspace "flatbuffers"
 	configurations { "Debug", "Release" }
+
+project "flatbuffers"
+	kind "SharedLib"
 	targetdir "../bin/%{cfg.buildcfg}"
+
+	files {
+		"../flatbuffers.cpp",
+	}
 	includedirs {
 		"../lua-intf",
-		"../lua532",
+		lua_include_dir,
+	}
+	libdirs {
+		lua_lib_dir,
 	}
 	flags {
 		"C++11",
@@ -18,13 +31,13 @@ workspace "flatbuffers"
 
 	filter "configurations:Debug"
 		flags { "Symbols" }
+		libdirs { lua_lib_dir .. "/Debug" }
 	filter "configurations:Release"
 		defines { "NDEBUG" }
 		optimize "On"
+		libdirs { lua_lib_dir .. "/Release" }
 	filter {}
 
-project "flatbuffers"
-	kind "SharedLib"
-	files {
-		"../flatbuffers.cpp",
+	links {
+		"lua",
 	}

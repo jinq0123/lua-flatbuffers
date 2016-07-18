@@ -21,6 +21,10 @@ you can define LUAINTF_LINK_LUA_COMPILED_IN_CXX to 0.
 // #define LUAINTF_LINK_LUA_COMPILED_IN_CXX 0
 ```
 
+Copy lua lib. Copy liblua.a to lua532/lib/.
+For Windows, copy lua.lib debug to lua532/lib/Debug,
+and lua.lib release to lua532/lib/Release.
+
 Usage Example
 --------------
 ```sh
