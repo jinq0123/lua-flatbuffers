@@ -34,8 +34,8 @@ flatc --binary --schema monster.fbs
 ```lua
 local fb = require("flatbuffers")
 
--- Create a FlatBuffers schema object.
-local fbs = fb.load_bfbs("monster.bfbs")
+-- Load a FlatBuffers schema file.
+assert(fb.load_bfbs_file("monster.bfbs"))
 
 local monster = {
   pos = {
@@ -48,11 +48,16 @@ local monster = {
 }
 
 -- Build a buffer.
-local buf = fbs:encode(monster)
+local buf = fb:encode("Monster", monster)
 
 -- Decode a flatbuffer string back to a Lua table.
-local monster2 = fbs:decode(buf)
+local monster2 = fbs:decode("Monster", buf)
 ```
+
+Todo
+------
+* Support namespace.
+  Reflection schema does not support namespaces #3899 ( https://github.com/google/flatbuffers/issues/3899 )
 
 DavidFeng/lua-flatbuffers
 -------------------------

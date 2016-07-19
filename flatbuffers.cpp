@@ -16,54 +16,42 @@ static void test()
 	std::cout << "test...\n";
 }
 
-// FlatBuffers Schema
-class Schema
+static std::tuple<bool, std::string> LoadBfbsFile(const std::string& sBfbsFile)
 {
-public:
-	explicit Schema(const std::string& sBfbsFilePath);
-	~Schema();
-
-public:
-	void Test() { std::cout << "Test\n"; }
-
-public:
-	void LoadFromBfbs(const std::string& sBfbs);
-	void LoadFromFile(const std::string& sFilePath);
-};  // class Schema
-
-Schema::Schema(const std::string& sBfbsFilePath)
-{
-	LoadFromFile(sBfbsFilePath);
-
-	if (sBfbsFilePath.empty())
-		std::cout << "empty path!\n";
-	else
-		std::cout << sBfbsFilePath << "\n";
+	return std::make_tuple(false, "To be implemented");
 }
 
-Schema::~Schema()
+static std::tuple<bool, std::string> LoadBfbs(const std::string& sBfbs)
 {
-	std::cout << "~Schema()\n";
+	return std::make_tuple(false, "To be implemented");
 }
 
-void Schema::LoadFromBfbs(const std::string& sBfbs)
+static std::tuple<bool, std::string> LoadFbsFile(const std::string& sFbsFile)
 {
-	// XXX
+	return std::make_tuple(false, "To be implemented");
 }
 
-void Schema::LoadFromFile(const std::string& sFilePath)
+static std::tuple<bool, std::string> LoadFbs(const std::string& sFbs)
 {
-	// XXX
+	return std::make_tuple(false, "To be implemented");
 }
 
-static std::shared_ptr<Schema> GetSchemaPtr()
+// Encode lua table to buffer.
+// Returns (true, buffer) or (false, error)
+static std::tuple<bool, std::string> Encode(
+	const std::string& sName, const LuaIntf::LuaRef& table)
 {
-	return std::make_shared<Schema>("Test Sp");
+	return std::make_tuple(false, "To be implemented");
 }
 
-namespace LuaIntf
+// Decode buffer to lua table.
+// Returns (table, "") or (nil, error)
+static std::tuple<LuaIntf::LuaRef, std::string> Decode(
+	lua_State* L,
+	const std::string& sName, const std::string& buf)
 {
-	LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
+	assert(L);
+	return std::make_tuple(LuaIntf::LuaRef(L, nullptr), "To be implemented");
 }
 
 extern "C"
@@ -76,11 +64,15 @@ int luaopen_flatbuffers(lua_State* L)
 	LuaRef mod = LuaRef::createTable(L);
 	LuaBinding(mod)
 		.addFunction("test", &test)
-		.addFunction("get_schema_ptr", GetSchemaPtr)
-		.beginClass<Schema>("Schema")
-			.addConstructor(LUA_ARGS(_opt<std::string>))
-			.addFunction("test", &Schema::Test)
-		.endClass();
+		.addFunction("load_bfbs_file", &LoadBfbsFile)
+		.addFunction("load_bfbs", &LoadBfbs)
+		.addFunction("load_fbs_file", &LoadFbsFile)
+		.addFunction("load_fbs", &LoadFbs)
+		.addFunction("encode", &Encode)
+		.addFunction("decode", [L](const std::string& sName,
+			const std::string& buf) {
+			Decode(L, sName, buf);
+		});
 	mod.pushToStack();
 	return 1;
 }
