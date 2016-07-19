@@ -24,6 +24,9 @@ public:
 	~Schema();
 
 public:
+	void Test() { std::cout << "Test\n"; }
+
+public:
 	void LoadFromBfbs(const std::string& sBfbs);
 	void LoadFromFile(const std::string& sFilePath);
 };  // class Schema
@@ -53,6 +56,16 @@ void Schema::LoadFromFile(const std::string& sFilePath)
 	// XXX
 }
 
+static std::shared_ptr<Schema> GetSchemaPtr()
+{
+	return std::make_shared<Schema>("Test Sp");
+}
+
+namespace LuaIntf
+{
+	LUA_USING_SHARED_PTR_TYPE(std::shared_ptr)
+}
+
 extern "C"
 #if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__CODEGEARC__)
 __declspec(dllexport)
@@ -63,8 +76,10 @@ int luaopen_flatbuffers(lua_State* L)
 	LuaRef mod = LuaRef::createTable(L);
 	LuaBinding(mod)
 		.addFunction("test", &test)
+		.addFunction("get_schema_ptr", GetSchemaPtr)
 		.beginClass<Schema>("Schema")
 			.addConstructor(LUA_ARGS(_opt<std::string>))
+			.addFunction("test", &Schema::Test)
 		.endClass();
 	mod.pushToStack();
 	return 1;
