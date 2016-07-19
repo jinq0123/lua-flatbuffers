@@ -16,7 +16,8 @@ project "flatbuffers"
 	targetdir "../bin/%{cfg.buildcfg}"
 
 	files {
-		"../flatbuffers.cpp",
+		"../src/**.h",
+		"../src/**.cpp",
 	}
 	includedirs {
 		"../lua-intf",
