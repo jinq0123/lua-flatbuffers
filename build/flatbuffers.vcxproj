@@ -92,7 +92,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\schema_cache.h" />
+  </ItemGroup>
+  <ItemGroup>
     <ClCompile Include="..\src\flatbuffers.cpp" />
+    <ClCompile Include="..\src\schema_cache.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

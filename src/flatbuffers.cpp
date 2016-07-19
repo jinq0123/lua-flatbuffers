@@ -1,44 +1,53 @@
 // FlatBuffers library for Lua.
 // Author: Jin Qing ( http://blog.csdn.net/jq0123 )
 
+#include "schema_cache.h"  // for SchemaCache
+
 // By default LuaIntf expect the Lua library to build under C++.
 // If you really want to use Lua library compiled under C,
 // you can define LUAINTF_LINK_LUA_COMPILED_IN_CXX to 0:
 // See: https://github.com/SteveKChiu/lua-intf
-
 // #define LUAINTF_LINK_LUA_COMPILED_IN_CXX 0
 #include "LuaIntf/LuaIntf.h"
 
 #include <iostream>
 
-static void test()
+namespace {
+
+void test()
 {
 	std::cout << "test...\n";
 }
 
-static std::tuple<bool, std::string> LoadBfbsFile(const std::string& sBfbsFile)
+SchemaCache& GetCache()
 {
-	return std::make_tuple(false, "To be implemented");
+	static SchemaCache s_cache;
+	return s_cache;
 }
 
-static std::tuple<bool, std::string> LoadBfbs(const std::string& sBfbs)
+std::tuple<bool, std::string> LoadBfbsFile(const std::string& sBfbsFile)
 {
-	return std::make_tuple(false, "To be implemented");
+	return GetCache().LoadBfbsFile(sBfbsFile);
 }
 
-static std::tuple<bool, std::string> LoadFbsFile(const std::string& sFbsFile)
+std::tuple<bool, std::string> LoadBfbs(const std::string& sBfbs)
 {
-	return std::make_tuple(false, "To be implemented");
+	return GetCache().LoadBfbs(sBfbs);
 }
 
-static std::tuple<bool, std::string> LoadFbs(const std::string& sFbs)
+std::tuple<bool, std::string> LoadFbsFile(const std::string& sFbsFile)
 {
-	return std::make_tuple(false, "To be implemented");
+	return GetCache().LoadFbsFile(sFbsFile);
+}
+
+std::tuple<bool, std::string> LoadFbs(const std::string& sFbs)
+{
+	return GetCache().LoadFbs(sFbs);
 }
 
 // Encode lua table to buffer.
 // Returns (true, buffer) or (false, error)
-static std::tuple<bool, std::string> Encode(
+std::tuple<bool, std::string> Encode(
 	const std::string& sName, const LuaIntf::LuaRef& table)
 {
 	return std::make_tuple(false, "To be implemented");
@@ -46,13 +55,15 @@ static std::tuple<bool, std::string> Encode(
 
 // Decode buffer to lua table.
 // Returns (table, "") or (nil, error)
-static std::tuple<LuaIntf::LuaRef, std::string> Decode(
+std::tuple<LuaIntf::LuaRef, std::string> Decode(
 	lua_State* L,
 	const std::string& sName, const std::string& buf)
 {
 	assert(L);
 	return std::make_tuple(LuaIntf::LuaRef(L, nullptr), "To be implemented");
 }
+
+}  // namespace
 
 extern "C"
 #if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__CODEGEARC__)

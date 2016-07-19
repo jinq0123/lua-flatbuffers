@@ -66,6 +66,7 @@ endif
 
 OBJECTS := \
 	$(OBJDIR)/flatbuffers.o \
+	$(OBJDIR)/schema_cache.o \
 
 RESOURCES := \
 
@@ -124,6 +125,9 @@ $(GCH): $(PCH)
 endif
 
 $(OBJDIR)/flatbuffers.o: ../src/flatbuffers.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/schema_cache.o: ../src/schema_cache.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 
