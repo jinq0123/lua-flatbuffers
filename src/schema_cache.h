@@ -28,12 +28,12 @@ public:
 	using Schema = reflection::Schema;
 
 	// Find the schema that contains the object.
-	const reflection::Schema* GetSchemaOfObject(const std::string& sObjName) const;
+	const reflection::Schema* GetSchemaOfObject(const string& sObjName) const;
 
 private:
 	// Binary FlatBuffers schema shared_ptr.
-	using BfbsSptr = std::shared_ptr<char []>;
-	using Str2Bfbs = std::unordered_map<std::string, BfbsSptr>;
+	using BfbsSptr = std::shared_ptr<string>;
+	using Str2Bfbs = std::unordered_map<string, BfbsSptr>;
 	Str2Bfbs m_mapFile2Bfbs;  // FileName -> BfbsSptr
 	Str2Bfbs m_mapObjName2Bfbs;  // ObjectName -> BfbsSptr
 };
