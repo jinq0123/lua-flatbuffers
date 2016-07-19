@@ -1,5 +1,7 @@
 #include "schema_cache.h"
 
+#include <flatbuffers/reflection_generated.h>  // for Schema
+
 SchemaCache::SchemaCache() {}
 SchemaCache::~SchemaCache() {}
 

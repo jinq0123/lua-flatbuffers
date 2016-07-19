@@ -5,8 +5,8 @@ Usage:
 	linux:  premake5.exe --os=linux gmake
 ]]
 
-local lua_include_dir = "../lua532/include"
-local lua_lib_dir = "../lua532/lib"
+local lua_include_dir = "../third_party/lua532/include"
+local lua_lib_dir = "../third_party/lua532/lib"
 
 workspace "flatbuffers"
 	configurations { "Debug", "Release" }
@@ -20,7 +20,8 @@ project "flatbuffers"
 		"../src/**.cpp",
 	}
 	includedirs {
-		"../lua-intf",
+		"../third_party/lua-intf",
+		"../third_party/flatbuffers/include",
 		lua_include_dir,
 	}
 	libdirs {

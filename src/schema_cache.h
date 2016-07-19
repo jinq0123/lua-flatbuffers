@@ -5,6 +5,10 @@
 #include <tuple>
 #include <unordered_map>
 
+namespace reflection {
+struct Schema;
+}
+
 // Cache FlatBuffers schemas.
 class SchemaCache
 {
@@ -20,7 +24,8 @@ public:
 	std::tuple<bool, string> LoadFbs(const string& sFbs);
 
 public:
-	const reflection::Schema *GetSchema(const void *buf) { return flatbuffers::GetRoot<reflection::Schema>(buf); }
+	// Find the schema that contains the object.
+	const reflection::Schema *GetSchemaOfObject(const std::string& sObjName);
 
 private:
 	using File2Bfbs = std::unordered_map<std::string, std::string>;

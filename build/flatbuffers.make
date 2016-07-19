@@ -16,7 +16,7 @@ ifeq ($(config),debug)
   TARGET = $(TARGETDIR)/libflatbuffers.so
   OBJDIR = obj/Debug
   DEFINES +=
-  INCLUDES += -I../lua-intf -I../lua532/include
+  INCLUDES += -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -fPIC
@@ -24,7 +24,7 @@ ifeq ($(config),debug)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -llua
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L../lua532/lib -L../lua532/lib/Debug -shared
+  ALL_LDFLAGS += $(LDFLAGS) -L../third_party/lua532/lib -L../third_party/lua532/lib/Debug -shared
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
@@ -43,7 +43,7 @@ ifeq ($(config),release)
   TARGET = $(TARGETDIR)/libflatbuffers.so
   OBJDIR = obj/Release
   DEFINES += -DNDEBUG
-  INCLUDES += -I../lua-intf -I../lua532/include
+  INCLUDES += -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC
@@ -51,7 +51,7 @@ ifeq ($(config),release)
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
   LIBS += -llua
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L../lua532/lib -L../lua532/lib/Release -s -shared
+  ALL_LDFLAGS += $(LDFLAGS) -L../third_party/lua532/lib -L../third_party/lua532/lib/Release -s -shared
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef

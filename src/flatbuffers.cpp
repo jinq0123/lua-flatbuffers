@@ -8,7 +8,7 @@
 // you can define LUAINTF_LINK_LUA_COMPILED_IN_CXX to 0:
 // See: https://github.com/SteveKChiu/lua-intf
 // #define LUAINTF_LINK_LUA_COMPILED_IN_CXX 0
-#include "LuaIntf/LuaIntf.h"
+#include <LuaIntf/LuaIntf.h>
 
 #include <iostream>
 
