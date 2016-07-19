@@ -1,3 +1,3 @@
 [submodule "lua-intf"]
-	path = lua-intf
+	path = third_party/lua-intf
 	url = git@github.com:SteveKChiu/lua-intf.git
