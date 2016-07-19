@@ -1,6 +1,7 @@
 #ifndef LUA_FLATBUFFERS_SCHEMA_CACHE_H_
 #define LUA_FLATBUFFERS_SCHEMA_CACHE_H_
 
+#include <memory>  // for shared_ptr<>
 #include <string>
 #include <tuple>
 #include <unordered_map>
@@ -24,12 +25,17 @@ public:
 	std::tuple<bool, string> LoadFbs(const string& sFbs);
 
 public:
+	using Schema = reflection::Schema;
+
 	// Find the schema that contains the object.
-	const reflection::Schema *GetSchemaOfObject(const std::string& sObjName);
+	const reflection::Schema* GetSchemaOfObject(const std::string& sObjName) const;
 
 private:
-	using File2Bfbs = std::unordered_map<std::string, std::string>;
-	File2Bfbs m_mapFile2Bfbs;
+	// Binary FlatBuffers schema shared_ptr.
+	using BfbsSptr = std::shared_ptr<char []>;
+	using Str2Bfbs = std::unordered_map<std::string, BfbsSptr>;
+	Str2Bfbs m_mapFile2Bfbs;  // FileName -> BfbsSptr
+	Str2Bfbs m_mapObjName2Bfbs;  // ObjectName -> BfbsSptr
 };
 
 #endif  // LUA_FLATBUFFERS_SCHEMA_CACHE_H_
