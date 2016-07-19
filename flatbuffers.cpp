@@ -71,7 +71,7 @@ int luaopen_flatbuffers(lua_State* L)
 		.addFunction("encode", &Encode)
 		.addFunction("decode", [L](const std::string& sName,
 			const std::string& buf) {
-			Decode(L, sName, buf);
+			return Decode(L, sName, buf);
 		});
 	mod.pushToStack();
 	return 1;
