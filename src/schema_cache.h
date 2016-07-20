@@ -5,6 +5,7 @@
 #include <string>
 #include <tuple>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace reflection {
 struct Schema;
@@ -34,8 +35,8 @@ private:
 	// Binary FlatBuffers schema shared_ptr.
 	using BfbsSptr = std::shared_ptr<string>;
 	using Str2Bfbs = std::unordered_map<string, BfbsSptr>;
-	Str2Bfbs m_mapFile2Bfbs;  // FileName -> BfbsSptr
 	Str2Bfbs m_mapObjName2Bfbs;  // ObjectName -> BfbsSptr
+	std::unordered_set<string> m_setLoadedBfbs;
 };
 
 #endif  // LUA_FLATBUFFERS_SCHEMA_CACHE_H_

@@ -1,19 +1,37 @@
 #include "schema_cache.h"
 
 #include <flatbuffers/reflection_generated.h>  // for Schema
+#include <flatbuffers/util.h>  // for LoadFile()
 
 SchemaCache::SchemaCache() {}
 SchemaCache::~SchemaCache() {}
 
+static bool LoadFile(const std::string sPath, std::string& rContents) {
+	std::ifstream ifs(sPath.c_str(), std::ifstream::binary);
+	if (!ifs.is_open()) return false;
+	ifs.seekg(0, std::ios::end);
+	size_t size = static_cast<size_t>(ifs.tellg());
+	rContents.resize(size);
+	ifs.seekg(0, std::ios::beg);
+	ifs.read(&rContents[0], size);
+	return !ifs.bad();
+}
+
 std::tuple<bool, std::string>
 SchemaCache::LoadBfbsFile(const string& sBfbsFile)
 {
-	return std::make_tuple(false, "to be implemented");
+	std::string sContents;
+	if (LoadFile(sBfbsFile, sContents))
+		return LoadBfbs(sContents);
+	return std::make_tuple(false, "unable to load file");
 }
 
 std::tuple<bool, std::string>
 SchemaCache::LoadBfbs(const string& sBfbs)
 {
+	if (m_setLoadedBfbs.find(sBfbs) != m_setLoadedBfbs.end())
+		return std::make_tuple(true, "");
+
 	// Verify it.
 	flatbuffers::Verifier verifier(
 		reinterpret_cast<const uint8_t *>(sBfbs.data()), sBfbs.length());
@@ -28,14 +46,15 @@ SchemaCache::LoadBfbs(const string& sBfbs)
 	{
 		assert(pObj);
 		const string& sName = pObj->name()->str();
-		if (m_mapObjName2Bfbs[sName])
-		{
-			string sError = "2 objects name '" + sName + "'";
-			return std::make_tuple(false, sError);
-		}
+		//if (m_mapObjName2Bfbs[sName])
+		//{
+		//	string sError = "2 objects name '" + sName + "'";
+		//	return std::make_tuple(false, sError);
+		//}
 		m_mapObjName2Bfbs[sName] = pBfbs;
 	}
 
+	m_setLoadedBfbs.insert(sBfbs);
 	return std::make_tuple(true, "");
 }
 
