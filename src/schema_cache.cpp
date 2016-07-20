@@ -77,6 +77,6 @@ SchemaCache::GetSchemaOfObject(const string& sObjName) const
 	if (itr == m_mapObjName2Bfbs.end()) return nullptr;
 	const BfbsSptr& pBfbs = (*itr).second;
 	assert(pBfbs);
-	return flatbuffers::GetRoot<reflection::Schema>(pBfbs.get());
+	return flatbuffers::GetRoot<reflection::Schema>(pBfbs->data());
 }
 

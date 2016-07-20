@@ -10,6 +10,8 @@
 // #define LUAINTF_LINK_LUA_COMPILED_IN_CXX 0
 #include <LuaIntf/LuaIntf.h>
 
+#include <flatbuffers/reflection_generated.h>
+
 #include <iostream>
 
 namespace {
@@ -50,7 +52,25 @@ std::tuple<bool, std::string> LoadFbs(const std::string& sFbs)
 std::tuple<bool, std::string> Encode(
 	const std::string& sName, const LuaIntf::LuaRef& table)
 {
-	return std::make_tuple(false, "To be implemented");
+	const reflection::Schema* pSchema = GetCache().GetSchemaOfObject(sName);
+	if (!pSchema) return std::make_tuple(false, "no type " + sName);
+
+	const auto& vObjects = *pSchema->objects();
+	const reflection::Object* pObj = vObjects.LookupByKey(sName.c_str());
+	assert(pObj);
+	const auto& vFields = *pObj->fields();
+
+	for (auto& e : table)
+	{
+		std::string sKey = e.key<std::string>();
+		const reflection::Field* pField = vFields.LookupByKey(sKey.c_str());
+		if (!pField) return std::make_tuple(false, "illegal field " + sKey);
+
+		LuaIntf::LuaRef value = e.value<LuaIntf::LuaRef>();
+	}
+
+	// XXX
+	return std::make_tuple(false, "to be implemented");
 }
 
 // Decode buffer to lua table.
@@ -60,7 +80,7 @@ std::tuple<LuaIntf::LuaRef, std::string> Decode(
 	const std::string& sName, const std::string& buf)
 {
 	assert(L);
-	return std::make_tuple(LuaIntf::LuaRef(L, nullptr), "To be implemented");
+	return std::make_tuple(LuaIntf::LuaRef(L, nullptr), "to be implemented");
 }
 
 }  // namespace
