@@ -3,14 +3,14 @@
 
 #include "schema_cache.h"  // for SchemaCache
 
+#include "encoder.h"
+
 // By default LuaIntf expect the Lua library to build under C++.
 // If you really want to use Lua library compiled under C,
 // you can define LUAINTF_LINK_LUA_COMPILED_IN_CXX to 0:
 // See: https://github.com/SteveKChiu/lua-intf
 // #define LUAINTF_LINK_LUA_COMPILED_IN_CXX 0
 #include <LuaIntf/LuaIntf.h>
-
-#include <flatbuffers/reflection_generated.h>
 
 #include <iostream>
 
@@ -53,24 +53,9 @@ std::tuple<bool, std::string> Encode(
 	const std::string& sName, const LuaIntf::LuaRef& table)
 {
 	const reflection::Schema* pSchema = GetCache().GetSchemaOfObject(sName);
-	if (!pSchema) return std::make_tuple(false, "no type " + sName);
-
-	const auto& vObjects = *pSchema->objects();
-	const reflection::Object* pObj = vObjects.LookupByKey(sName.c_str());
-	assert(pObj);
-	const auto& vFields = *pObj->fields();
-
-	for (auto& e : table)
-	{
-		std::string sKey = e.key<std::string>();
-		const reflection::Field* pField = vFields.LookupByKey(sKey.c_str());
-		if (!pField) return std::make_tuple(false, "illegal field " + sKey);
-
-		LuaIntf::LuaRef value = e.value<LuaIntf::LuaRef>();
-	}
-
-	// XXX
-	return std::make_tuple(false, "to be implemented");
+	if (pSchema)
+		return Encoder(*pSchema).Encode(sName, table);
+	return std::make_tuple(false, "no type " + sName);
 }
 
 // Decode buffer to lua table.

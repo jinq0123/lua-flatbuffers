@@ -92,9 +92,11 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\src\encoder.h" />
     <ClInclude Include="..\src\schema_cache.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\encoder.cpp" />
     <ClCompile Include="..\src\flatbuffers.cpp" />
     <ClCompile Include="..\src\schema_cache.cpp" />
   </ItemGroup>
