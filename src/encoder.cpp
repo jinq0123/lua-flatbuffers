@@ -163,11 +163,13 @@ void Encoder::AddOffsets(const Field2Offset& mapOffset)
 	}
 }
 
-template <typename T>
+template <typename ElementType, typename DefaultValueType>
 inline void Encoder::AddElement(uint16_t offset,
-	const LuaRef& elementValue, T defaultValue)
+	const LuaRef& elementValue, DefaultValueType defaultValue)
 {
-	m_fbb.AddElement<T>(offset, elementValue.toValue<T>(), defaultValue);
+	m_fbb.AddElement(offset,
+		elementValue.toValue<ElementType>(),
+		static_cast<ElementType>(defaultValue));
 }
 
 std::string Encoder::GetFullFieldName(const std::string& sFieldName) const

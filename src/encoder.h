@@ -43,9 +43,9 @@ private:
 	void AddOffsets(const Field2Offset& mapOffset);
 	void AddElement(const reflection::Field& field, const LuaRef& value);
 
-	template <typename T>
+	template <typename ElementType, typename DefaultValueType>
 	inline void AddElement(uint16_t offset, const LuaRef& elementValue,
-		T defaultValue);
+		DefaultValueType defaultValue);
 
 private:
 	std::string GetFullFieldName(const std::string& sFieldName) const;
