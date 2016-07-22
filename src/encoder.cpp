@@ -49,6 +49,7 @@ Encoder::Encode(const Object& obj, const LuaRef& table)
 	return m_fbb.EndTable(start, obj.fields()->size());
 }
 
+// Cache fields to 2 maps.
 bool Encoder::CacheFields(const Object& obj, const LuaRef& table,
 	Field2Scalar& rMapScalar, Field2Offset& rMapOffset)
 {
@@ -81,6 +82,7 @@ bool Encoder::CacheFields(const Object& obj, const LuaRef& table,
 			// XXX
 			break;
 		case reflection::Obj:
+			assert(type.index() >= 0);
 			rMapOffset[pField] = Encode(*m_vObjects[type.index()], value);
 			break;
 		case reflection::Union:
