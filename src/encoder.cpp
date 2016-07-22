@@ -19,9 +19,11 @@ Encoder::Encode(const std::string& sName, const LuaRef& table)
 
 	const Object* pObj = m_vObjects.LookupByKey(sName.c_str());
 	assert(pObj);
-	if (!Encode(*pObj, table))  // An offset of 0 means error.
+	flatbuffers::uoffset_t offset = Encode(*pObj, table);
+	if (!offset)  // An offset of 0 means error.
 		return std::make_tuple(false, m_sError);
 
+	m_fbb.Finish(flatbuffers::Offset<void>(offset));  // Todo: Add file_identifier if root_type
 	const char* pBuffer = reinterpret_cast<const char*>(
 		m_fbb.GetBufferPointer());
 	return std::make_tuple(true, std::string(pBuffer, m_fbb.GetSize()));
