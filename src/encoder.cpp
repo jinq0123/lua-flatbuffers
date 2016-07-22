@@ -76,7 +76,8 @@ bool Encoder::CacheFields(const Object& obj, const LuaRef& table,
 		switch (type.base_type())
 		{
 		case reflection::String:
-			// XXX
+			rMapOffset[pField] = m_fbb.CreateString(
+				value.toValue<const char*>()).o;
 			break;
 		case reflection::Vector:
 			// XXX
