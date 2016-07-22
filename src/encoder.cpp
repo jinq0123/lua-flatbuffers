@@ -80,6 +80,7 @@ bool Encoder::CacheFields(const Object& obj, const LuaRef& table,
 				value.toValue<const char*>()).o;
 			break;
 		case reflection::Vector:
+			// Todo: check key (may be map)
 			// XXX
 			break;
 		case reflection::Obj:
