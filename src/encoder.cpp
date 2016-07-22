@@ -13,18 +13,21 @@ Encoder::Encoder(const reflection::Schema& schema) :
 std::tuple<bool, std::string>
 Encoder::Encode(const std::string& sName, const LuaIntf::LuaRef& table)
 {
-	m_fbb.Clear();
-	NameStack emptyStack;
-	m_nameStack.swap(emptyStack);
+	Reset();
 
-	return Build(sName, table);
+	if (!EncodeToFbb(sName, table))  // An offset of 0 means error.
+		return std::make_tuple(false, m_sError);
+
+	const char* pBuffer = reinterpret_cast<const char*>(
+		m_fbb.GetBufferPointer());
+	return std::make_tuple(true, std::string(pBuffer, m_fbb.GetSize()));
 }
 
 // Todo: check required fields.
 // Todo: Skip default value.
 
-std::tuple<bool, std::string>
-Encoder::Build(const std::string& sName, const LuaIntf::LuaRef& table)
+flatbuffers::uoffset_t
+Encoder::EncodeToFbb(const std::string& sName, const LuaIntf::LuaRef& table)
 {
 	m_nameStack.push(sName);
 	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
@@ -37,13 +40,13 @@ Encoder::Build(const std::string& sName, const LuaIntf::LuaRef& table)
 		const reflection::Field* pField = vFields.LookupByKey(sKey.c_str());
 		if (!pField)
 		{
-			return std::make_tuple(false,
-				"illegal field " + GetFullFieldName(sKey));
+			m_sError = "illegal field " + GetFullFieldName(sKey);
+			return 0;
 		}
 		if (pField->deprecated())
 		{
-			return std::make_tuple(false,
-				"deprecated field " + GetFullFieldName(sKey));
+			m_sError = "deprecated field " + GetFullFieldName(sKey);
+			return 0;
 		}
 
 		LuaIntf::LuaRef value = e.value<LuaIntf::LuaRef>();
@@ -51,7 +54,8 @@ Encoder::Build(const std::string& sName, const LuaIntf::LuaRef& table)
 
 	m_nameStack.pop();
 	// XXX
-	return std::make_tuple(false, "to be implemented");
+	m_sError = "to be implemented";
+	return 0;
 }
 
 std::string Encoder::GetFullFieldName(const std::string& sFieldName) const
@@ -64,5 +68,14 @@ std::string Encoder::GetFullFieldName(const std::string& sFieldName) const
 		ns.pop();
 	}
 	return sResult;
+}
+
+void Encoder::Reset()
+{
+	m_fbb.Clear();
+	m_sError.clear();
+
+	NameStack emptyStack;
+	m_nameStack.swap(emptyStack);  // swap to clear
 }
 
