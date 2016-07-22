@@ -24,8 +24,8 @@ public:
 
 private:
 	// Encode recursively. Return 0 and set m_sError if any error.
-	flatbuffers::uoffset_t EncodeToFbb(const std::string& sName,
-		const LuaIntf::LuaRef& table);
+	flatbuffers::uoffset_t Encoder::Encode(
+		const reflection::Object& obj, const LuaIntf::LuaRef& table);
 
 private:
 	std::string GetFullFieldName(const std::string& sFieldName) const;

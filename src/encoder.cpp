@@ -15,7 +15,9 @@ Encoder::Encode(const std::string& sName, const LuaIntf::LuaRef& table)
 {
 	Reset();
 
-	if (!EncodeToFbb(sName, table))  // An offset of 0 means error.
+	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
+	assert(pObj);
+	if (!Encode(*pObj, table))  // An offset of 0 means error.
 		return std::make_tuple(false, m_sError);
 
 	const char* pBuffer = reinterpret_cast<const char*>(
@@ -27,12 +29,11 @@ Encoder::Encode(const std::string& sName, const LuaIntf::LuaRef& table)
 // Todo: Skip default value.
 
 flatbuffers::uoffset_t
-Encoder::EncodeToFbb(const std::string& sName, const LuaIntf::LuaRef& table)
+Encoder::Encode(const reflection::Object& obj,
+	const LuaIntf::LuaRef& table)
 {
-	m_nameStack.push(sName);
-	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
-	assert(pObj);
-	const auto& vFields = *pObj->fields();
+	m_nameStack.push(obj.name()->str());
+	const auto& vFields = *obj.fields();
 
 	for (auto& e : table)
 	{
