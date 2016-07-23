@@ -23,8 +23,9 @@ public:
 
 public:
 	using LuaRef = LuaIntf::LuaRef;
-	std::tuple<bool, std::string> Encode(
-		const std::string& sName, const LuaRef& table);
+	bool Encode(const std::string& sName, const LuaRef& table);
+	std::string GetResultStr() const;
+	const std::string& GetErrorStr() const { return m_sError; }
 
 private:
 	// Encode recursively. Return 0 and set m_sError if any error.

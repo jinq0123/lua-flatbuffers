@@ -12,8 +12,7 @@ Encoder::Encoder(const reflection::Schema& schema) :
 {
 }
 
-std::tuple<bool, std::string>
-Encoder::Encode(const std::string& sName, const LuaRef& table)
+bool Encoder::Encode(const std::string& sName, const LuaRef& table)
 {
 	Reset();
 
@@ -21,12 +20,17 @@ Encoder::Encode(const std::string& sName, const LuaRef& table)
 	assert(pObj);
 	flatbuffers::uoffset_t offset = Encode(*pObj, table);
 	if (!offset)  // An offset of 0 means error.
-		return std::make_tuple(false, m_sError);
+		return false;
 
 	m_fbb.Finish(flatbuffers::Offset<void>(offset));  // Todo: Add file_identifier if root_type
+	return true;
+}
+
+std::string Encoder::GetResultStr() const
+{
 	const char* pBuffer = reinterpret_cast<const char*>(
 		m_fbb.GetBufferPointer());
-	return std::make_tuple(true, std::string(pBuffer, m_fbb.GetSize()));
+	return std::string(pBuffer, m_fbb.GetSize());
 }
 
 // Todo: check required fields.
