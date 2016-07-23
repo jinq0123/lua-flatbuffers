@@ -3,6 +3,7 @@
 
 #include "schema_cache.h"  // for SchemaCache
 
+#include "decoder.h"
 #include "encoder.h"
 
 // By default LuaIntf expect the Lua library to build under C++.
@@ -52,12 +53,12 @@ std::tuple<bool, std::string> LoadFbs(const std::string& sFbs)
 std::tuple<LuaIntf::LuaRef, std::string> Encode(
 	const std::string& sName, const LuaIntf::LuaRef& table)
 {
-	lua_State* luaState = table.state();
+	lua_State* L = table.state();
 	const reflection::Schema* pSchema = GetCache().GetSchemaOfObject(sName);
 	if (!pSchema)
 	{
 		return std::make_tuple(
-			LuaIntf::LuaRef(luaState, nullptr),
+			LuaIntf::LuaRef(L, nullptr),
 			"no type " + sName);
 	}
 
@@ -65,10 +66,10 @@ std::tuple<LuaIntf::LuaRef, std::string> Encode(
 	if (encoder.Encode(sName, table))
 	{
 		return std::make_tuple(LuaIntf::LuaRef::fromValue(
-			luaState, encoder.GetResultStr()), "");
+			L, encoder.GetResultStr()), "");
 	}
 	return std::make_tuple(
-		LuaIntf::LuaRef(luaState, nullptr),
+		LuaIntf::LuaRef(L, nullptr),
 		encoder.GetErrorStr());
 }
 
@@ -79,7 +80,15 @@ std::tuple<LuaIntf::LuaRef, std::string> Decode(
 	const std::string& sName, const std::string& buf)
 {
 	assert(L);
-	return std::make_tuple(LuaIntf::LuaRef(L, nullptr), "to be implemented");
+	const reflection::Schema* pSchema = GetCache().GetSchemaOfObject(sName);
+	if (!pSchema)
+	{
+		return std::make_tuple(
+			LuaIntf::LuaRef(L, nullptr),
+			"no type " + sName);
+	}
+
+	return Decoder(L, *pSchema).Decode(sName, buf);
 }
 
 }  // namespace
