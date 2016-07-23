@@ -79,6 +79,7 @@ bool Encoder::CacheFields(const Object& obj, const LuaRef& table,
 
 		LuaRef value = e.value<LuaRef>();
 		const reflection::Type& type = *pField->type();
+		// Todo: check type of value...
 		switch (type.base_type())
 		{
 		case reflection::String:
