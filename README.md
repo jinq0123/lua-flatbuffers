@@ -54,6 +54,40 @@ local buf = fb:encode("Monster", monster)
 local monster2 = fbs:decode("Monster", buf)
 ```
 
+Test
+--------
+<pre>
+E:\Git\Lua\lua-flatbuffers_jinq0123\test>lua53pp.exe
+Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
+> package.cpath = package.cpath .. ";../bin/Debug/?.dll"
+> fb = require("flatbuffers")
+> fb.load_bfbs_file("../third_party/flatbuffers/tests/monster_test.bfbs")
+true
+> buf = fb.encode("Monster", {hp = 1234})
+> t = fb.decode("Monster", buf)
+> inspect = require("inspect")
+> inspect(t)
+{
+  color = 8,
+  hp = 1234,
+  mana = 150,
+  test_type = 0,
+  testbool = 0,
+  testf = 3.1415901184082,
+  testf2 = 3.0,
+  testf3 = 0.0,
+  testhashs32_fnv1 = 0,
+  testhashs32_fnv1a = 0,
+  testhashs64_fnv1 = 0,
+  testhashs64_fnv1a = 0,
+  testhashu32_fnv1 = 0,
+  testhashu32_fnv1a = 0,
+  testhashu64_fnv1 = 0,
+  testhashu64_fnv1a = 0
+}
+>
+</pre>
+
 Todo
 ------
 * Support namespace.
