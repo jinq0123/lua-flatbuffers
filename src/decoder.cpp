@@ -71,8 +71,13 @@ void Decoder::SetLuaTableField(
 		rLuaTable[pName] = DecodeVectorField(fbTable, field);
 		break;
 	case reflection::Obj:
-		// XXX
+	{
+		const auto* pTable = fbTable.GetPointer<
+			const flatbuffers::Table*>(field.offset());
+		if (!pTable) break;
+		rLuaTable[pName] = DecodeObject(*m_vObjects[type.index()], *pTable);
 		break;
+	}
 	case reflection::Union:
 		// XXX
 		break;
