@@ -12,17 +12,10 @@ Decoder::Decoder(lua_State* state, const reflection::Schema& schema) :
 	assert(L);
 }
 
-template<typename FieldType>
-inline FieldType GetField(const flatbuffers::Table& fbTable,
-	const reflection::Field& field)
-{
-	return fbTable.GetField<FieldType>(field.offset(),
-		static_cast<FieldType>(fdefaultVal));
-}
-
-static void SetField(const flatbuffers::Table& fbTable,
+void Decoder::SetLuaTableField(
+	const Table& fbTable,
 	const reflection::Field& field,
-	LuaIntf::LuaRef& rLuaTable)
+	LuaRef& rLuaTable) const
 {
 	if (field.deprecated()) return;
 	const reflection::Type& type = *field.type();
@@ -69,12 +62,13 @@ static void SetField(const flatbuffers::Table& fbTable,
 
 	case reflection::String:
 	{
-		auto* pStr = fbTable.GetPointer<const flatbuffers::String *>(field.offset());
+		const auto* pStr = fbTable.GetPointer<
+			const flatbuffers::String *>(field.offset());
 		if (pStr) rLuaTable[pName] = pStr->str();
 		break;
 	}
 	case reflection::Vector:
-		// XXX
+		rLuaTable[pName] = DecodeVectorField(fbTable, field);
 		break;
 	case reflection::Obj:
 		// XXX
@@ -89,24 +83,50 @@ static void SetField(const flatbuffers::Table& fbTable,
 }
 
 std::tuple<LuaIntf::LuaRef, std::string>
-Decoder::Decode(const std::string& sName, const std::string& buf)
+Decoder::Decode(const std::string& sName, const std::string& buf) const
 {
+	const Table* pRoot = flatbuffers::GetRoot<Table>(buf.data());
+	assert(pRoot);
+
 	// Todo: verify buffer...
 
 	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
 	assert(pObj);
-
-	const flatbuffers::Table& fbTable =
-		*flatbuffers::GetRoot<flatbuffers::Table>(buf.data());
-
-	LuaRef luaTable = LuaRef::createTable(L);
-	for (const reflection::Field* pField : *pObj->fields())
-	{
-		assert(pField);
-		SetField(fbTable, *pField, luaTable);
-	}
-
-	// XXX
-	return std::make_tuple(luaTable, "");
+	return std::make_tuple(DecodeObject(*pObj, *pRoot), "");
+	// Todo: return error.
 }
 
+LuaIntf::LuaRef Decoder::DecodeObject(
+	const reflection::Object& object,
+	const Table& fbTable) const
+{
+	LuaRef luaTable = LuaRef::createTable(L);
+	for (const reflection::Field* pField : *object.fields())
+	{
+		assert(pField);
+		SetLuaTableField(fbTable, *pField, luaTable);
+	}
+
+	return luaTable;
+}
+
+LuaIntf::LuaRef Decoder::DecodeVectorField(
+	const Table& table,
+	const reflection::Field& field) const
+{
+	const void* pVec = table.GetPointer<const void*>(field.offset());
+	if (!pVec) return LuaRef(L, nullptr);
+	const reflection::Type& type = *field.type();
+
+	// Todo: may be map (if has key)...
+	reflection::BaseType elementType = type.element();
+
+	LuaRef luaArray = LuaRef::createTable(L);
+	for (size_t i = 0; i < pVec->size(); ++i)
+	{
+		const uint8_t* pElement = (*pVec)[i];
+		luaArray[i + 1] = Decode(elementType, pElement);
+		const Table* pTable
+	}
+	return luaArray;
+}

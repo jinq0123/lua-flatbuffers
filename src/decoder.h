@@ -8,6 +8,7 @@ class LuaRef;
 }
 
 namespace reflection {
+struct Field;
 struct Object;
 struct Schema;
 }
@@ -25,7 +26,21 @@ public:
 	// Decode buffer to lua table.
 	// Returns (table, "") or (nil, error)
 	std::tuple<LuaRef, std::string> Decode(
-		const std::string& sName, const std::string& buf);
+		const std::string& sName, const std::string& buf) const;
+
+private:
+	using Table = flatbuffers::Table;
+	void SetLuaTableField(
+		const Table& fbTable,
+		const reflection::Field& field,
+		LuaRef& rLuaTable) const;
+
+	LuaRef DecodeObject(
+		const reflection::Object& object,
+		const Table& fbTable) const;
+	LuaRef DecodeVectorField(
+		const Table& table,
+		const reflection::Field& field) const;
 
 private:
 	lua_State* L;
