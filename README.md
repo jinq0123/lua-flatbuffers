@@ -32,10 +32,10 @@ flatc --binary --schema monster.fbs
 ```
 
 ```lua
-local fb = require("flatbuffers")
+local lfb = require("lfb")
 
 -- Load a FlatBuffers schema file.
-assert(fb.load_bfbs_file("monster.bfbs"))
+assert(lfb.load_bfbs_file("monster.bfbs"))
 
 local monster = {
   pos = {
@@ -48,10 +48,10 @@ local monster = {
 }
 
 -- Build a buffer.
-local buf = fb:encode("Monster", monster)
+local buf = lfb:encode("Monster", monster)
 
 -- Decode a flatbuffer string back to a Lua table.
-local monster2 = fbs:decode("Monster", buf)
+local monster2 = lfbs:decode("Monster", buf)
 ```
 
 Test
@@ -60,11 +60,11 @@ Test
 E:\Git\Lua\lua-flatbuffers_jinq0123\test>lua53pp.exe
 Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
 > package.cpath = package.cpath .. ";../bin/Debug/?.dll"
-> fb = require("flatbuffers")
-> fb.load_bfbs_file("../third_party/flatbuffers/tests/monster_test.bfbs")
+> lfb = require("lfb")
+> lfb.load_bfbs_file("../third_party/flatbuffers/tests/monster_test.bfbs")
 true
-> buf = fb.encode("Monster", {hp = 1234})
-> t = fb.decode("Monster", buf)
+> buf = lfb.encode("Monster", {hp = 1234})
+> t = lfb.decode("Monster", buf)
 > inspect = require("inspect")
 > inspect(t)
 {
