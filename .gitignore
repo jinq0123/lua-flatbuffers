@@ -32,3 +32,4 @@
 /build/obj
 /build/flatbuffers.VC.opendb
 /build/flatbuffers.sdf
+/test/inspect.lua

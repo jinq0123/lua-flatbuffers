@@ -68,9 +68,11 @@ static void SetField(const flatbuffers::Table& fbTable,
 		break;
 
 	case reflection::String:
-		rLuaTable[pName] = fbTable.GetPointer<const flatbuffers::String *>(
-			field.offset())->str();
+	{
+		auto* pStr = fbTable.GetPointer<const flatbuffers::String *>(field.offset());
+		if (pStr) rLuaTable[pName] = pStr->str();
 		break;
+	}
 	case reflection::Vector:
 		// XXX
 		break;
