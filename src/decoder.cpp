@@ -123,6 +123,7 @@ LuaIntf::LuaRef Decoder::DecodeVectorField(
 	reflection::BaseType elemType = type.element();
 
 	// Todo: may be map (if has key)...
+	// Todo: Move switch(elemType) out...
 
 	LuaRef luaArray = LuaRef::createTable(L);
 	for (size_t i = 1; i <= pVec->size(); ++i)
@@ -155,8 +156,12 @@ LuaIntf::LuaRef Decoder::DecodeVectorField(
 			assert(false);
 			break;
 		case reflection::Obj:
-			// XXX
+		{
+			const auto* pTable = flatbuffers::GetAnyVectorElemPointer<const Table>(pVec, i);
+			// Todo: check pTable
+			luaArray[i+1] = DecodeObject(*m_vObjects[type.index()], *pTable);
 			break;
+		}
 		case reflection::Union:
 			// XXX
 			break;
