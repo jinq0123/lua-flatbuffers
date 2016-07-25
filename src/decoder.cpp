@@ -114,19 +114,56 @@ LuaIntf::LuaRef Decoder::DecodeVectorField(
 	const Table& table,
 	const reflection::Field& field) const
 {
-	const void* pVec = table.GetPointer<const void*>(field.offset());
+	const auto* pVec = table.GetPointer<
+		const flatbuffers::VectorOfAny*>(field.offset());
 	if (!pVec) return LuaRef(L, nullptr);
+
 	const reflection::Type& type = *field.type();
+	assert(reflection::Vector == type.base_type());
+	reflection::BaseType elemType = type.element();
 
 	// Todo: may be map (if has key)...
-	reflection::BaseType elementType = type.element();
 
 	LuaRef luaArray = LuaRef::createTable(L);
-	for (size_t i = 0; i < pVec->size(); ++i)
+	for (size_t i = 1; i <= pVec->size(); ++i)
 	{
-		const uint8_t* pElement = (*pVec)[i];
-		luaArray[i + 1] = Decode(elementType, pElement);
-		const Table* pTable
-	}
+		switch (elemType)
+		{
+		case reflection::UType:
+		case reflection::Bool:
+		case reflection::UByte:
+		case reflection::Byte:
+		case reflection::Short:
+		case reflection::UShort:
+		case reflection::Int:
+		case reflection::UInt:
+		case reflection::Long:
+			luaArray[i+1] = GetAnyVectorElemI(pVec, elemType, i);
+			break;
+		case reflection::ULong:
+			luaArray[i+1] = static_cast<uint64_t>(
+				GetAnyVectorElemI(pVec, elemType, i));
+			break;
+		case reflection::Float:
+		case reflection::Double:
+			luaArray[i+1] = GetAnyVectorElemF(pVec, elemType, i);
+			break;
+		case reflection::String:
+			luaArray[i+1] = GetAnyVectorElemS(pVec, elemType, i);
+			break;
+		case reflection::Vector:
+			assert(false);
+			break;
+		case reflection::Obj:
+			// XXX
+			break;
+		case reflection::Union:
+			// XXX
+			break;
+		default:
+			assert(false);
+			break;
+		}  // switch
+	}  // for
 	return luaArray;
 }
