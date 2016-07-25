@@ -77,7 +77,8 @@ std::tuple<LuaIntf::LuaRef, std::string> Encode(
 // Returns (table, "") or (nil, error)
 std::tuple<LuaIntf::LuaRef, std::string> Decode(
 	lua_State* L,
-	const std::string& sName, const std::string& buf)
+	const std::string& sName,
+	const std::string& buf)
 {
 	assert(L);
 	const reflection::Schema* pSchema = GetCache().GetSchemaOfObject(sName);
