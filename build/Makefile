@@ -11,26 +11,26 @@ ifndef verbose
 endif
 
 ifeq ($(config),debug)
-  flatbuffers_config = debug
+  lfb_config = debug
 endif
 ifeq ($(config),release)
-  flatbuffers_config = release
+  lfb_config = release
 endif
 
-PROJECTS := flatbuffers
+PROJECTS := lfb
 
 .PHONY: all clean help $(PROJECTS) 
 
 all: $(PROJECTS)
 
-flatbuffers:
-ifneq (,$(flatbuffers_config))
-	@echo "==== Building flatbuffers ($(flatbuffers_config)) ===="
-	@${MAKE} --no-print-directory -C . -f flatbuffers.make config=$(flatbuffers_config)
+lfb:
+ifneq (,$(lfb_config))
+	@echo "==== Building lfb ($(lfb_config)) ===="
+	@${MAKE} --no-print-directory -C . -f lfb.make config=$(lfb_config)
 endif
 
 clean:
-	@${MAKE} --no-print-directory -C . -f flatbuffers.make clean
+	@${MAKE} --no-print-directory -C . -f lfb.make clean
 
 help:
 	@echo "Usage: make [config=name] [target]"
@@ -42,6 +42,6 @@ help:
 	@echo "TARGETS:"
 	@echo "   all (default)"
 	@echo "   clean"
-	@echo "   flatbuffers"
+	@echo "   lfb"
 	@echo ""
 	@echo "For more information, see http://industriousone.com/premake/quick-start"

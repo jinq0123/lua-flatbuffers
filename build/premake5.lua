@@ -6,12 +6,12 @@ Usage:
 ]]
 
 local lua_include_dir = "../third_party/lua532/include"
-local lua_lib_dir = "../third_party/lua532/lib"
+local lib_dir = "../third_party/lib"
 
-workspace "flatbuffers"
+workspace "lfb"
 	configurations { "Debug", "Release" }
 
-project "flatbuffers"
+project "lfb"
 	kind "SharedLib"
 	targetdir "../bin/%{cfg.buildcfg}"
 
@@ -25,7 +25,7 @@ project "flatbuffers"
 		lua_include_dir,
 	}
 	libdirs {
-		lua_lib_dir,
+		lib_dir,
 	}
 	flags {
 		"C++11",
@@ -33,13 +33,14 @@ project "flatbuffers"
 
 	filter "configurations:Debug"
 		flags { "Symbols" }
-		libdirs { lua_lib_dir .. "/Debug" }
+		libdirs { lib_dir .. "/Debug" }
 	filter "configurations:Release"
 		defines { "NDEBUG" }
 		optimize "On"
-		libdirs { lua_lib_dir .. "/Release" }
+		libdirs { lib_dir .. "/Release" }
 	filter {}
 
 	links {
 		"lua",
+		"flatbuffers"
 	}

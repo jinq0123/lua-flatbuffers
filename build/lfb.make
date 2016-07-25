@@ -13,7 +13,7 @@ endif
 ifeq ($(config),debug)
   RESCOMP = windres
   TARGETDIR = ../bin/Debug
-  TARGET = $(TARGETDIR)/libflatbuffers.so
+  TARGET = $(TARGETDIR)/liblfb.so
   OBJDIR = obj/Debug
   DEFINES +=
   INCLUDES += -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
@@ -22,9 +22,9 @@ ifeq ($(config),debug)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS) -std=c++11
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += -llua
+  LIBS += -llua -lflatbuffers
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L../third_party/lua532/lib -L../third_party/lua532/lib/Debug -shared
+  ALL_LDFLAGS += $(LDFLAGS) -L../third_party/lib -L../third_party/lib/Debug -shared
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
@@ -40,7 +40,7 @@ endif
 ifeq ($(config),release)
   RESCOMP = windres
   TARGETDIR = ../bin/Release
-  TARGET = $(TARGETDIR)/libflatbuffers.so
+  TARGET = $(TARGETDIR)/liblfb.so
   OBJDIR = obj/Release
   DEFINES += -DNDEBUG
   INCLUDES += -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
@@ -49,9 +49,9 @@ ifeq ($(config),release)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC
   ALL_CXXFLAGS += $(CXXFLAGS) $(ALL_CFLAGS) -std=c++11
   ALL_RESFLAGS += $(RESFLAGS) $(DEFINES) $(INCLUDES)
-  LIBS += -llua
+  LIBS += -llua -lflatbuffers
   LDDEPS +=
-  ALL_LDFLAGS += $(LDFLAGS) -L../third_party/lua532/lib -L../third_party/lua532/lib/Release -s -shared
+  ALL_LDFLAGS += $(LDFLAGS) -L../third_party/lib -L../third_party/lib/Release -s -shared
   LINKCMD = $(CXX) -o "$@" $(OBJECTS) $(RESOURCES) $(ALL_LDFLAGS) $(LIBS)
   define PREBUILDCMDS
   endef
@@ -83,7 +83,7 @@ ifeq (/bin,$(findstring /bin,$(SHELL)))
 endif
 
 $(TARGET): $(GCH) ${CUSTOMFILES} $(OBJECTS) $(LDDEPS) $(RESOURCES)
-	@echo Linking flatbuffers
+	@echo Linking lfb
 	$(SILENT) $(LINKCMD)
 	$(POSTBUILDCMDS)
 
@@ -104,7 +104,7 @@ else
 endif
 
 clean:
-	@echo Cleaning flatbuffers
+	@echo Cleaning lfb
 ifeq (posix,$(SHELLTYPE))
 	$(SILENT) rm -f  $(TARGET)
 	$(SILENT) rm -rf $(OBJDIR)
