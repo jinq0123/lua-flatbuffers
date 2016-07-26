@@ -51,6 +51,10 @@ private:
 		const void* pVoid) const;
 
 private:
+	bool Fail() const { !m_sError.empty(); }
+	std::tuple<LuaRef, std::string> Error() const;
+
+private:
 	lua_State* L;
 	const reflection::Schema& m_schema;
 	const flatbuffers::Vector<flatbuffers::Offset<
@@ -59,6 +63,7 @@ private:
 		reflection::Enum>>& m_vEnums;
 
 	std::unique_ptr<flatbuffers::Verifier> m_pVerifier;
+	std::string m_sError;
 };  // class Decoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_H_

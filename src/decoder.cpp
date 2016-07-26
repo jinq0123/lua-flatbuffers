@@ -99,6 +99,7 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 	// Todo: verify buffer...
 	m_pVerifier = std::make_unique<flatbuffers::Verifier>(
 		reinterpret_cast<const uint8_t *>(buf.data()), buf.size());
+	m_sError.clear();
 
 
 	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
@@ -272,5 +273,10 @@ LuaRef Decoder::Decode(
 
 	assert(false);
 	return LuaRef(L, nullptr);
+}
+
+std::tuple<LuaRef, std::string> Decoder::Error() const
+{
+	return std::make_tuple(LuaRef(L, nullptr), m_sError);
 }
 
