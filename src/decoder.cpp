@@ -4,10 +4,13 @@
 
 #include <flatbuffers/reflection.h>
 
+using LuaIntf::LuaRef;
+
 Decoder::Decoder(lua_State* state, const reflection::Schema& schema) :
 	L(state),
 	m_schema(schema),
-	m_vObjects(*schema.objects())
+	m_vObjects(*schema.objects()),
+	m_vEnums(*schema.enums())
 {
 	assert(L);
 }
@@ -79,7 +82,7 @@ void Decoder::SetLuaTableField(
 		break;
 	}
 	case reflection::Union:
-		// XXX
+		rLuaTable[pName] = DecodeUnionField(fbTable, field);
 		break;
 	default:
 		assert(false);
@@ -87,7 +90,7 @@ void Decoder::SetLuaTableField(
 	}
 }
 
-std::tuple<LuaIntf::LuaRef, std::string>
+std::tuple<LuaRef, std::string>
 Decoder::Decode(const std::string& sName, const std::string& buf) const
 {
 	const Table* pRoot = flatbuffers::GetRoot<Table>(buf.data());
@@ -101,7 +104,7 @@ Decoder::Decode(const std::string& sName, const std::string& buf) const
 	// Todo: return error.
 }
 
-LuaIntf::LuaRef Decoder::DecodeObject(
+LuaRef Decoder::DecodeObject(
 	const reflection::Object& object,
 	const Table& fbTable) const
 {
@@ -115,7 +118,7 @@ LuaIntf::LuaRef Decoder::DecodeObject(
 	return luaTable;
 }
 
-LuaIntf::LuaRef Decoder::DecodeVectorField(
+LuaRef Decoder::DecodeVectorField(
 	const Table& table,
 	const reflection::Field& field) const
 {
@@ -124,6 +127,13 @@ LuaIntf::LuaRef Decoder::DecodeVectorField(
 	if (!pVec) return LuaRef(L, nullptr);
 
 	const reflection::Type& type = *field.type();
+	return DecodeVector(type, *pVec);
+}
+
+LuaRef Decoder::DecodeVector(
+	const reflection::Type& type,
+	const flatbuffers::VectorOfAny& v) const
+{
 	assert(reflection::Vector == type.base_type());
 	reflection::BaseType elemType = type.element();
 
@@ -131,7 +141,8 @@ LuaIntf::LuaRef Decoder::DecodeVectorField(
 	// Todo: Move switch(elemType) out...
 
 	LuaRef luaArray = LuaRef::createTable(L);
-	for (size_t i = 1; i <= pVec->size(); ++i)
+	const flatbuffers::VectorOfAny* pVec = &v;
+	for (size_t i = 1; i <= v.size(); ++i)
 	{
 		switch (elemType)
 		{
@@ -158,7 +169,7 @@ LuaIntf::LuaRef Decoder::DecodeVectorField(
 			luaArray[i+1] = GetAnyVectorElemS(pVec, elemType, i);
 			break;
 		case reflection::Vector:
-			assert(false);
+			assert(!"Nesting vectors is not supported.");
 			break;
 		case reflection::Obj:
 		{
@@ -168,7 +179,7 @@ LuaIntf::LuaRef Decoder::DecodeVectorField(
 			break;
 		}
 		case reflection::Union:
-			// XXX
+			assert(!"Union must always be part of a table.");
 			break;
 		default:
 			assert(false);
@@ -177,3 +188,79 @@ LuaIntf::LuaRef Decoder::DecodeVectorField(
 	}  // for
 	return luaArray;
 }
+
+LuaRef Decoder::DecodeUnionField(
+	const Table& table,
+	const reflection::Field& field) const
+{
+	assert(!field.deprecated());
+	const reflection::Type& type = *field.type();
+	assert(type.base_type() == reflection::Union);
+	const void* pVoid = table.GetPointer<const void*>(field.offset());
+	if (!pVoid) return LuaRef(L, nullptr);
+
+	const reflection::Enum& e = *m_vEnums[type.index()];
+	assert(e.is_union());
+	const reflection::Type& underlyingType = *e.underlying_type();
+	return Decode(underlyingType, pVoid);
+}
+
+template <typename T>
+inline LuaRef ReadScalar(lua_State* L, const void* pVoid)
+{
+	assert(L && pVoid);
+	using flatbuffers::ReadScalar;
+	return LuaRef::fromValue(L, ReadScalar<T>(pVoid));
+}
+
+LuaRef Decoder::Decode(
+	const reflection::Type& type,
+	const void* pVoid) const
+{
+	if (!pVoid) return LuaRef(L, nullptr);
+
+	switch (type.base_type())
+	{
+	case reflection::UType:
+	case reflection::Bool:
+	case reflection::UByte:
+		return ReadScalar<uint8_t>(L, pVoid);
+	case reflection::Byte:
+		return ReadScalar<int8_t>(L, pVoid);
+	case reflection::Short:
+		return ReadScalar<int16_t>(L, pVoid);
+	case reflection::UShort:
+		return ReadScalar<uint16_t>(L, pVoid);
+	case reflection::Int:
+		return ReadScalar<uint8_t>(L, pVoid);
+	case reflection::UInt:
+		return ReadScalar<uint8_t>(L, pVoid);
+	case reflection::Long:
+		return ReadScalar<int64_t>(L, pVoid);
+	case reflection::ULong:
+		return ReadScalar<uint64_t>(L, pVoid);
+	case reflection::Float:
+		return ReadScalar<float>(L, pVoid);
+	case reflection::Double:
+		return ReadScalar<double>(L, pVoid);
+	case reflection::String:
+	{
+		const auto* pStr = reinterpret_cast<const flatbuffers::String*>(pVoid);
+		return LuaRef::fromValue(L, pStr->str());
+	}
+	case reflection::Vector:
+		// XXX assert(!"Nesting vectors is not supported.");
+		break;
+	case reflection::Obj:
+	{
+		const auto* pTable = reinterpret_cast<const Table*>(pVoid);
+		return DecodeObject(*m_vObjects[type.index()], *pTable);
+	}
+	case reflection::Union:
+		// XXX assert(!"Union must always be part of a table.");
+		break;
+	}  // switch
+	assert(false);
+	return LuaRef(L, nullptr);
+}
+

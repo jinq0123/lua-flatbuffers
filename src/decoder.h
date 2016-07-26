@@ -8,9 +8,11 @@ class LuaRef;
 }
 
 namespace reflection {
+struct Enum;
 struct Field;
 struct Object;
 struct Schema;
+struct Type;
 }
 
 struct lua_State;
@@ -38,15 +40,23 @@ private:
 	LuaRef DecodeObject(
 		const reflection::Object& object,
 		const Table& fbTable) const;
-	LuaRef DecodeVectorField(
-		const Table& table,
+	LuaRef DecodeVectorField(const Table& table,
 		const reflection::Field& field) const;
+	LuaRef DecodeVector(const reflection::Type& type,
+		const flatbuffers::VectorOfAny& v) const;
+	LuaRef DecodeUnionField(const Table& table,
+		const reflection::Field& field) const;
+
+	LuaRef Decode(const reflection::Type& type,
+		const void* pVoid) const;
 
 private:
 	lua_State* L;
 	const reflection::Schema& m_schema;
 	const flatbuffers::Vector<flatbuffers::Offset<
 		reflection::Object>>& m_vObjects;
+	const flatbuffers::Vector<flatbuffers::Offset<
+		reflection::Enum>>& m_vEnums;
 };  // class Decoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_H_

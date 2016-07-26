@@ -15,6 +15,8 @@
 
 #include <iostream>
 
+using LuaIntf::LuaRef;
+
 namespace {
 
 void test()
@@ -50,32 +52,32 @@ std::tuple<bool, std::string> LoadFbs(const std::string& sFbs)
 
 // Encode lua table to buffer.
 // Returns (buffer, "") or (nil, error)
-std::tuple<LuaIntf::LuaRef, std::string> Encode(
-	const std::string& sName, const LuaIntf::LuaRef& table)
+std::tuple<LuaRef, std::string> Encode(
+	const std::string& sName, const LuaRef& table)
 {
 	lua_State* L = table.state();
 	const reflection::Schema* pSchema = GetCache().GetSchemaOfObject(sName);
 	if (!pSchema)
 	{
 		return std::make_tuple(
-			LuaIntf::LuaRef(L, nullptr),
+			LuaRef(L, nullptr),
 			"no type " + sName);
 	}
 
 	Encoder encoder(*pSchema);
 	if (encoder.Encode(sName, table))
 	{
-		return std::make_tuple(LuaIntf::LuaRef::fromValue(
+		return std::make_tuple(LuaRef::fromValue(
 			L, encoder.GetResultStr()), "");
 	}
 	return std::make_tuple(
-		LuaIntf::LuaRef(L, nullptr),
+		LuaRef(L, nullptr),
 		encoder.GetErrorStr());
 }
 
 // Decode buffer to lua table.
 // Returns (table, "") or (nil, error)
-std::tuple<LuaIntf::LuaRef, std::string> Decode(
+std::tuple<LuaRef, std::string> Decode(
 	lua_State* L,
 	const std::string& sName,
 	const std::string& buf)
@@ -85,7 +87,7 @@ std::tuple<LuaIntf::LuaRef, std::string> Decode(
 	if (!pSchema)
 	{
 		return std::make_tuple(
-			LuaIntf::LuaRef(L, nullptr),
+			LuaRef(L, nullptr),
 			"no type " + sName);
 	}
 
