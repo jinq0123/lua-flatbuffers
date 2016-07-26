@@ -249,17 +249,24 @@ LuaRef Decoder::Decode(
 		return LuaRef::fromValue(L, pStr->str());
 	}
 	case reflection::Vector:
-		// XXX assert(!"Nesting vectors is not supported.");
-		break;
+	{
+		const auto* pVec = reinterpret_cast<const flatbuffers::VectorOfAny*>(pVoid);
+		return DecodeVector(type, *pVec);
+	}
 	case reflection::Obj:
 	{
 		const auto* pTable = reinterpret_cast<const Table*>(pVoid);
 		return DecodeObject(*m_vObjects[type.index()], *pTable);
 	}
 	case reflection::Union:
-		// XXX assert(!"Union must always be part of a table.");
-		break;
+	{
+		const reflection::Enum& e = *m_vEnums[type.index()];
+		assert(e.is_union());
+		const reflection::Type& underlyingType = *e.underlying_type();
+		return Decode(underlyingType, pVoid);
+	}
 	}  // switch
+
 	assert(false);
 	return LuaRef(L, nullptr);
 }
