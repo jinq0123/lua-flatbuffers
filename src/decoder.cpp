@@ -91,12 +91,15 @@ void Decoder::SetLuaTableField(
 }
 
 std::tuple<LuaRef, std::string>
-Decoder::Decode(const std::string& sName, const std::string& buf) const
+Decoder::Decode(const std::string& sName, const std::string& buf)
 {
 	const Table* pRoot = flatbuffers::GetRoot<Table>(buf.data());
 	assert(pRoot);
 
 	// Todo: verify buffer...
+	m_pVerifier = std::make_unique<flatbuffers::Verifier>(
+		reinterpret_cast<const uint8_t *>(buf.data()), buf.size());
+
 
 	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
 	assert(pObj);

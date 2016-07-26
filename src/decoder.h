@@ -28,7 +28,7 @@ public:
 	// Decode buffer to lua table.
 	// Returns (table, "") or (nil, error)
 	std::tuple<LuaRef, std::string> Decode(
-		const std::string& sName, const std::string& buf) const;
+		const std::string& sName, const std::string& buf);
 
 private:
 	using Table = flatbuffers::Table;
@@ -57,6 +57,8 @@ private:
 		reflection::Object>>& m_vObjects;
 	const flatbuffers::Vector<flatbuffers::Offset<
 		reflection::Enum>>& m_vEnums;
+
+	std::unique_ptr<flatbuffers::Verifier> m_pVerifier;
 };  // class Decoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_H_

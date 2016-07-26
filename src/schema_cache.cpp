@@ -34,7 +34,7 @@ SchemaCache::LoadBfbs(const string& sBfbs)
 
 	// Verify it.
 	flatbuffers::Verifier verifier(
-		reinterpret_cast<const uint8_t *>(sBfbs.data()), sBfbs.length());
+		reinterpret_cast<const uint8_t *>(sBfbs.data()), sBfbs.size());
 	if (!reflection::VerifySchemaBuffer(verifier))
 		return std::make_tuple(false, "failed to verify schema buffer");
 
