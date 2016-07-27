@@ -100,7 +100,7 @@ extern "C"
 #if defined(_MSC_VER) || defined(__BORLANDC__) || defined(__CODEGEARC__)
 __declspec(dllexport)
 #endif
-int luaopen_flatbuffers(lua_State* L)
+int luaopen_lfb(lua_State* L)
 {
 	using namespace LuaIntf;
 	LuaRef mod = LuaRef::createTable(L);
