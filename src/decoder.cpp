@@ -50,6 +50,10 @@ void Decoder::SetLuaTableField(
 	assert(pName);
 	uint16_t offset = field.offset();
 
+	if (field.required() && !fbTable.VerifyFieldRequired<
+		flatbuffers::uoffset_t>(*m_pVerifier, offset))
+		goto set_illegal;
+
 	using flatbuffers::GetFieldI;
 	using flatbuffers::GetFieldF;
 	switch (type.base_type())
@@ -57,6 +61,7 @@ void Decoder::SetLuaTableField(
 	case reflection::UType:
 	case reflection::Bool:
 	case reflection::UByte:
+		if (fbTable.VerifyField<uint8_t>(*m_pVerifier, offset)) goto set_illegal;
 		rLuaTable[pName] = GetFieldI<uint8_t>(fbTable, field);
 		break;
 	case reflection::Byte:
@@ -112,6 +117,10 @@ void Decoder::SetLuaTableField(
 		assert(false);
 		break;
 	}
+	return;
+
+set_illegal:
+	m_isBufferIllegal = true;
 }
 
 LuaRef Decoder::DecodeObject(
@@ -126,8 +135,11 @@ LuaRef Decoder::DecodeObject(
 	{
 		assert(pField);
 		SetLuaTableField(fbTable, *pField, luaTable);
+		if (m_isBufferIllegal) return Nil();
 	}
 
+	if (!m_pVerifier->EndTable())
+		return SetIllegal();
 	return luaTable;
 }
 
