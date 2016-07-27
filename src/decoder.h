@@ -44,7 +44,7 @@ private:
 		const reflection::Field& field);
 	LuaRef DecodeObjectField(const Table& fbTable,
 		const reflection::Field& field);
-	LuaRef DecodeUnionField(const Table& table,
+	LuaRef DecodeUnionField(const Table& fbTable,
 		const reflection::Field& field);
 
 	template<typename T>

@@ -145,14 +145,13 @@ LuaRef Decoder::DecodeObjectField(
 	return DecodeObject(*m_vObjects[field.type()->index()], *pTable);  // XXX verify
 }
 
-LuaRef Decoder::DecodeUnionField(
-	const Table& table,
+LuaRef Decoder::DecodeUnionField(const Table& fbTable,
 	const reflection::Field& field)
 {
 	assert(!field.deprecated());
 	const reflection::Type& type = *field.type();
 	assert(type.base_type() == reflection::Union);
-	const void* pVoid = table.GetPointer<const void*>(field.offset());
+	const void* pVoid = fbTable.GetPointer<const void*>(field.offset());
 	if (!pVoid) return Nil();
 
 	const reflection::Enum& e = *m_vEnums[type.index()];
