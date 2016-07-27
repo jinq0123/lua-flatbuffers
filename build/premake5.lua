@@ -15,6 +15,14 @@ project "lfb"
 	kind "SharedLib"
 	targetdir "../bin/%{cfg.buildcfg}"
 
+	--[[
+	From: https://github.com/SteveKChiu/lua-intf
+	By default LuaIntf expect the Lua library to build under C++.
+	If you really want to use Lua library compiled under C,
+	you can define LUAINTF_LINK_LUA_COMPILED_IN_CXX to 0:
+	--]]
+	-- defines { "LUAINTF_LINK_LUA_COMPILED_IN_CXX=0" }
+
 	files {
 		"../src/**.h",
 		"../src/**.cpp",
