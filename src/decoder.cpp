@@ -28,6 +28,7 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 	m_pVerifier = std::make_unique<flatbuffers::Verifier>(
 		reinterpret_cast<const uint8_t *>(pBuf), buf.size());
 	m_sError.clear();
+	m_nameStack.Reset();
 
 	// Check the first offset field before GetRoot().
 	if (!m_pVerifier->Verify<flatbuffers::uoffset_t>(pBuf))
@@ -73,39 +74,6 @@ LuaRef Decoder::DecodeFieldOfTable(
 	return Nil();
 }
 
-LuaRef Decoder::DecodeObjectField(
-	const Table& fbTable, const reflection::Field& field)
-{
-	uint16_t offset = field.offset();
-	if (!fbTable.VerifyField<flatbuffers::uoffset_t>(*m_pVerifier, offset))
-	{
-		ERR_RET_NIL("illegal offset to object field "
-			+ PopFullFieldName(field.name()->c_str()));
-	}
-	const auto* pTable = fbTable.GetPointer<const flatbuffers::Table*>(offset);
-	if (!pTable) return Nil();
-	return DecodeObject(*m_vObjects[field.type()->index()], *pTable);  // XXX verify
-}
-
-LuaRef Decoder::DecodeStringField(
-	const Table& fbTable, const reflection::Field& field)
-{
-	uint16_t offset = field.offset();
-	if (!fbTable.VerifyField<flatbuffers::uoffset_t>(*m_pVerifier, offset))
-	{
-		ERR_RET_NIL("illegal offset to string field "
-			+ PopFullFieldName(field.name()->c_str()));
-	}
-	const auto* pStr = fbTable.GetPointer<const flatbuffers::String *>(offset);
-	if (!m_pVerifier->Verify(pStr))
-	{
-		ERR_RET_NIL("illegal string field "
-			+ PopFullFieldName(field.name()->c_str()));
-	}
-	if (pStr) return LuaRef::fromValue(L, pStr->str());
-	return Nil();
-}
-
 LuaRef Decoder::DecodeScalarField(
 	const Table& fbTable, const reflection::Field& field)
 {
@@ -138,6 +106,93 @@ LuaRef Decoder::DecodeScalarField(
 	return Nil();
 }
 
+LuaRef Decoder::DecodeStringField(
+	const Table& fbTable, const reflection::Field& field)
+{
+	uint16_t offset = field.offset();
+	if (!fbTable.VerifyField<flatbuffers::uoffset_t>(*m_pVerifier, offset))
+	{
+		ERR_RET_NIL("illegal offset to string field "
+			+ PopFullFieldName(field.name()->c_str()));
+	}
+	const auto* pStr = fbTable.GetPointer<const flatbuffers::String *>(offset);
+	if (!m_pVerifier->Verify(pStr))
+	{
+		ERR_RET_NIL("illegal string field "
+			+ PopFullFieldName(field.name()->c_str()));
+	}
+	if (pStr) return LuaRef::fromValue(L, pStr->str());
+	return Nil();
+}
+
+LuaRef Decoder::DecodeVectorField(
+	const Table& table,
+	const reflection::Field& field)
+{
+	const auto* pVec = table.GetPointer<
+		const flatbuffers::VectorOfAny*>(field.offset());
+	if (!pVec) return Nil();
+
+	const reflection::Type& type = *field.type();
+	return DecodeVector(type, *pVec);
+}
+
+LuaRef Decoder::DecodeObjectField(
+	const Table& fbTable, const reflection::Field& field)
+{
+	uint16_t offset = field.offset();
+	if (!fbTable.VerifyField<flatbuffers::uoffset_t>(*m_pVerifier, offset))
+	{
+		ERR_RET_NIL("illegal offset to object field "
+			+ PopFullFieldName(field.name()->c_str()));
+	}
+	const auto* pTable = fbTable.GetPointer<const flatbuffers::Table*>(offset);
+	if (!pTable) return Nil();
+	return DecodeObject(*m_vObjects[field.type()->index()], *pTable);  // XXX verify
+}
+
+LuaRef Decoder::DecodeUnionField(
+	const Table& table,
+	const reflection::Field& field)
+{
+	assert(!field.deprecated());
+	const reflection::Type& type = *field.type();
+	assert(type.base_type() == reflection::Union);
+	const void* pVoid = table.GetPointer<const void*>(field.offset());
+	if (!pVoid) return Nil();
+
+	const reflection::Enum& e = *m_vEnums[type.index()];
+	assert(e.is_union());
+	const reflection::Type& underlyingType = *e.underlying_type();
+	return Decode(underlyingType, pVoid);
+}
+
+template<typename T>
+LuaRef Decoder::DecodeFieldI(const Table& fbTable,
+	const reflection::Field &field)
+{
+	if (fbTable.VerifyField<T>(*m_pVerifier, field.offset()))
+	{
+		ERR_RET_NIL("illegal int field "
+			+ PopFullFieldName(field.name()->c_str()));
+	}
+	T i = flatbuffers::GetFieldI<T>(fbTable, field);
+	return LuaRef::fromValue(L, i);
+}
+
+template<typename T>
+LuaRef Decoder::DecodeFieldF(const Table& fbTable,
+	const reflection::Field &field)
+{
+	if (fbTable.VerifyField<T>(*m_pVerifier, field.offset()))
+	{
+		ERR_RET_NIL("illegal float field "
+			+ PopFullFieldName(field.name()->c_str()));
+	}
+	T f = flatbuffers::GetFieldF<T>(fbTable, field);
+	return LuaRef::fromValue(L, f);
+}
+
 LuaRef Decoder::DecodeObject(
 	const reflection::Object& object,
 	const Table& fbTable)
@@ -161,18 +216,6 @@ LuaRef Decoder::DecodeObject(
 
 	m_nameStack.pop();
 	return luaTable;
-}
-
-LuaRef Decoder::DecodeVectorField(
-	const Table& table,
-	const reflection::Field& field)
-{
-	const auto* pVec = table.GetPointer<
-		const flatbuffers::VectorOfAny*>(field.offset());
-	if (!pVec) return Nil();
-
-	const reflection::Type& type = *field.type();
-	return DecodeVector(type, *pVec);
 }
 
 LuaRef Decoder::DecodeVector(
@@ -232,22 +275,6 @@ LuaRef Decoder::DecodeVector(
 		}  // switch
 	}  // for
 	return luaArray;
-}
-
-LuaRef Decoder::DecodeUnionField(
-	const Table& table,
-	const reflection::Field& field)
-{
-	assert(!field.deprecated());
-	const reflection::Type& type = *field.type();
-	assert(type.base_type() == reflection::Union);
-	const void* pVoid = table.GetPointer<const void*>(field.offset());
-	if (!pVoid) return Nil();
-
-	const reflection::Enum& e = *m_vEnums[type.index()];
-	assert(e.is_union());
-	const reflection::Type& underlyingType = *e.underlying_type();
-	return Decode(underlyingType, pVoid);
 }
 
 template <typename T>
@@ -316,32 +343,6 @@ LuaRef Decoder::Decode(
 	return Nil();
 }
 
-template<typename T>
-LuaRef Decoder::DecodeFieldI(const Table& fbTable,
-	const reflection::Field &field)
-{
-	if (fbTable.VerifyField<T>(*m_pVerifier, field.offset()))
-	{
-		ERR_RET_NIL("illegal int field "
-			+ PopFullFieldName(field.name()->c_str()));
-	}
-	T i = flatbuffers::GetFieldI<T>(fbTable, field);
-	return LuaRef::fromValue(L, i);
-}
-
-template<typename T>
-LuaRef Decoder::DecodeFieldF(const Table& fbTable,
-	const reflection::Field &field)
-{
-	if (fbTable.VerifyField<T>(*m_pVerifier, field.offset()))
-	{
-		ERR_RET_NIL("illegal float field "
-			+ PopFullFieldName(field.name()->c_str()));
-	}
-	T f = flatbuffers::GetFieldF<T>(fbTable, field);
-	return LuaRef::fromValue(L, f);
-}
-
 LuaRef Decoder::Nil() const
 {
 	return LuaRef(L, nullptr);
@@ -361,4 +362,3 @@ std::string Decoder::PopFullFieldName(const std::string& sFieldName)
 {
 	return m_nameStack.PopFullFieldName(sFieldName);
 }
-

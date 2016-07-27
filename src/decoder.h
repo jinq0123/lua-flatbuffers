@@ -36,13 +36,13 @@ private:
 	using Table = flatbuffers::Table;
 	LuaRef DecodeFieldOfTable(const Table& fbTable,
 		const reflection::Field& field);
-	LuaRef DecodeObjectField(const Table& fbTable,
+	LuaRef DecodeScalarField(const Table& fbTable,
 		const reflection::Field& field);
 	LuaRef DecodeStringField(const Table& fbTable,
 		const reflection::Field& field);
-	LuaRef DecodeScalarField(const Table& fbTable,
-		const reflection::Field& field);
 	LuaRef DecodeVectorField(const Table& table,
+		const reflection::Field& field);
+	LuaRef DecodeObjectField(const Table& fbTable,
 		const reflection::Field& field);
 	LuaRef DecodeUnionField(const Table& table,
 		const reflection::Field& field);
@@ -60,8 +60,6 @@ private:
 
 	LuaRef Decode(const reflection::Type& type,
 		const void* pVoid);
-
-private:
 
 private:
 	bool Bad() const { return !m_sError.empty(); }

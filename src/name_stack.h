@@ -10,6 +10,7 @@ class NameStack final : public std::stack<std::string>
 public:
 	std::string PopFullFieldName(const std::string& sFieldName);
 	std::string PopFullName();
+	void Reset();
 };
 
 #endif  // LUA_FLATBUFFERS_NAME_STACK_H_

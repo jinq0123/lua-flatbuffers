@@ -21,4 +21,7 @@ std::string NameStack::PopFullName()
 	return sResult;
 }
 
-
+void NameStack::Reset()
+{
+	swap(NameStack());  // swap to clear
+}

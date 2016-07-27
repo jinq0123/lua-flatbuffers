@@ -191,8 +191,6 @@ void Encoder::Reset()
 {
 	m_fbb.Clear();
 	m_sError.clear();
-
-	NameStack emptyStack;
-	m_nameStack.swap(emptyStack);  // swap to clear
+	m_nameStack.Reset();
 }
 
