@@ -40,7 +40,7 @@ private:
 		const reflection::Field& field);
 	LuaRef DecodeStringField(const Table& fbTable,
 		const reflection::Field& field);
-	LuaRef DecodeVectorField(const Table& table,
+	LuaRef DecodeVectorField(const Table& fbTable,
 		const reflection::Field& field);
 	LuaRef DecodeObjectField(const Table& fbTable,
 		const reflection::Field& field);
@@ -60,6 +60,11 @@ private:
 
 	LuaRef Decode(const reflection::Type& type,
 		const void* pVoid);
+
+private:
+	template <typename T>
+	bool VerifyFieldOfTable(const Table& fbTable,
+		const reflection::Field &field);
 
 private:
 	bool Bad() const { return !m_sError.empty(); }
