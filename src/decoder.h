@@ -51,8 +51,8 @@ private:
 		const void* pVoid) const;
 
 private:
-	bool Fail() const { !m_sError.empty(); }
-	std::tuple<LuaRef, std::string> Error() const;
+	bool Fail() const { return !m_sError.empty(); }
+	LuaRef Nil() const;
 
 private:
 	lua_State* L;

@@ -128,7 +128,7 @@ LuaRef Decoder::DecodeVectorField(
 {
 	const auto* pVec = table.GetPointer<
 		const flatbuffers::VectorOfAny*>(field.offset());
-	if (!pVec) return LuaRef(L, nullptr);
+	if (!pVec) return Nil();
 
 	const reflection::Type& type = *field.type();
 	return DecodeVector(type, *pVec);
@@ -201,7 +201,7 @@ LuaRef Decoder::DecodeUnionField(
 	const reflection::Type& type = *field.type();
 	assert(type.base_type() == reflection::Union);
 	const void* pVoid = table.GetPointer<const void*>(field.offset());
-	if (!pVoid) return LuaRef(L, nullptr);
+	if (!pVoid) return Nil();
 
 	const reflection::Enum& e = *m_vEnums[type.index()];
 	assert(e.is_union());
@@ -221,7 +221,7 @@ LuaRef Decoder::Decode(
 	const reflection::Type& type,
 	const void* pVoid) const
 {
-	if (!pVoid) return LuaRef(L, nullptr);
+	if (!pVoid) return Nil();
 
 	switch (type.base_type())
 	{
@@ -272,11 +272,11 @@ LuaRef Decoder::Decode(
 	}  // switch
 
 	assert(false);
-	return LuaRef(L, nullptr);
+	return Nil();
 }
 
-std::tuple<LuaRef, std::string> Decoder::Error() const
+LuaRef Decoder::Nil() const
 {
-	return std::make_tuple(LuaRef(L, nullptr), m_sError);
+	return LuaRef(L, nullptr);
 }
 
