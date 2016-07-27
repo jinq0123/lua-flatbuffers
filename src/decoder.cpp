@@ -30,7 +30,6 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 {
 	const char* pBuf = buf.data();
 
-	// Todo: verify buffer...
 	m_pVerifier = std::make_unique<flatbuffers::Verifier>(
 		reinterpret_cast<const uint8_t *>(pBuf), buf.size());
 	m_sError.clear();
@@ -43,7 +42,10 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 	assert(pRoot);
 	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
 	assert(pObj);
-	return std::make_tuple(DecodeObject(*pObj, *pRoot), m_sError);
+	LuaRef luaTable = DecodeObject(*pObj, *pRoot);
+
+	m_pVerifier.reset();
+	return std::make_tuple(luaTable, m_sError);
 }
 
 void Decoder::SetLuaTableField(
