@@ -4,6 +4,16 @@
 
 #include <flatbuffers/reflection.h>
 
+#define ERR_RETURN(ErrorStr) do { \
+	SetError(ErrorStr); \
+	return; \
+} while(0)
+
+#define ERR_RET_NIL(ErrorStr) do { \
+	SetError(ErrorStr); \
+	return Nil(); \
+} while(0)
+
 using LuaIntf::LuaRef;
 
 Decoder::Decoder(lua_State* state, const reflection::Schema& schema) :
@@ -23,7 +33,7 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 	// Todo: verify buffer...
 	m_pVerifier = std::make_unique<flatbuffers::Verifier>(
 		reinterpret_cast<const uint8_t *>(pBuf), buf.size());
-	m_isBufferIllegal = false;
+	m_sError.clear();
 
 	// Check the first offset field before GetRoot().
 	if (!m_pVerifier->Verify<flatbuffers::uoffset_t>(pBuf))
@@ -33,10 +43,7 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 	assert(pRoot);
 	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
 	assert(pObj);
-	LuaRef luaTable = DecodeObject(*pObj, *pRoot);
-	if (m_isBufferIllegal)
-		return std::make_tuple(Nil(), "illegal buffer");
-	return std::make_tuple(luaTable, "");
+	return std::make_tuple(DecodeObject(*pObj, *pRoot), m_sError);
 }
 
 void Decoder::SetLuaTableField(
@@ -52,16 +59,13 @@ void Decoder::SetLuaTableField(
 
 	if (field.required() && !fbTable.VerifyFieldRequired<
 		flatbuffers::uoffset_t>(*m_pVerifier, offset))
-		goto set_illegal;
+		ERR_RETURN("illegal required field " + PopFullFieldName(pName));
 
-	using flatbuffers::GetFieldI;
-	using flatbuffers::GetFieldF;
 	switch (type.base_type())
 	{
 	case reflection::UType:
 	case reflection::Bool:
 	case reflection::UByte:
-		if (fbTable.VerifyField<uint8_t>(*m_pVerifier, offset)) goto set_illegal;
 		rLuaTable[pName] = GetFieldI<uint8_t>(fbTable, field);
 		break;
 	case reflection::Byte:
@@ -94,8 +98,12 @@ void Decoder::SetLuaTableField(
 
 	case reflection::String:
 	{
+		if (!fbTable.VerifyField<flatbuffers::uoffset_t>(*m_pVerifier, offset))
+			ERR_RETURN("illegal offset to string field " + PopFullFieldName(pName));
 		const auto* pStr = fbTable.GetPointer<
-			const flatbuffers::String *>(field.offset());
+			const flatbuffers::String *>(offset);
+		if (!m_pVerifier->Verify(pStr))
+			ERR_RETURN("illegal string field " + PopFullFieldName(pName));
 		if (pStr) rLuaTable[pName] = pStr->str();
 		break;
 	}
@@ -105,7 +113,7 @@ void Decoder::SetLuaTableField(
 	case reflection::Obj:
 	{
 		const auto* pTable = fbTable.GetPointer<
-			const flatbuffers::Table*>(field.offset());
+			const flatbuffers::Table*>(offset);
 		if (!pTable) break;
 		rLuaTable[pName] = DecodeObject(*m_vObjects[type.index()], *pTable);
 		break;
@@ -117,29 +125,28 @@ void Decoder::SetLuaTableField(
 		assert(false);
 		break;
 	}
-	return;
-
-set_illegal:
-	m_isBufferIllegal = true;
 }
 
 LuaRef Decoder::DecodeObject(
 	const reflection::Object& object,
 	const Table& fbTable)
 {
+	m_nameStack.push(object.name()->str());
 	if (!fbTable.VerifyTableStart(*m_pVerifier))
-		return SetIllegal();
+		ERR_RET_NIL("illegal start of table " + PopFullName());
 
 	LuaRef luaTable = LuaRef::createTable(L);
 	for (const reflection::Field* pField : *object.fields())
 	{
 		assert(pField);
 		SetLuaTableField(fbTable, *pField, luaTable);
-		if (m_isBufferIllegal) return Nil();
+		if (Bad()) return Nil();
 	}
 
 	if (!m_pVerifier->EndTable())
-		return SetIllegal();
+		ERR_RET_NIL("illegal end of table " + PopFullName());
+
+	m_nameStack.pop();
 	return luaTable;
 }
 
@@ -296,14 +303,45 @@ LuaRef Decoder::Decode(
 	return Nil();
 }
 
+template<typename T>
+T Decoder::GetFieldI(const Table& fbTable, const reflection::Field &field)
+{
+	if (fbTable.VerifyField<T>(*m_pVerifier, field.offset()))
+	{
+		SetError("illegal int field " + PopFullFieldName(field.name()->c_str()));
+		return T();
+	}
+	return flatbuffers::GetFieldI<T>(fbTable, field);
+}
+
+template<typename T>
+T Decoder::GetFieldF(const Table& fbTable, const reflection::Field &field)
+{
+	if (fbTable.VerifyField<T>(*m_pVerifier, field.offset()))
+	{
+		SetError("illegal float field " + PopFullFieldName(field.name()->c_str()));
+		return T();
+	}
+	return flatbuffers::GetFieldF<T>(fbTable, field);
+}
+
 LuaRef Decoder::Nil() const
 {
 	return LuaRef(L, nullptr);
 }
 
-LuaRef Decoder::SetIllegal()
+void Decoder::SetError(const std::string& sError)
 {
-	m_isBufferIllegal = true;
-	return Nil();
+	m_sError = sError;
+}
+
+std::string Decoder::PopFullName()
+{
+	return m_nameStack.PopFullName();
+}
+
+std::string Decoder::PopFullFieldName(const std::string& sFieldName)
+{
+	return m_nameStack.PopFullFieldName(sFieldName);
 }
 

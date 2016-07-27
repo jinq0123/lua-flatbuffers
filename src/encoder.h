@@ -1,9 +1,10 @@
 #ifndef LUA_FLATBUFFERS_ENCODER_H_
 #define LUA_FLATBUFFERS_ENCODER_H_
 
+#include "name_stack.h"
+
 #include <flatbuffers/flatbuffers.h>
 
-#include <stack>
 #include <unordered_map>
 
 namespace LuaIntf {
@@ -49,17 +50,15 @@ private:
 		DefaultValueType defaultValue);
 
 private:
-	std::string GetFullFieldName(const std::string& sFieldName) const;
+	std::string PopFullFieldName(const std::string& sFieldName);
 	void Reset();
 
 private:
 	flatbuffers::FlatBufferBuilder m_fbb;
 	const reflection::Schema& m_schema;
 	const flatbuffers::Vector<flatbuffers::Offset<Object>>& m_vObjects;
-	using NameStack = std::stack<std::string>;
 	NameStack m_nameStack;  // For error message.
 	std::string m_sError;  // Encode error.
-
 };  // class Encoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_H_

@@ -68,6 +68,7 @@ OBJECTS := \
 	$(OBJDIR)/decoder.o \
 	$(OBJDIR)/encoder.o \
 	$(OBJDIR)/flatbuffers.o \
+	$(OBJDIR)/name_stack.o \
 	$(OBJDIR)/schema_cache.o \
 
 RESOURCES := \
@@ -133,6 +134,9 @@ $(OBJDIR)/encoder.o: ../src/encoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/flatbuffers.o: ../src/flatbuffers.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/name_stack.o: ../src/name_stack.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/schema_cache.o: ../src/schema_cache.cpp

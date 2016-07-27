@@ -51,7 +51,6 @@ Encoder::Encode(const Object& obj, const LuaRef& table)
 	AddElements(mapScalar);
 	AddOffsets(mapOffset);
 	m_nameStack.pop();
-	// XXX numFields = vFields.size()?
 	return m_fbb.EndTable(start, obj.fields()->size());
 }
 
@@ -68,12 +67,12 @@ bool Encoder::CacheFields(const Object& obj, const LuaRef& table,
 		const reflection::Field* pField = vFields.LookupByKey(sKey.c_str());
 		if (!pField)
 		{
-			m_sError = "illegal field " + GetFullFieldName(sKey);
+			m_sError = "illegal field " + PopFullFieldName(sKey);
 			return false;
 		}
 		if (pField->deprecated())
 		{
-			m_sError = "deprecated field " + GetFullFieldName(sKey);
+			m_sError = "deprecated field " + PopFullFieldName(sKey);
 			return false;
 		}
 
@@ -183,16 +182,9 @@ inline void Encoder::AddElement(uint16_t offset,
 		static_cast<ElementType>(defaultValue));
 }
 
-std::string Encoder::GetFullFieldName(const std::string& sFieldName) const
+std::string Encoder::PopFullFieldName(const std::string& sFieldName)
 {
-	NameStack ns(m_nameStack);
-	std::string sResult(sFieldName);
-	while (!ns.empty())
-	{
-		sResult.insert(0, ns.top() + ".");
-		ns.pop();
-	}
-	return sResult;
+	return m_nameStack.PopFullFieldName(sFieldName);
 }
 
 void Encoder::Reset()

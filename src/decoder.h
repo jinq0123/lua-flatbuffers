@@ -1,6 +1,8 @@
 #ifndef LUA_FLATBUFFERS_DECODER_H_
 #define LUA_FLATBUFFERS_DECODER_H_
 
+#include "name_stack.h"
+
 #include <flatbuffers/flatbuffers.h>
 
 namespace LuaIntf {
@@ -51,8 +53,17 @@ private:
 		const void* pVoid);
 
 private:
+	template<typename T>
+	T GetFieldI(const Table& fbTable, const reflection::Field &field);
+	template<typename T>
+	T GetFieldF(const Table& fbTable, const reflection::Field &field);
+
+private:
+	bool Bad() const { return !m_sError.empty(); }
 	LuaRef Nil() const;
-	LuaRef SetIllegal();
+	void SetError(const std::string& sError);
+	std::string PopFullName();
+	std::string PopFullFieldName(const std::string& sFieldName);
 
 private:
 	lua_State* L;
@@ -63,7 +74,8 @@ private:
 		reflection::Enum>>& m_vEnums;
 
 	std::unique_ptr<flatbuffers::Verifier> m_pVerifier;
-	bool m_isBufferIllegal = false;
+	std::string m_sError;
+	NameStack m_nameStack;  // For error message.
 };  // class Decoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_H_
