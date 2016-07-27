@@ -4,11 +4,6 @@
 
 #include <flatbuffers/reflection.h>
 
-#define ERR_RETURN(ErrorStr) do { \
-	SetError(ErrorStr); \
-	return; \
-} while(0)
-
 #define ERR_RET_NIL(ErrorStr) do { \
 	SetError(ErrorStr); \
 	return Nil(); \
@@ -48,85 +43,99 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 	return std::make_tuple(luaTable, m_sError);
 }
 
-void Decoder::SetLuaTableField(
-	const Table& fbTable,
-	const reflection::Field& field,
-	LuaRef& rLuaTable)
+LuaRef Decoder::DecodeFieldOfTable(
+	const Table& fbTable, const reflection::Field& field)
 {
-	if (field.deprecated()) return;
-	const reflection::Type& type = *field.type();
-	const char* pName = field.name()->c_str();
-	assert(pName);
-	uint16_t offset = field.offset();
-
+	if (field.deprecated()) return Nil();
 	if (field.required() && !fbTable.VerifyFieldRequired<
-		flatbuffers::uoffset_t>(*m_pVerifier, offset))
-		ERR_RETURN("illegal required field " + PopFullFieldName(pName));
+		flatbuffers::uoffset_t>(*m_pVerifier, field.offset()))
+	{
+		ERR_RET_NIL("illegal required field "
+			+ PopFullFieldName(field.name()->c_str()));
+	}
 
-	switch (type.base_type())
+	reflection::BaseType eType = field.type()->base_type();
+	if (eType <= reflection::Double)
+		return DecodeScalarField(fbTable, field);
+
+	switch (eType)
+	{
+	case reflection::String:
+		return DecodeStringField(fbTable, field);
+	case reflection::Vector:
+		return DecodeVectorField(fbTable, field);
+	case reflection::Obj:
+		return DecodeObjectField(fbTable, field);
+	case reflection::Union:
+		return DecodeUnionField(fbTable, field);
+	}
+	assert(!"Illegal field type.");
+	return Nil();
+}
+
+LuaRef Decoder::DecodeObjectField(
+	const Table& fbTable, const reflection::Field& field)
+{
+	uint16_t offset = field.offset();
+	if (!fbTable.VerifyField<flatbuffers::uoffset_t>(*m_pVerifier, offset))
+	{
+		ERR_RET_NIL("illegal offset to object field "
+			+ PopFullFieldName(field.name()->c_str()));
+	}
+	const auto* pTable = fbTable.GetPointer<const flatbuffers::Table*>(offset);
+	if (!pTable) return Nil();
+	return DecodeObject(*m_vObjects[field.type()->index()], *pTable);  // XXX verify
+}
+
+LuaRef Decoder::DecodeStringField(
+	const Table& fbTable, const reflection::Field& field)
+{
+	uint16_t offset = field.offset();
+	if (!fbTable.VerifyField<flatbuffers::uoffset_t>(*m_pVerifier, offset))
+	{
+		ERR_RET_NIL("illegal offset to string field "
+			+ PopFullFieldName(field.name()->c_str()));
+	}
+	const auto* pStr = fbTable.GetPointer<const flatbuffers::String *>(offset);
+	if (!m_pVerifier->Verify(pStr))
+	{
+		ERR_RET_NIL("illegal string field "
+			+ PopFullFieldName(field.name()->c_str()));
+	}
+	if (pStr) return LuaRef::fromValue(L, pStr->str());
+	return Nil();
+}
+
+LuaRef Decoder::DecodeScalarField(
+	const Table& fbTable, const reflection::Field& field)
+{
+	switch (field.type()->base_type())
 	{
 	case reflection::UType:
 	case reflection::Bool:
 	case reflection::UByte:
-		rLuaTable[pName] = GetFieldI<uint8_t>(fbTable, field);
-		break;
+		return DecodeFieldI<uint8_t>(fbTable, field);
 	case reflection::Byte:
-		rLuaTable[pName] = GetFieldI<int8_t>(fbTable, field);
-		break;
+		return DecodeFieldI<int8_t>(fbTable, field);
 	case reflection::Short:
-		rLuaTable[pName] = GetFieldI<int16_t>(fbTable, field);
-		break;
+		return DecodeFieldI<int16_t>(fbTable, field);
 	case reflection::UShort:
-		rLuaTable[pName] = GetFieldI<uint16_t>(fbTable, field);
-		break;
+		return DecodeFieldI<uint16_t>(fbTable, field);
 	case reflection::Int:
-		rLuaTable[pName] = GetFieldI<int32_t>(fbTable, field);
-		break;
+		return DecodeFieldI<int32_t>(fbTable, field);
 	case reflection::UInt:
-		rLuaTable[pName] = GetFieldI<uint32_t>(fbTable, field);
-		break;
+		return DecodeFieldI<uint32_t>(fbTable, field);
 	case reflection::Long:
-		rLuaTable[pName] = GetFieldI<int64_t>(fbTable, field);
-		break;
+		return DecodeFieldI<int64_t>(fbTable, field);
 	case reflection::ULong:
-		rLuaTable[pName] = GetFieldI<uint64_t>(fbTable, field);
-		break;
+		return DecodeFieldI<uint64_t>(fbTable, field);
 	case reflection::Float:
-		rLuaTable[pName] = GetFieldF<float>(fbTable, field);
-		break;
+		return DecodeFieldF<float>(fbTable, field);
 	case reflection::Double:
-		rLuaTable[pName] = GetFieldF<double>(fbTable, field);
-		break;
-
-	case reflection::String:
-	{
-		if (!fbTable.VerifyField<flatbuffers::uoffset_t>(*m_pVerifier, offset))
-			ERR_RETURN("illegal offset to string field " + PopFullFieldName(pName));
-		const auto* pStr = fbTable.GetPointer<
-			const flatbuffers::String *>(offset);
-		if (!m_pVerifier->Verify(pStr))
-			ERR_RETURN("illegal string field " + PopFullFieldName(pName));
-		if (pStr) rLuaTable[pName] = pStr->str();
-		break;
+		return DecodeFieldF<double>(fbTable, field);
 	}
-	case reflection::Vector:
-		rLuaTable[pName] = DecodeVectorField(fbTable, field);
-		break;
-	case reflection::Obj:
-	{
-		const auto* pTable = fbTable.GetPointer<
-			const flatbuffers::Table*>(offset);
-		if (!pTable) break;
-		rLuaTable[pName] = DecodeObject(*m_vObjects[type.index()], *pTable);
-		break;
-	}
-	case reflection::Union:
-		rLuaTable[pName] = DecodeUnionField(fbTable, field);
-		break;
-	default:
-		assert(false);
-		break;
-	}
+	assert(!"Illegal scalar field type.");
+	return Nil();
 }
 
 LuaRef Decoder::DecodeObject(
@@ -141,7 +150,9 @@ LuaRef Decoder::DecodeObject(
 	for (const reflection::Field* pField : *object.fields())
 	{
 		assert(pField);
-		SetLuaTableField(fbTable, *pField, luaTable);
+		const char* pName = pField->name()->c_str();
+		assert(pName);
+		luaTable[pName] = DecodeFieldOfTable(fbTable, *pField);
 		if (Bad()) return Nil();
 	}
 
@@ -306,25 +317,29 @@ LuaRef Decoder::Decode(
 }
 
 template<typename T>
-T Decoder::GetFieldI(const Table& fbTable, const reflection::Field &field)
+LuaRef Decoder::DecodeFieldI(const Table& fbTable,
+	const reflection::Field &field)
 {
 	if (fbTable.VerifyField<T>(*m_pVerifier, field.offset()))
 	{
-		SetError("illegal int field " + PopFullFieldName(field.name()->c_str()));
-		return T();
+		ERR_RET_NIL("illegal int field "
+			+ PopFullFieldName(field.name()->c_str()));
 	}
-	return flatbuffers::GetFieldI<T>(fbTable, field);
+	T i = flatbuffers::GetFieldI<T>(fbTable, field);
+	return LuaRef::fromValue(L, i);
 }
 
 template<typename T>
-T Decoder::GetFieldF(const Table& fbTable, const reflection::Field &field)
+LuaRef Decoder::DecodeFieldF(const Table& fbTable,
+	const reflection::Field &field)
 {
 	if (fbTable.VerifyField<T>(*m_pVerifier, field.offset()))
 	{
-		SetError("illegal float field " + PopFullFieldName(field.name()->c_str()));
-		return T();
+		ERR_RET_NIL("illegal float field "
+			+ PopFullFieldName(field.name()->c_str()));
 	}
-	return flatbuffers::GetFieldF<T>(fbTable, field);
+	T f = flatbuffers::GetFieldF<T>(fbTable, field);
+	return LuaRef::fromValue(L, f);
 }
 
 LuaRef Decoder::Nil() const

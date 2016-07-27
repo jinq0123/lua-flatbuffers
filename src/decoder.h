@@ -34,29 +34,34 @@ public:
 
 private:
 	using Table = flatbuffers::Table;
-	void SetLuaTableField(
-		const Table& fbTable,
-		const reflection::Field& field,
-		LuaRef& rLuaTable);
+	LuaRef DecodeFieldOfTable(const Table& fbTable,
+		const reflection::Field& field);
+	LuaRef DecodeObjectField(const Table& fbTable,
+		const reflection::Field& field);
+	LuaRef DecodeStringField(const Table& fbTable,
+		const reflection::Field& field);
+	LuaRef DecodeScalarField(const Table& fbTable,
+		const reflection::Field& field);
+	LuaRef DecodeVectorField(const Table& table,
+		const reflection::Field& field);
+	LuaRef DecodeUnionField(const Table& table,
+		const reflection::Field& field);
+
+	template<typename T>
+	LuaRef DecodeFieldI(const Table& fbTable, const reflection::Field &field);
+	template<typename T>
+	LuaRef DecodeFieldF(const Table& fbTable, const reflection::Field &field);
 
 	LuaRef DecodeObject(
 		const reflection::Object& object,
 		const Table& fbTable);
-	LuaRef DecodeVectorField(const Table& table,
-		const reflection::Field& field);
 	LuaRef DecodeVector(const reflection::Type& type,
 		const flatbuffers::VectorOfAny& v);
-	LuaRef DecodeUnionField(const Table& table,
-		const reflection::Field& field);
 
 	LuaRef Decode(const reflection::Type& type,
 		const void* pVoid);
 
 private:
-	template<typename T>
-	T GetFieldI(const Table& fbTable, const reflection::Field &field);
-	template<typename T>
-	T GetFieldF(const Table& fbTable, const reflection::Field &field);
 
 private:
 	bool Bad() const { return !m_sError.empty(); }
