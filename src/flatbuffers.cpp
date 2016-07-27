@@ -53,11 +53,7 @@ std::tuple<LuaRef, std::string> Encode(
 	lua_State* L = table.state();
 	const reflection::Schema* pSchema = GetCache().GetSchemaOfObject(sName);
 	if (!pSchema)
-	{
-		return std::make_tuple(
-			LuaRef(L, nullptr),
-			"no type " + sName);
-	}
+		return std::make_tuple(LuaRef(L, nullptr), "no type " + sName);
 
 	Encoder encoder(*pSchema);
 	if (encoder.Encode(sName, table))
@@ -65,9 +61,7 @@ std::tuple<LuaRef, std::string> Encode(
 		return std::make_tuple(LuaRef::fromValue(
 			L, encoder.GetResultStr()), "");
 	}
-	return std::make_tuple(
-		LuaRef(L, nullptr),
-		encoder.GetErrorStr());
+	return std::make_tuple(LuaRef(L, nullptr), encoder.GetErrorStr());
 }
 
 // Decode buffer to lua table.
@@ -79,14 +73,10 @@ std::tuple<LuaRef, std::string> Decode(
 {
 	assert(L);
 	const reflection::Schema* pSchema = GetCache().GetSchemaOfObject(sName);
-	if (!pSchema)
-	{
-		return std::make_tuple(
-			LuaRef(L, nullptr),
-			"no type " + sName);
-	}
+	if (pSchema)
+		return Decoder(L, *pSchema).Decode(sName, buf);
 
-	return Decoder(L, *pSchema).Decode(sName, buf);
+	return std::make_tuple(LuaRef(L, nullptr), "no type " + sName);
 }
 
 }  // namespace
