@@ -15,6 +15,27 @@ Decoder::Decoder(lua_State* state, const reflection::Schema& schema) :
 	assert(L);
 }
 
+std::tuple<LuaRef, std::string>
+Decoder::Decode(const std::string& sName, const std::string& buf)
+{
+	const char* pBuf = buf.data();
+
+	// Todo: verify buffer...
+	m_pVerifier = std::make_unique<flatbuffers::Verifier>(
+		reinterpret_cast<const uint8_t *>(pBuf), buf.size());
+	m_sError.clear();
+
+	// Check the first offset field before GetRoot().
+	if (!m_pVerifier->Verify<flatbuffers::uoffset_t>(pBuf))
+		return std::make_tuple(Nil(), "buffer is too short");
+
+	const Table* pRoot = flatbuffers::GetRoot<Table>(pBuf);
+	assert(pRoot);
+	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
+	assert(pObj);
+	return std::make_tuple(DecodeObject(*pObj, *pRoot), m_sError);
+}
+
 void Decoder::SetLuaTableField(
 	const Table& fbTable,
 	const reflection::Field& field,
@@ -88,24 +109,6 @@ void Decoder::SetLuaTableField(
 		assert(false);
 		break;
 	}
-}
-
-std::tuple<LuaRef, std::string>
-Decoder::Decode(const std::string& sName, const std::string& buf)
-{
-	const Table* pRoot = flatbuffers::GetRoot<Table>(buf.data());
-	assert(pRoot);
-
-	// Todo: verify buffer...
-	m_pVerifier = std::make_unique<flatbuffers::Verifier>(
-		reinterpret_cast<const uint8_t *>(buf.data()), buf.size());
-	m_sError.clear();
-
-
-	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
-	assert(pObj);
-	return std::make_tuple(DecodeObject(*pObj, *pRoot), "");
-	// Todo: return error.
 }
 
 LuaRef Decoder::DecodeObject(
