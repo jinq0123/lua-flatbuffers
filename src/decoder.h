@@ -35,24 +35,24 @@ private:
 	void SetLuaTableField(
 		const Table& fbTable,
 		const reflection::Field& field,
-		LuaRef& rLuaTable) const;
+		LuaRef& rLuaTable);
 
 	LuaRef DecodeObject(
 		const reflection::Object& object,
-		const Table& fbTable) const;
+		const Table& fbTable);
 	LuaRef DecodeVectorField(const Table& table,
-		const reflection::Field& field) const;
+		const reflection::Field& field);
 	LuaRef DecodeVector(const reflection::Type& type,
-		const flatbuffers::VectorOfAny& v) const;
+		const flatbuffers::VectorOfAny& v);
 	LuaRef DecodeUnionField(const Table& table,
-		const reflection::Field& field) const;
+		const reflection::Field& field);
 
 	LuaRef Decode(const reflection::Type& type,
-		const void* pVoid) const;
+		const void* pVoid);
 
 private:
-	bool Fail() const { return !m_sError.empty(); }
 	LuaRef Nil() const;
+	LuaRef SetIllegal();
 
 private:
 	lua_State* L;
@@ -63,7 +63,7 @@ private:
 		reflection::Enum>>& m_vEnums;
 
 	std::unique_ptr<flatbuffers::Verifier> m_pVerifier;
-	std::string m_sError;
+	bool m_isBufferIllegal = false;
 };  // class Decoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_H_

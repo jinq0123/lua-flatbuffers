@@ -23,7 +23,7 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 	// Todo: verify buffer...
 	m_pVerifier = std::make_unique<flatbuffers::Verifier>(
 		reinterpret_cast<const uint8_t *>(pBuf), buf.size());
-	m_sError.clear();
+	m_isBufferIllegal = false;
 
 	// Check the first offset field before GetRoot().
 	if (!m_pVerifier->Verify<flatbuffers::uoffset_t>(pBuf))
@@ -33,13 +33,16 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 	assert(pRoot);
 	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
 	assert(pObj);
-	return std::make_tuple(DecodeObject(*pObj, *pRoot), m_sError);
+	LuaRef luaTable = DecodeObject(*pObj, *pRoot);
+	if (m_isBufferIllegal)
+		return std::make_tuple(Nil(), "illegal buffer");
+	return std::make_tuple(luaTable, "");
 }
 
 void Decoder::SetLuaTableField(
 	const Table& fbTable,
 	const reflection::Field& field,
-	LuaRef& rLuaTable) const
+	LuaRef& rLuaTable)
 {
 	if (field.deprecated()) return;
 	const reflection::Type& type = *field.type();
@@ -113,8 +116,11 @@ void Decoder::SetLuaTableField(
 
 LuaRef Decoder::DecodeObject(
 	const reflection::Object& object,
-	const Table& fbTable) const
+	const Table& fbTable)
 {
+	if (!fbTable.VerifyTableStart(*m_pVerifier))
+		return SetIllegal();
+
 	LuaRef luaTable = LuaRef::createTable(L);
 	for (const reflection::Field* pField : *object.fields())
 	{
@@ -127,7 +133,7 @@ LuaRef Decoder::DecodeObject(
 
 LuaRef Decoder::DecodeVectorField(
 	const Table& table,
-	const reflection::Field& field) const
+	const reflection::Field& field)
 {
 	const auto* pVec = table.GetPointer<
 		const flatbuffers::VectorOfAny*>(field.offset());
@@ -139,7 +145,7 @@ LuaRef Decoder::DecodeVectorField(
 
 LuaRef Decoder::DecodeVector(
 	const reflection::Type& type,
-	const flatbuffers::VectorOfAny& v) const
+	const flatbuffers::VectorOfAny& v)
 {
 	assert(reflection::Vector == type.base_type());
 	reflection::BaseType elemType = type.element();
@@ -198,7 +204,7 @@ LuaRef Decoder::DecodeVector(
 
 LuaRef Decoder::DecodeUnionField(
 	const Table& table,
-	const reflection::Field& field) const
+	const reflection::Field& field)
 {
 	assert(!field.deprecated());
 	const reflection::Type& type = *field.type();
@@ -222,7 +228,7 @@ inline LuaRef ReadScalar(lua_State* L, const void* pVoid)
 
 LuaRef Decoder::Decode(
 	const reflection::Type& type,
-	const void* pVoid) const
+	const void* pVoid)
 {
 	if (!pVoid) return Nil();
 
@@ -281,5 +287,11 @@ LuaRef Decoder::Decode(
 LuaRef Decoder::Nil() const
 {
 	return LuaRef(L, nullptr);
+}
+
+LuaRef Decoder::SetIllegal()
+{
+	m_isBufferIllegal = true;
+	return Nil();
 }
 
