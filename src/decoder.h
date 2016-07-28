@@ -83,6 +83,7 @@ private:
 	void SetError(const std::string& sError);
 	std::string PopFullName();
 	std::string PopFullFieldName(const std::string& sFieldName);
+	std::string PopFullVectorName(size_t index);
 
 private:
 	lua_State* L;

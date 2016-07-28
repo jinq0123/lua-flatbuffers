@@ -4,6 +4,8 @@
 
 #include <flatbuffers/reflection.h>
 
+#include <sstream>
+
 #define ERR_RET_NIL(ErrorStr) do { \
 	SetError(ErrorStr); \
 	return Nil(); \
@@ -285,12 +287,7 @@ LuaRef Decoder::DecodeStringVector(const flatbuffers::VectorOfAny& v)
 		const auto* pStr = flatbuffers::GetAnyVectorElemPointer<
 			const flatbuffers::String>(&v, i);
 		if (!m_pVerifier->Verify(pStr))
-		{
-			char buf[128];
-			snprintf(buf, sizeof(buf), "illegal string vector item %s[%u]",
-				PopFullName().c_str(), i);
-			ERR_RET_NIL(buf);
-		}
+			ERR_RET_NIL("illegal string vector item " + PopFullVectorName(i));
 		luaArray[i+1] = pStr->str();
 	}
 	return luaArray;
@@ -305,9 +302,10 @@ LuaRef Decoder::DecodeObjVector(const reflection::Object& elemObj,
 	{
 		for (size_t i = 0; i < v.size(); ++i)
 		{
-			const void* pElement = flatbuffers::GetAnyVectorElemAddressOf<
-				const void>(&v, i, elemObj.bytesize());
-			luaArray[i+1] = DecodeObject(elemObj, pElement);
+			const auto* pStruct = flatbuffers::GetAnyVectorElemAddressOf<
+				const flatbuffers::Struct>(&v, i, elemObj.bytesize());
+			assert(pStruct);
+			luaArray[i+1] = DecodeStruct(elemObj, *pStruct);
 			if (Bad()) return Nil();
 		}
 		return luaArray;
@@ -317,7 +315,9 @@ LuaRef Decoder::DecodeObjVector(const reflection::Object& elemObj,
 	{
 		const Table* pTable = flatbuffers::GetAnyVectorElemPointer<
 			const Table>(&v, i);
-		luaArray[i+1] = DecodeObject(elemObj, pTable);
+		if (!pTable)
+			ERR_RET_NIL("illegal vector element point " + PopFullVectorName(i));
+		luaArray[i+1] = DecodeTable(elemObj, *pTable);
 		if (Bad()) return Nil();
 	}
 	return luaArray;
@@ -427,3 +427,11 @@ std::string Decoder::PopFullFieldName(const std::string& sFieldName)
 {
 	return m_nameStack.PopFullFieldName(sFieldName);
 }
+
+std::string Decoder::PopFullVectorName(size_t index)
+{
+	std::ostringstream oss;
+	oss << "[" << index << "]";
+	return PopFullName() + oss.str();
+}
+
