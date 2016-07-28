@@ -67,11 +67,11 @@ endif
 OBJECTS := \
 	$(OBJDIR)/decoder.o \
 	$(OBJDIR)/decoder_base.o \
+	$(OBJDIR)/object_decoder.o \
+	$(OBJDIR)/root_decoder.o \
 	$(OBJDIR)/encoder.o \
 	$(OBJDIR)/flatbuffers.o \
 	$(OBJDIR)/name_stack.o \
-	$(OBJDIR)/object_decoder.o \
-	$(OBJDIR)/root_decoder.o \
 	$(OBJDIR)/schema_cache.o \
 
 RESOURCES := \
@@ -130,10 +130,16 @@ $(GCH): $(PCH)
 	$(SILENT) $(CXX) -x c++-header $(ALL_CXXFLAGS) -o "$@" -MF "$(@:%.gch=%.d)" -c "$<"
 endif
 
-$(OBJDIR)/decoder.o: ../src/decoder.cpp
+$(OBJDIR)/decoder.o: ../src/decoder/decoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/decoder_base.o: ../src/decoder_base.cpp
+$(OBJDIR)/decoder_base.o: ../src/decoder/decoder_base.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/object_decoder.o: ../src/decoder/object_decoder.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/root_decoder.o: ../src/decoder/root_decoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/encoder.o: ../src/encoder.cpp
@@ -143,12 +149,6 @@ $(OBJDIR)/flatbuffers.o: ../src/flatbuffers.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/name_stack.o: ../src/name_stack.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/object_decoder.o: ../src/object_decoder.cpp
-	@echo $(notdir $<)
-	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/root_decoder.o: ../src/root_decoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/schema_cache.o: ../src/schema_cache.cpp
