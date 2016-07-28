@@ -1,8 +1,7 @@
 #include "decoder.h"
 
-#include <LuaIntf/LuaIntf.h>
-
 #include <flatbuffers/reflection.h>
+#include <LuaIntf/LuaIntf.h>
 
 #include <sstream>
 

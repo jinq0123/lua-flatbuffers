@@ -66,6 +66,7 @@ endif
 
 OBJECTS := \
 	$(OBJDIR)/decoder.o \
+	$(OBJDIR)/decoder_base.o \
 	$(OBJDIR)/encoder.o \
 	$(OBJDIR)/flatbuffers.o \
 	$(OBJDIR)/name_stack.o \
@@ -128,6 +129,9 @@ $(GCH): $(PCH)
 endif
 
 $(OBJDIR)/decoder.o: ../src/decoder.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/decoder_base.o: ../src/decoder_base.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/encoder.o: ../src/encoder.cpp
