@@ -115,8 +115,6 @@ LuaRef Decoder::DecodeStringField(
 	return Nil();
 }
 
-// Todo: Move first uoffset_t verify to DecodeFieldOfTable()
-
 LuaRef Decoder::DecodeVectorField(
 	const Table& fbTable,
 	const reflection::Field& field)
@@ -127,7 +125,10 @@ LuaRef Decoder::DecodeVectorField(
 	// XXX verify
 
 	const reflection::Type& type = *field.type();
-	return DecodeVector(type, *pVec);
+	m_nameStack.Push(field.name()->c_str());
+	LuaRef luaTable = DecodeVector(type, *pVec);
+	m_nameStack.SafePop();
+	return luaTable;
 }
 
 LuaRef Decoder::DecodeObjectField(
@@ -183,7 +184,7 @@ LuaRef Decoder::DecodeObject(
 	const reflection::Object& object,
 	const Table& fbTable)
 {
-	m_nameStack.push(object.name()->str());
+	m_nameStack.Push(object.name()->str());
 	if (!fbTable.VerifyTableStart(*m_pVerifier))
 		ERR_RET_NIL("illegal start of table " + PopFullName());
 
@@ -200,7 +201,7 @@ LuaRef Decoder::DecodeObject(
 	if (!m_pVerifier->EndTable())
 		ERR_RET_NIL("illegal end of table " + PopFullName());
 
-	m_nameStack.pop();
+	m_nameStack.SafePop();
 	return luaTable;
 }
 
@@ -208,6 +209,10 @@ LuaRef Decoder::DecodeVector(
 	const reflection::Type& type,
 	const flatbuffers::VectorOfAny& v)
 {
+	// Check the vector size.
+	if (m_pVerifier->Verify<flatbuffers::uoffset_t>(&v))
+		ERR_RET_NIL("illegal vector " + PopFullName());
+
 	assert(reflection::Vector == type.base_type());
 	reflection::BaseType elemType = type.element();
 

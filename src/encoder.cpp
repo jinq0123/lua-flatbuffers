@@ -39,7 +39,7 @@ std::string Encoder::GetResultStr() const
 flatbuffers::uoffset_t
 Encoder::Encode(const Object& obj, const LuaRef& table)
 {
-	m_nameStack.push(obj.name()->str());
+	m_nameStack.Push(obj.name()->str());
 
 	// Cache to map before StartTable().
 	Field2Scalar mapScalar;
@@ -50,7 +50,7 @@ Encoder::Encode(const Object& obj, const LuaRef& table)
 	flatbuffers::uoffset_t start = m_fbb.StartTable();
 	AddElements(mapScalar);
 	AddOffsets(mapOffset);
-	m_nameStack.pop();
+	m_nameStack.SafePop();
 	return m_fbb.EndTable(start, obj.fields()->size());
 }
 

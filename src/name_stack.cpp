@@ -9,19 +9,19 @@ std::string NameStack::PopFullFieldName(const std::string& sFieldName)
 
 std::string NameStack::PopFullName()
 {
-	if (empty()) return "";
+	if (m_stack.empty()) return "";
 
-	std::string sResult(top());
-	pop();
-	while (!empty())
+	std::string sResult(m_stack.top());
+	m_stack.pop();
+	while (!m_stack.empty())
 	{
-		sResult.insert(0, top() + ".");
-		pop();
+		sResult.insert(0, m_stack.top() + ".");
+		m_stack.pop();
 	}
 	return sResult;
 }
 
 void NameStack::Reset()
 {
-	swap(NameStack());  // swap to clear
+	m_stack.swap(Stack());  // swap to clear
 }
