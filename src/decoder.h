@@ -87,8 +87,6 @@ private:
 	const reflection::Schema& m_schema;
 	const flatbuffers::Vector<flatbuffers::Offset<
 		reflection::Object>>& m_vObjects;
-	const flatbuffers::Vector<flatbuffers::Offset<
-		reflection::Enum>>& m_vEnums;
 
 	std::unique_ptr<flatbuffers::Verifier> m_pVerifier;
 	std::string m_sError;

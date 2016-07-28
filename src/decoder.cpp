@@ -14,8 +14,7 @@ using LuaIntf::LuaRef;
 Decoder::Decoder(lua_State* state, const reflection::Schema& schema) :
 	L(state),
 	m_schema(schema),
-	m_vObjects(*schema.objects()),
-	m_vEnums(*schema.enums())
+	m_vObjects(*schema.objects())
 {
 	assert(L);
 }
@@ -151,7 +150,7 @@ LuaRef Decoder::DecodeUnionField(const Table& fbTable,
 	const void* pVoid = fbTable.GetPointer<const void*>(field.offset());
 	if (!pVoid) return Nil();
 
-	const reflection::Enum& e = *m_vEnums[type.index()];
+	const reflection::Enum& e = *(*m_schema.enums())[type.index()];
 	assert(e.is_union());
 	const reflection::Type& underlyingType = *e.underlying_type();
 	m_nameStack.Push(field.name()->c_str());
