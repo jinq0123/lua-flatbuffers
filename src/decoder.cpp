@@ -259,10 +259,20 @@ LuaRef Decoder::DecodeScalarVector(reflection::BaseType elemType,
 
 LuaRef Decoder::DecodeStringVector(const flatbuffers::VectorOfAny& v)
 {
-	// XXX verify string...
 	LuaRef luaArray = LuaRef::createTable(L);
 	for (size_t i = 0; i < v.size(); ++i)
-		luaArray[i+1] = GetAnyVectorElemS(&v, reflection::String, i);
+	{
+		const auto* pStr = flatbuffers::GetAnyVectorElemPointer<
+			const flatbuffers::String>(&v, i);
+		if (!m_pVerifier->Verify(pStr))
+		{
+			char buf[128];
+			snprintf(buf, sizeof(buf), "illegal string vector item %s[%u]",
+				PopFullName().c_str(), i);
+			ERR_RET_NIL(buf);
+		}
+		luaArray[i+1] = pStr->str();
+	}
 	return luaArray;
 }
 
