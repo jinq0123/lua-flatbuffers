@@ -236,12 +236,6 @@ LuaRef Decoder::DecodeVector(
 	assert(reflection::Vector != elemType && "Nesting vectors is not supported.");
 	assert(reflection::Union != elemType && "Union must always be part of a table.");
 
-	const uint8_t* end;
-	if (!m_pVerifier->VerifyVector(
-		reinterpret_cast<const uint8_t*>(&v),
-		flatbuffers::GetTypeSize(elemType), &end))
-		ERR_RET_NIL("illegal vector " + PopFullName());
-
 	// Todo: Check key order.
 
 	if (elemType <= reflection::Double)
@@ -258,6 +252,13 @@ LuaRef Decoder::DecodeScalarVector(reflection::BaseType elemType,
 	const flatbuffers::VectorOfAny& v)
 {
 	assert(elemType <= reflection::Double);
+
+	const uint8_t* end;
+	if (!m_pVerifier->VerifyVector(
+		reinterpret_cast<const uint8_t*>(&v),
+		flatbuffers::GetTypeSize(elemType), &end))
+		ERR_RET_NIL("illegal scalar vector " + PopFullName());
+
 	LuaRef luaArray = LuaRef::createTable(L);
 	const flatbuffers::VectorOfAny* pVec = &v;
 	if (elemType <= reflection::Long)
@@ -281,6 +282,11 @@ LuaRef Decoder::DecodeScalarVector(reflection::BaseType elemType,
 
 LuaRef Decoder::DecodeStringVector(const flatbuffers::VectorOfAny& v)
 {
+	const uint8_t* end;
+	if (!m_pVerifier->VerifyVector(reinterpret_cast<const uint8_t*>(&v),
+		sizeof(flatbuffers::uoffset_t), &end))
+		ERR_RET_NIL("illegal string vector " + PopFullName());
+
 	LuaRef luaArray = LuaRef::createTable(L);
 	for (size_t i = 0; i < v.size(); ++i)
 	{
@@ -296,21 +302,42 @@ LuaRef Decoder::DecodeStringVector(const flatbuffers::VectorOfAny& v)
 LuaRef Decoder::DecodeObjVector(const reflection::Object& elemObj,
 	const flatbuffers::VectorOfAny& v)
 {
-	// XXX verify?
-	LuaRef luaArray = LuaRef::createTable(L);
 	if (elemObj.is_struct())
-	{
-		for (size_t i = 0; i < v.size(); ++i)
-		{
-			const auto* pStruct = flatbuffers::GetAnyVectorElemAddressOf<
-				const flatbuffers::Struct>(&v, i, elemObj.bytesize());
-			assert(pStruct);
-			luaArray[i+1] = DecodeStruct(elemObj, *pStruct);
-			if (Bad()) return Nil();
-		}
-		return luaArray;
-	}
+		return DecodeStructVector(elemObj, v);
+	return DecodeTableVector(elemObj, v);
+}
 
+LuaRef Decoder::DecodeStructVector(const reflection::Object& elemObj,
+	const flatbuffers::VectorOfAny& v)
+{
+	assert(elemObj.is_struct());
+	const uint8_t* end;
+	if (!m_pVerifier->VerifyVector(reinterpret_cast<const uint8_t*>(&v),
+		elemObj.bytesize(), &end))
+		ERR_RET_NIL("illegal struct vector " + PopFullName());
+
+	LuaRef luaArray = LuaRef::createTable(L);
+	for (size_t i = 0; i < v.size(); ++i)
+	{
+		const auto* pStruct = flatbuffers::GetAnyVectorElemAddressOf<
+			const flatbuffers::Struct>(&v, i, elemObj.bytesize());
+		assert(pStruct);
+		luaArray[i+1] = DecodeStruct(elemObj, *pStruct);
+		if (Bad()) return Nil();
+	}
+	return luaArray;
+}
+
+LuaRef Decoder::DecodeTableVector(const reflection::Object& elemObj,
+	const flatbuffers::VectorOfAny& v)
+{
+	assert(!elemObj.is_struct());
+	const uint8_t* end;
+	if (!m_pVerifier->VerifyVector(reinterpret_cast<const uint8_t*>(&v),
+		sizeof(flatbuffers::uoffset_t), &end))
+		ERR_RET_NIL("illegal table vector " + PopFullName());
+
+	LuaRef luaArray = LuaRef::createTable(L);
 	for (size_t i = 0; i < v.size(); ++i)
 	{
 		const Table* pTable = flatbuffers::GetAnyVectorElemPointer<

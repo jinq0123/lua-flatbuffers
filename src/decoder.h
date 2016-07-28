@@ -66,6 +66,10 @@ private:
 	LuaRef DecodeStringVector(const flatbuffers::VectorOfAny& v);
 	LuaRef DecodeObjVector(const reflection::Object& elemObj,
 		const flatbuffers::VectorOfAny& v);
+	LuaRef DecodeStructVector(const reflection::Object& elemObj,
+		const flatbuffers::VectorOfAny& v);
+	LuaRef DecodeTableVector(const reflection::Object& elemObj,
+		const flatbuffers::VectorOfAny& v);
 
 	template <typename T>
 	inline LuaRef Decoder::DecodeScalar(const void* pData);
