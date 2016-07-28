@@ -33,11 +33,13 @@ Decoder::Decode(const std::string& sName, const std::string& buf)
 	if (!m_pVerifier->Verify<flatbuffers::uoffset_t>(pBuf))
 		return std::make_tuple(Nil(), "buffer is too short");
 
-	const Table* pRoot = flatbuffers::GetRoot<Table>(pBuf);
-	assert(pRoot);
+	const void* pRoot = flatbuffers::GetRoot<void>(pBuf);
+	if (!pRoot)
+		return std::make_tuple(Nil(), "illegal root");
+
 	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
 	assert(pObj);
-	LuaRef luaTable = DecodeObject(*pObj, *pRoot);
+	LuaRef luaTable = DecodeObject(*pObj, pRoot);
 
 	m_pVerifier.reset();
 	return std::make_tuple(luaTable, m_sError);
@@ -135,10 +137,8 @@ LuaRef Decoder::DecodeObjectField(
 	const Table& fbTable, const reflection::Field& field)
 {
 	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
-	const auto* pTable = fbTable.GetPointer<
-		const flatbuffers::Table*>(field.offset());
-	if (!pTable) return Nil();
-	return DecodeObject(*m_vObjects[field.type()->index()], *pTable);
+	const void* pData = fbTable.GetPointer<const void*>(field.offset());
+	return DecodeObject(*m_vObjects[field.type()->index()], pData);
 }
 
 LuaRef Decoder::DecodeUnionField(const Table& fbTable,
@@ -147,14 +147,14 @@ LuaRef Decoder::DecodeUnionField(const Table& fbTable,
 	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	const reflection::Type& type = *field.type();
 	assert(type.base_type() == reflection::Union);
-	const void* pVoid = fbTable.GetPointer<const void*>(field.offset());
-	if (!pVoid) return Nil();
+	const void* pData = fbTable.GetPointer<const void*>(field.offset());
+	if (!pData) return Nil();
 
 	const reflection::Enum& e = *(*m_schema.enums())[type.index()];
 	assert(e.is_union());
 	const reflection::Type& underlyingType = *e.underlying_type();
 	m_nameStack.Push(field.name()->c_str());
-	LuaRef luaRef = DecodeUnion(underlyingType, pVoid);
+	LuaRef luaRef = DecodeUnion(underlyingType, pData);
 	m_nameStack.SafePop();
 	return luaRef;
 }
@@ -181,6 +181,19 @@ LuaRef Decoder::DecodeFieldF(const Table& fbTable,
 
 LuaRef Decoder::DecodeObject(
 	const reflection::Object& object,
+	const void* pData)
+{
+	if (!pData) return Nil();
+	if (object.is_struct())
+	{
+		return DecodeStruct(object,
+			*reinterpret_cast<const flatbuffers::Struct*>(pData));
+	}
+	return DecodeTable(object, *reinterpret_cast<const Table*>(pData));
+}
+
+LuaRef Decoder::DecodeTable(
+	const reflection::Object& object,
 	const Table& fbTable)
 {
 	m_nameStack.Push(object.name()->str());
@@ -203,6 +216,14 @@ LuaRef Decoder::DecodeObject(
 	m_nameStack.SafePop();
 	return luaTable;
 }
+
+LuaRef Decoder::DecodeStruct(const reflection::Object& object,
+	const flatbuffers::Struct& fbStruct)
+{
+	// XXX
+	return Nil();
+}
+
 
 LuaRef Decoder::DecodeVector(
 	const reflection::Type& type,
@@ -278,73 +299,83 @@ LuaRef Decoder::DecodeStringVector(const flatbuffers::VectorOfAny& v)
 LuaRef Decoder::DecodeObjVector(const reflection::Object& elemObj,
 	const flatbuffers::VectorOfAny& v)
 {
+	// XXX verify?
 	LuaRef luaArray = LuaRef::createTable(L);
+	if (elemObj.is_struct())
+	{
+		for (size_t i = 0; i < v.size(); ++i)
+		{
+			const void* pElement = flatbuffers::GetAnyVectorElemAddressOf<
+				const void>(&v, i, elemObj.bytesize());
+			luaArray[i+1] = DecodeObject(elemObj, pElement);
+			if (Bad()) return Nil();
+		}
+		return luaArray;
+	}
+
 	for (size_t i = 0; i < v.size(); ++i)
 	{
-		const auto* pTable = flatbuffers::GetAnyVectorElemPointer<
+		const Table* pTable = flatbuffers::GetAnyVectorElemPointer<
 			const Table>(&v, i);
-		luaArray[i+1] = DecodeObject(elemObj, *pTable);
+		luaArray[i+1] = DecodeObject(elemObj, pTable);
 		if (Bad()) return Nil();
 	}
 	return luaArray;
 }
 
 template <typename T>
-inline LuaRef Decoder::DecodeScalar(const void* pVoid)
+inline LuaRef Decoder::DecodeScalar(const void* pData)
 {
-	assert(pVoid);
-	if (!m_pVerifier->Verify<T>(pVoid))
+	assert(pData);
+	if (!m_pVerifier->Verify<T>(pData))
 		ERR_RET_NIL("illegal scalar " + PopFullName());
-	return LuaRef::fromValue(L, flatbuffers::ReadScalar<T>(pVoid));
+	return LuaRef::fromValue(L, flatbuffers::ReadScalar<T>(pData));
 }
 
 LuaRef Decoder::DecodeUnion(
 	const reflection::Type& type,
-	const void* pVoid)
+	const void* pData)
 {
-	assert(pVoid);
+	assert(pData);
 	switch (type.base_type())
 	{
 	case reflection::UType:
 	case reflection::Bool:
 	case reflection::UByte:
-		return DecodeScalar<uint8_t>(pVoid);
+		return DecodeScalar<uint8_t>(pData);
 	case reflection::Byte:
-		return DecodeScalar<int8_t>(pVoid);
+		return DecodeScalar<int8_t>(pData);
 	case reflection::Short:
-		return DecodeScalar<int16_t>(pVoid);
+		return DecodeScalar<int16_t>(pData);
 	case reflection::UShort:
-		return DecodeScalar<uint16_t>(pVoid);
+		return DecodeScalar<uint16_t>(pData);
 	case reflection::Int:
-		return DecodeScalar<uint8_t>(pVoid);
+		return DecodeScalar<uint8_t>(pData);
 	case reflection::UInt:
-		return DecodeScalar<uint8_t>(pVoid);
+		return DecodeScalar<uint8_t>(pData);
 	case reflection::Long:
-		return DecodeScalar<int64_t>(pVoid);
+		return DecodeScalar<int64_t>(pData);
 	case reflection::ULong:
-		return DecodeScalar<uint64_t>(pVoid);
+		return DecodeScalar<uint64_t>(pData);
 	case reflection::Float:
-		return DecodeScalar<float>(pVoid);
+		return DecodeScalar<float>(pData);
 	case reflection::Double:
-		return DecodeScalar<double>(pVoid);
+		return DecodeScalar<double>(pData);
 
 	case reflection::String:
 	{
-		const auto* pStr = reinterpret_cast<const flatbuffers::String*>(pVoid);
+		const auto* pStr = reinterpret_cast<const flatbuffers::String*>(pData);
 		if (!m_pVerifier->Verify(pStr))
 			ERR_RET_NIL("illegal string " + PopFullName());
 		return LuaRef::fromValue(L, pStr->str());
 	}
 	case reflection::Vector:
 	{
-		const auto* pVec = reinterpret_cast<const flatbuffers::VectorOfAny*>(pVoid);
+		const auto* pVec = reinterpret_cast<const flatbuffers::VectorOfAny*>(pData);
 		return DecodeVector(type, *pVec);
 	}
 	case reflection::Obj:
-	{
-		const auto* pTable = reinterpret_cast<const Table*>(pVoid);
-		return DecodeObject(*m_vObjects[type.index()], *pTable);
-	}
+		return DecodeObject(*m_vObjects[type.index()], pData);
 	case reflection::Union:
 		assert(!"Union must always be part of a table.");
 	}  // switch

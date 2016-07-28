@@ -35,6 +35,7 @@ public:
 
 private:
 	using Table = flatbuffers::Table;
+	// XXX Rename to DecodeField (of table or struct)...
 	LuaRef DecodeFieldOfTable(const Table& fbTable,
 		const reflection::Field& field);
 	LuaRef DecodeScalarField(const Table& fbTable,
@@ -53,9 +54,10 @@ private:
 	template<typename T>
 	LuaRef DecodeFieldF(const Table& fbTable, const reflection::Field &field);
 
-	LuaRef DecodeObject(
-		const reflection::Object& object,
-		const Table& fbTable);
+	LuaRef DecodeObject(const reflection::Object& object, const void* pData);
+	LuaRef DecodeTable(const reflection::Object& object, const Table& fbTable);
+	LuaRef DecodeStruct(const reflection::Object& object,
+		const flatbuffers::Struct& fbStruct);
 
 	LuaRef DecodeVector(const reflection::Type& type,
 		const flatbuffers::VectorOfAny& v);
@@ -66,9 +68,9 @@ private:
 		const flatbuffers::VectorOfAny& v);
 
 	template <typename T>
-	inline LuaRef Decoder::DecodeScalar(const void* pVoid);
+	inline LuaRef Decoder::DecodeScalar(const void* pData);
 
-	LuaRef DecodeUnion(const reflection::Type& type, const void* pVoid);
+	LuaRef DecodeUnion(const reflection::Type& type, const void* pData);
 
 private:
 	template <typename T>
