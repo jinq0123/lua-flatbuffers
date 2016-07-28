@@ -1,37 +1,21 @@
 #ifndef LUA_FLATBUFFERS_DECODER_H_
 #define LUA_FLATBUFFERS_DECODER_H_
 
-#include "name_stack.h"
+#include "decoder_base.h"
 
 #include <flatbuffers/flatbuffers.h>
 
-namespace LuaIntf {
-class LuaRef;
-}
-
 namespace reflection {
 enum BaseType;
-struct Enum;
 struct Field;
 struct Object;
-struct Schema;
 struct Type;
 }
 
-struct lua_State;
-
-class Decoder final
+class Decoder final : public DecoderBase
 {
 public:
-	Decoder(lua_State* state, const reflection::Schema& schema);
-
-public:
-	using LuaRef = LuaIntf::LuaRef;
-
-	// Decode buffer to lua table.
-	// Returns (table, "") or (nil, error)
-	std::tuple<LuaRef, std::string> Decode(
-		const std::string& sName, const std::string& buf);
+	explicit Decoder(DecoderContext& rCtx);
 
 private:
 	using Table = flatbuffers::Table;
@@ -74,7 +58,7 @@ private:
 		const flatbuffers::VectorOfAny& v);
 
 	template <typename T>
-	inline LuaRef Decoder::DecodeScalar(const void* pData);
+	inline LuaRef DecodeScalar(const void* pData);
 
 	LuaRef DecodeUnion(const reflection::Type& type, const void* pData);
 
@@ -82,24 +66,6 @@ private:
 	template <typename T>
 	bool VerifyFieldOfTable(const Table& fbTable,
 		const reflection::Field &field);
-
-private:
-	bool Bad() const { return !m_sError.empty(); }
-	LuaRef Nil() const;
-	void SetError(const std::string& sError);
-	std::string PopFullName();
-	std::string PopFullFieldName(const std::string& sFieldName);
-	std::string PopFullVectorName(size_t index);
-
-private:
-	lua_State* L;
-	const reflection::Schema& m_schema;
-	const flatbuffers::Vector<flatbuffers::Offset<
-		reflection::Object>>& m_vObjects;
-
-	std::unique_ptr<flatbuffers::Verifier> m_pVerifier;
-	std::string m_sError;
-	NameStack m_nameStack;  // For error message.
 };  // class Decoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_H_

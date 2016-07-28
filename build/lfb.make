@@ -70,6 +70,7 @@ OBJECTS := \
 	$(OBJDIR)/encoder.o \
 	$(OBJDIR)/flatbuffers.o \
 	$(OBJDIR)/name_stack.o \
+	$(OBJDIR)/object_decoder.o \
 	$(OBJDIR)/root_decoder.o \
 	$(OBJDIR)/schema_cache.o \
 
@@ -142,6 +143,9 @@ $(OBJDIR)/flatbuffers.o: ../src/flatbuffers.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/name_stack.o: ../src/name_stack.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/object_decoder.o: ../src/object_decoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/root_decoder.o: ../src/root_decoder.cpp

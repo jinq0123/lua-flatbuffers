@@ -3,47 +3,10 @@
 #include <flatbuffers/reflection.h>
 #include <LuaIntf/LuaIntf.h>
 
-#include <sstream>
-
-#define ERR_RET_NIL(ErrorStr) do { \
-	SetError(ErrorStr); \
-	return Nil(); \
-} while(0)
-
 using LuaIntf::LuaRef;
 
-Decoder::Decoder(lua_State* state, const reflection::Schema& schema) :
-	L(state),
-	m_schema(schema),
-	m_vObjects(*schema.objects())
+Decoder::Decoder(DecoderContext& rCtx) : DecoderBase(rCtx)
 {
-	assert(L);
-}
-
-std::tuple<LuaRef, std::string>
-Decoder::Decode(const std::string& sName, const std::string& buf)
-{
-	const char* pBuf = buf.data();
-
-	m_pVerifier = std::make_unique<flatbuffers::Verifier>(
-		reinterpret_cast<const uint8_t *>(pBuf), buf.size());
-	m_sError.clear();
-	m_nameStack.Reset();
-
-	// Check the first offset field before GetRoot().
-	if (!m_pVerifier->Verify<flatbuffers::uoffset_t>(pBuf))
-		return std::make_tuple(Nil(), "buffer is too short");
-
-	const void* pRoot = flatbuffers::GetRoot<void>(pBuf);
-	if (!pRoot)
-		return std::make_tuple(Nil(), "illegal root");
-
-	const reflection::Object* pObj = m_vObjects.LookupByKey(sName.c_str());
-	assert(pObj);
-	LuaRef luaTable = DecodeObject(*pObj, pRoot);
-
-	m_pVerifier.reset();
-	return std::make_tuple(luaTable, m_sError);
 }
 
 LuaRef Decoder::DecodeFieldOfTable(
@@ -185,19 +148,6 @@ LuaRef Decoder::DecodeFieldF(const Table& fbTable,
 		return Nil();
 	T f = flatbuffers::GetFieldF<T>(fbTable, field);
 	return LuaRef::fromValue(L, f);
-}
-
-LuaRef Decoder::DecodeObject(
-	const reflection::Object& object,
-	const void* pData)
-{
-	if (!pData) return Nil();
-	if (object.is_struct())
-	{
-		return DecodeStruct(object,
-			*reinterpret_cast<const flatbuffers::Struct*>(pData));
-	}
-	return DecodeTable(object, *reinterpret_cast<const Table*>(pData));
 }
 
 LuaRef Decoder::DecodeTable(
@@ -455,32 +405,5 @@ bool Decoder::VerifyFieldOfTable(
 	SetError("illegal offset of field "
 		+ PopFullFieldName(field.name()->c_str()));
 	return false;
-}
-
-LuaRef Decoder::Nil() const
-{
-	return LuaRef(L, nullptr);
-}
-
-void Decoder::SetError(const std::string& sError)
-{
-	m_sError = sError;
-}
-
-std::string Decoder::PopFullName()
-{
-	return m_nameStack.PopFullName();
-}
-
-std::string Decoder::PopFullFieldName(const std::string& sFieldName)
-{
-	return m_nameStack.PopFullFieldName(sFieldName);
-}
-
-std::string Decoder::PopFullVectorName(size_t index)
-{
-	std::ostringstream oss;
-	oss << "[" << index << "]";
-	return PopFullName() + oss.str();
 }
 

@@ -1,5 +1,7 @@
 #include "root_decoder.h"
 
+#include "object_decoder.h"  // for ObjectDecoder
+
 #include <flatbuffers/reflection.h>
 #include <LuaIntf/LuaIntf.h>
 
@@ -20,6 +22,5 @@ LuaIntf::LuaRef RootDecoder::Decode(const std::string& sName, const void* pBuf)
 	const reflection::Object* pObj = Objects().LookupByKey(sName.c_str());
 	assert(pObj);
 	
-	// XXX LuaRef luaTable = ObjectDecoder(m_rCtx).DecodeObject(*pObj, pRoot);
-	return Nil();  // XXX
+	return ObjectDecoder(m_rCtx).DecodeObject(*pObj, pRoot);
 }

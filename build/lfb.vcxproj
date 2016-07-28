@@ -97,6 +97,7 @@
     <ClInclude Include="..\src\decoder_context.h" />
     <ClInclude Include="..\src\encoder.h" />
     <ClInclude Include="..\src\name_stack.h" />
+    <ClInclude Include="..\src\object_decoder.h" />
     <ClInclude Include="..\src\root_decoder.h" />
     <ClInclude Include="..\src\schema_cache.h" />
   </ItemGroup>
@@ -106,6 +107,7 @@
     <ClCompile Include="..\src\encoder.cpp" />
     <ClCompile Include="..\src\flatbuffers.cpp" />
     <ClCompile Include="..\src\name_stack.cpp" />
+    <ClCompile Include="..\src\object_decoder.cpp" />
     <ClCompile Include="..\src\root_decoder.cpp" />
     <ClCompile Include="..\src\schema_cache.cpp" />
   </ItemGroup>
