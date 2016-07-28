@@ -209,62 +209,74 @@ LuaRef Decoder::DecodeVector(
 	const reflection::Type& type,
 	const flatbuffers::VectorOfAny& v)
 {
-	// Check the vector size.
-	if (m_pVerifier->Verify<flatbuffers::uoffset_t>(&v))
-		ERR_RET_NIL("illegal vector " + PopFullName());
-
 	assert(reflection::Vector == type.base_type());
 	reflection::BaseType elemType = type.element();
+	assert(reflection::Vector != elemType && "Nesting vectors is not supported.");
+	assert(reflection::Union != elemType && "Union must always be part of a table.");
 
-	// Todo: may be map (if has key)...
-	// Todo: Move switch(elemType) out...
+	const uint8_t* end;
+	if (!m_pVerifier->VerifyVector(
+		reinterpret_cast<const uint8_t*>(&v),
+		flatbuffers::GetTypeSize(elemType), &end))
+		ERR_RET_NIL("illegal vector " + PopFullName());
 
+	// Todo: Check key order.
+
+	if (elemType <= reflection::Double)
+		return DecodeScalarVector(elemType, v);
+	if (reflection::String == elemType)
+		return DecodeStringVector(v);
+	if (reflection::Obj == elemType)
+		return DecodeObjVector(*m_vObjects[type.index()], v);
+	assert(!"Illegal element type.");
+	return Nil();
+}
+
+LuaRef Decoder::DecodeScalarVector(reflection::BaseType elemType,
+	const flatbuffers::VectorOfAny& v)
+{
+	assert(elemType <= reflection::Double);
 	LuaRef luaArray = LuaRef::createTable(L);
 	const flatbuffers::VectorOfAny* pVec = &v;
-	for (size_t i = 1; i <= v.size(); ++i)
+	if (elemType <= reflection::Long)
 	{
-		switch (elemType)
-		{
-		case reflection::UType:
-		case reflection::Bool:
-		case reflection::UByte:
-		case reflection::Byte:
-		case reflection::Short:
-		case reflection::UShort:
-		case reflection::Int:
-		case reflection::UInt:
-		case reflection::Long:
+		for (size_t i = 0; i < v.size(); ++i)
 			luaArray[i+1] = GetAnyVectorElemI(pVec, elemType, i);
-			break;
-		case reflection::ULong:
+	}
+	else if (elemType == reflection::ULong)
+	{
+		for (size_t i = 0; i < v.size(); ++i)
 			luaArray[i+1] = static_cast<uint64_t>(
 				GetAnyVectorElemI(pVec, elemType, i));
-			break;
-		case reflection::Float:
-		case reflection::Double:
+	}
+	else
+	{
+		for (size_t i = 0; i < v.size(); ++i)
 			luaArray[i+1] = GetAnyVectorElemF(pVec, elemType, i);
-			break;
-		case reflection::String:
-			luaArray[i+1] = GetAnyVectorElemS(pVec, elemType, i);
-			break;
-		case reflection::Vector:
-			assert(!"Nesting vectors is not supported.");
-			break;
-		case reflection::Obj:
-		{
-			const auto* pTable = flatbuffers::GetAnyVectorElemPointer<const Table>(pVec, i);
-			// Todo: check pTable
-			luaArray[i+1] = DecodeObject(*m_vObjects[type.index()], *pTable);
-			break;
-		}
-		case reflection::Union:
-			assert(!"Union must always be part of a table.");
-			break;
-		default:
-			assert(false);
-			break;
-		}  // switch
-	}  // for
+	}
+	return luaArray;
+}
+
+LuaRef Decoder::DecodeStringVector(const flatbuffers::VectorOfAny& v)
+{
+	// XXX verify string...
+	LuaRef luaArray = LuaRef::createTable(L);
+	for (size_t i = 0; i < v.size(); ++i)
+		luaArray[i+1] = GetAnyVectorElemS(&v, reflection::String, i);
+	return luaArray;
+}
+
+LuaRef Decoder::DecodeObjVector(const reflection::Object& elemObj,
+	const flatbuffers::VectorOfAny& v)
+{
+	LuaRef luaArray = LuaRef::createTable(L);
+	for (size_t i = 0; i < v.size(); ++i)
+	{
+		const auto* pTable = flatbuffers::GetAnyVectorElemPointer<
+			const Table>(&v, i);
+		// Todo: check pTable
+		luaArray[i+1] = DecodeObject(elemObj, *pTable);
+	}
 	return luaArray;
 }
 

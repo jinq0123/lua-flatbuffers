@@ -10,6 +10,7 @@ class LuaRef;
 }
 
 namespace reflection {
+enum BaseType;
 struct Enum;
 struct Field;
 struct Object;
@@ -55,7 +56,13 @@ private:
 	LuaRef DecodeObject(
 		const reflection::Object& object,
 		const Table& fbTable);
+
 	LuaRef DecodeVector(const reflection::Type& type,
+		const flatbuffers::VectorOfAny& v);
+	LuaRef DecodeScalarVector(reflection::BaseType elemType,
+		const flatbuffers::VectorOfAny& v);
+	LuaRef DecodeStringVector(const flatbuffers::VectorOfAny& v);
+	LuaRef DecodeObjVector(const reflection::Object& elemObj,
 		const flatbuffers::VectorOfAny& v);
 
 	LuaRef Decode(const reflection::Type& type,
