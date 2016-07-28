@@ -1,5 +1,5 @@
-#ifndef LUA_FLATBUFFERS_ROOT_DECODER_H_
-#define LUA_FLATBUFFERS_ROOT_DECODER_H_
+#ifndef LUA_FLATBUFFERS_DECODER_ROOT_DECODER_H_
+#define LUA_FLATBUFFERS_DECODER_ROOT_DECODER_H_
 
 #include "decoder_base.h"
 
@@ -13,4 +13,4 @@ public:
 	LuaRef Decode(const std::string& sName, const void* pBuf);
 };  // class RootDecoder
 
-#endif  // LUA_FLATBUFFERS_ROOT_DECODER_H_
+#endif  // LUA_FLATBUFFERS_DECODER_ROOT_DECODER_H_

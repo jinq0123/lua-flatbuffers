@@ -1,5 +1,5 @@
-#ifndef LUA_FLATBUFFERS_DECODER_CONTEXT_H_
-#define LUA_FLATBUFFERS_DECODER_CONTEXT_H_
+#ifndef LUA_FLATBUFFERS_DECODER_DECODER_CONTEXT_H_
+#define LUA_FLATBUFFERS_DECODER_DECODER_CONTEXT_H_
 
 #include "name_stack.h"
 
@@ -22,4 +22,4 @@ struct DecoderContext
 	std::string sError;
 };  // class DecoderContext
 
-#endif  // LUA_FLATBUFFERS_DECODER_CONTEXT_H_
+#endif  // LUA_FLATBUFFERS_DECODER_DECODER_CONTEXT_H_

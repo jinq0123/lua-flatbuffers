@@ -92,20 +92,22 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\src\decoder\decoder.h" />
     <ClInclude Include="..\src\decoder\decoder_base.h" />
     <ClInclude Include="..\src\decoder\decoder_context.h" />
     <ClInclude Include="..\src\decoder\object_decoder.h" />
     <ClInclude Include="..\src\decoder\root_decoder.h" />
+    <ClInclude Include="..\src\decoder\struct_decoder.h" />
+    <ClInclude Include="..\src\decoder\table_decoder.h" />
     <ClInclude Include="..\src\encoder.h" />
     <ClInclude Include="..\src\name_stack.h" />
     <ClInclude Include="..\src\schema_cache.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\src\decoder\decoder.cpp" />
     <ClCompile Include="..\src\decoder\decoder_base.cpp" />
     <ClCompile Include="..\src\decoder\object_decoder.cpp" />
     <ClCompile Include="..\src\decoder\root_decoder.cpp" />
+    <ClCompile Include="..\src\decoder\struct_decoder.cpp" />
+    <ClCompile Include="..\src\decoder\table_decoder.cpp" />
     <ClCompile Include="..\src\encoder.cpp" />
     <ClCompile Include="..\src\flatbuffers.cpp" />
     <ClCompile Include="..\src\name_stack.cpp" />

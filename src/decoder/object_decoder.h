@@ -1,5 +1,5 @@
-#ifndef LUA_FLATBUFFERS_OBJECT_DECODER_H_
-#define LUA_FLATBUFFERS_OBJECT_DECODER_H_
+#ifndef LUA_FLATBUFFERS_DECODER_OBJECT_DECODER_H_
+#define LUA_FLATBUFFERS_DECODER_OBJECT_DECODER_H_
 
 #include "decoder_base.h"
 
@@ -10,6 +10,6 @@ public:
 
 public:
 	LuaRef DecodeObject(const reflection::Object& object, const void* pData);
-};  // class Decoder
+};  // class ObjectDecoder
 
-#endif  // LUA_FLATBUFFERS_OBJECT_DECODER_H_
+#endif  // LUA_FLATBUFFERS_DECODER_OBJECT_DECODER_H_

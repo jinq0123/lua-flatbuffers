@@ -3,7 +3,6 @@
 #include "object_decoder.h"  // for ObjectDecoder
 
 #include <flatbuffers/reflection.h>
-#include <LuaIntf/LuaIntf.h>
 
 RootDecoder::RootDecoder(DecoderContext& rCtx) : DecoderBase(rCtx)
 {

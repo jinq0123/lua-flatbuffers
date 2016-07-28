@@ -1,10 +1,11 @@
-#ifndef LUA_FLATBUFFERS_DECODER_BASE_H_
-#define LUA_FLATBUFFERS_DECODER_BASE_H_
+#ifndef LUA_FLATBUFFERS_DECODER_DECODER_BASE_H_
+#define LUA_FLATBUFFERS_DECODER_DECODER_BASE_H_
 
 #include "decoder_context.h"
 
 #include <flatbuffers/flatbuffers.h>
 #include <flatbuffers/reflection.h>  // for objects()
+#include <LuaIntf/LuaIntf.h>  // for createTable()
 
 #include <string>
 
@@ -34,11 +35,15 @@ protected:
 	{
 		return *m_rCtx.schema.objects();
 	}
+	lua_State* LuaState() const { return m_rCtx.pLuaState; }
+	LuaRef CreateLuaTable() const { return LuaRef::createTable(LuaState()); }
 
 protected:
 	bool Bad() const { return !m_rCtx.sError.empty(); }
 	LuaRef Nil() const;
 	void SetError(const string& sError);
+	void PushName(const std::string& sName) { m_rCtx.nameStack.Push(sName); }
+	void SafePopName() { m_rCtx.nameStack.SafePop(); }
 	string PopFullName();
 	string PopFullFieldName(const string& sFieldName);
 	string PopFullVectorName(size_t index);
@@ -47,4 +52,4 @@ protected:
 	DecoderContext& m_rCtx;
 };  // class DecoderBase
 
-#endif  // LUA_FLATBUFFERS_DECODER_BASE_H_
+#endif  // LUA_FLATBUFFERS_DECODER_DECODER_BASE_H_

@@ -3,7 +3,6 @@
 #include "name_stack.h"
 
 #include <flatbuffers/reflection.h>  // for Schema
-#include <LuaIntf/LuaIntf.h>
 
 #include <sstream>
 

@@ -1,6 +1,7 @@
 #include "object_decoder.h"
 
-#include <LuaIntf/LuaIntf.h>
+#include "struct_decoder.h"
+#include "table_decoder.h"
 
 ObjectDecoder::ObjectDecoder(DecoderContext& rCtx) : DecoderBase(rCtx)
 {

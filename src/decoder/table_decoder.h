@@ -1,5 +1,5 @@
-#ifndef LUA_FLATBUFFERS_DECODER_H_
-#define LUA_FLATBUFFERS_DECODER_H_
+#ifndef LUA_FLATBUFFERS_DECODER_TABLE_DECODER_H_
+#define LUA_FLATBUFFERS_DECODER_TABLE_DECODER_H_
 
 #include "decoder_base.h"
 
@@ -12,10 +12,10 @@ struct Object;
 struct Type;
 }
 
-class Decoder final : public DecoderBase
+class TableDecoder final : public DecoderBase
 {
 public:
-	explicit Decoder(DecoderContext& rCtx);
+	explicit TableDecoder(DecoderContext& rCtx);
 
 private:
 	using Table = flatbuffers::Table;
@@ -66,6 +66,6 @@ private:
 	template <typename T>
 	bool VerifyFieldOfTable(const Table& fbTable,
 		const reflection::Field &field);
-};  // class Decoder
+};  // class TableDecoder
 
-#endif  // LUA_FLATBUFFERS_DECODER_H_
+#endif  // LUA_FLATBUFFERS_DECODER_TABLE_DECODER_H_
