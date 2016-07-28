@@ -73,6 +73,13 @@ LuaRef Decoder::DecodeFieldOfTable(
 	return Nil();
 }
 
+LuaRef Decoder::DecodeFieldOfStruct(const Struct& fbStruct,
+	const reflection::Field& field)
+{
+	// XXX
+	return Nil();
+}
+
 LuaRef Decoder::DecodeScalarField(
 	const Table& fbTable, const reflection::Field& field)
 {
@@ -198,6 +205,7 @@ LuaRef Decoder::DecodeTable(
 	const reflection::Object& object,
 	const Table& fbTable)
 {
+	assert(!object.is_struct());
 	m_nameStack.Push(object.name()->str());
 	if (!fbTable.VerifyTableStart(*m_pVerifier))
 		ERR_RET_NIL("illegal start of table " + PopFullName());
@@ -222,8 +230,23 @@ LuaRef Decoder::DecodeTable(
 LuaRef Decoder::DecodeStruct(const reflection::Object& object,
 	const flatbuffers::Struct& fbStruct)
 {
-	// XXX
-	return Nil();
+	assert(object.is_struct());
+	m_nameStack.Push(object.name()->str());
+	if (m_pVerifier->Verify(&fbStruct, object.bytesize()))
+		ERR_RET_NIL("illegal struct " + PopFullName());
+
+	LuaRef luaTable = LuaRef::createTable(L);
+	for (const reflection::Field* pField : *object.fields())
+	{
+		assert(pField);
+		const char* pName = pField->name()->c_str();
+		assert(pName);
+		luaTable[pName] = DecodeFieldOfStruct(fbStruct, *pField);
+		if (Bad()) return Nil();
+	}
+
+	m_nameStack.SafePop();
+	return luaTable;
 }
 
 

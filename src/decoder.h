@@ -35,8 +35,10 @@ public:
 
 private:
 	using Table = flatbuffers::Table;
-	// XXX Rename to DecodeField (of table or struct)...
+	using Struct = flatbuffers::Struct;
 	LuaRef DecodeFieldOfTable(const Table& fbTable,
+		const reflection::Field& field);
+	LuaRef DecodeFieldOfStruct(const Struct& fbStruct,
 		const reflection::Field& field);
 	LuaRef DecodeScalarField(const Table& fbTable,
 		const reflection::Field& field);
