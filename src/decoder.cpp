@@ -105,8 +105,7 @@ LuaRef Decoder::DecodeScalarField(
 LuaRef Decoder::DecodeStringField(
 	const Table& fbTable, const reflection::Field& field)
 {
-	const auto* pStr = fbTable.GetPointer<
-		const flatbuffers::String *>(field.offset());
+	const flatbuffers::String* pStr = flatbuffers::GetFieldS(fbTable, field);
 	if (!m_pVerifier->Verify(pStr))
 	{
 		ERR_RET_NIL("illegal string field "
