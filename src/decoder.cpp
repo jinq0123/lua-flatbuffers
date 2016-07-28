@@ -105,6 +105,7 @@ LuaRef Decoder::DecodeScalarField(
 LuaRef Decoder::DecodeStringField(
 	const Table& fbTable, const reflection::Field& field)
 {
+	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	const flatbuffers::String* pStr = flatbuffers::GetFieldS(fbTable, field);
 	if (!m_pVerifier->Verify(pStr))
 	{
@@ -119,10 +120,10 @@ LuaRef Decoder::DecodeVectorField(
 	const Table& fbTable,
 	const reflection::Field& field)
 {
+	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	const auto* pVec = fbTable.GetPointer<
 		const flatbuffers::VectorOfAny*>(field.offset());
 	if (!pVec) return Nil();
-	// XXX verify
 
 	const reflection::Type& type = *field.type();
 	m_nameStack.Push(field.name()->c_str());
@@ -134,6 +135,7 @@ LuaRef Decoder::DecodeVectorField(
 LuaRef Decoder::DecodeObjectField(
 	const Table& fbTable, const reflection::Field& field)
 {
+	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	uint16_t offset = field.offset();
 	if (!fbTable.VerifyField<flatbuffers::uoffset_t>(*m_pVerifier, offset))
 	{
@@ -148,6 +150,7 @@ LuaRef Decoder::DecodeObjectField(
 LuaRef Decoder::DecodeUnionField(const Table& fbTable,
 	const reflection::Field& field)
 {
+	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	assert(!field.deprecated());
 	const reflection::Type& type = *field.type();
 	assert(type.base_type() == reflection::Union);
@@ -284,7 +287,6 @@ LuaRef Decoder::DecodeObjVector(const reflection::Object& elemObj,
 	{
 		const auto* pTable = flatbuffers::GetAnyVectorElemPointer<
 			const Table>(&v, i);
-		// Todo: check pTable
 		luaArray[i+1] = DecodeObject(elemObj, *pTable);
 	}
 	return luaArray;
