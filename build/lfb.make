@@ -16,7 +16,7 @@ ifeq ($(config),debug)
   TARGET = $(TARGETDIR)/liblfb.so
   OBJDIR = obj/Debug
   DEFINES +=
-  INCLUDES += -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
+  INCLUDES += -I../src -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -g -fPIC
@@ -43,7 +43,7 @@ ifeq ($(config),release)
   TARGET = $(TARGETDIR)/liblfb.so
   OBJDIR = obj/Release
   DEFINES += -DNDEBUG
-  INCLUDES += -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
+  INCLUDES += -I../src -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
   FORCE_INCLUDE +=
   ALL_CPPFLAGS += $(CPPFLAGS) -MMD -MP $(DEFINES) $(INCLUDES)
   ALL_CFLAGS += $(CFLAGS) $(ALL_CPPFLAGS) -O2 -fPIC

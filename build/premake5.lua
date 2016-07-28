@@ -28,6 +28,7 @@ project "lfb"
 		"../src/**.cpp",
 	}
 	includedirs {
+		"../src",
 		"../third_party/lua-intf",
 		"../third_party/flatbuffers/include",
 		lua_include_dir,

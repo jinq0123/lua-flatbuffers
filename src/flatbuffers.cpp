@@ -3,8 +3,8 @@
 
 #include "schema_cache.h"  // for SchemaCache
 
+#include "decoder/root_decoder.h"
 #include "encoder.h"
-#include "root_decoder.h"
 
 #include <LuaIntf/LuaIntf.h>
 

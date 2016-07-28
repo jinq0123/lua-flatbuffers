@@ -34,3 +34,4 @@
 /build/flatbuffers.sdf
 /build/*.opendb
 /build/*.sdf
+/build/*.filters
