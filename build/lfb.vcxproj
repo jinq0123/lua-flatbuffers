@@ -94,8 +94,10 @@
   <ItemGroup>
     <ClInclude Include="..\src\decoder.h" />
     <ClInclude Include="..\src\decoder_base.h" />
+    <ClInclude Include="..\src\decoder_context.h" />
     <ClInclude Include="..\src\encoder.h" />
     <ClInclude Include="..\src\name_stack.h" />
+    <ClInclude Include="..\src\root_decoder.h" />
     <ClInclude Include="..\src\schema_cache.h" />
   </ItemGroup>
   <ItemGroup>
@@ -104,6 +106,7 @@
     <ClCompile Include="..\src\encoder.cpp" />
     <ClCompile Include="..\src\flatbuffers.cpp" />
     <ClCompile Include="..\src\name_stack.cpp" />
+    <ClCompile Include="..\src\root_decoder.cpp" />
     <ClCompile Include="..\src\schema_cache.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

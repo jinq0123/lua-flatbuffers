@@ -3,8 +3,8 @@
 
 #include "schema_cache.h"  // for SchemaCache
 
-#include "decoder.h"
 #include "encoder.h"
+#include "root_decoder.h"
 
 #include <LuaIntf/LuaIntf.h>
 
@@ -73,10 +73,18 @@ std::tuple<LuaRef, std::string> Decode(
 {
 	assert(L);
 	const reflection::Schema* pSchema = GetCache().GetSchemaOfObject(sName);
-	if (pSchema)
-		return Decoder(L, *pSchema).Decode(sName, buf);
+	if (!pSchema)
+		return std::make_tuple(LuaRef(L, nullptr), "no type " + sName);
 
-	return std::make_tuple(LuaRef(L, nullptr), "no type " + sName);
+	const char* pBuf = buf.data();
+	flatbuffers::Verifier verifier(reinterpret_cast<
+		const uint8_t *>(buf.data()), buf.size());
+	DecoderContext ctx{
+		L,
+		*pSchema,
+		verifier
+	};
+	return std::make_tuple(RootDecoder(ctx).Decode(sName, pBuf), ctx.sError);
 }
 
 }  // namespace

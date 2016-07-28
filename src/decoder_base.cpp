@@ -9,37 +9,29 @@
 
 using LuaIntf::LuaRef;
 
-DecoderBase::DecoderBase(lua_State* state,
-	const reflection::Schema& schema,
-	flatbuffers::Verifier& rVerifier,
-	NameStack& rNameStack) :
-	m_pLuaState(state),
-	m_schema(schema),
-	m_vObjects(*schema.objects()),
-	m_rVerifier(rVerifier),
-	m_rNameStack(rNameStack)
+DecoderBase::DecoderBase(DecoderContext& rCtx) : m_rCtx(rCtx)
 {
-	assert(state);
+	assert(rCtx.pLuaState);
 }
 
 LuaRef DecoderBase::Nil() const
 {
-	return LuaRef(m_pLuaState, nullptr);
+	return LuaRef(m_rCtx.pLuaState, nullptr);
 }
 
 void DecoderBase::SetError(const std::string& sError)
 {
-	m_sError = sError;
+	m_rCtx.sError = sError;
 }
 
 std::string DecoderBase::PopFullName()
 {
-	return m_rNameStack.PopFullName();
+	return m_rCtx.nameStack.PopFullName();
 }
 
 std::string DecoderBase::PopFullFieldName(const std::string& sFieldName)
 {
-	return m_rNameStack.PopFullFieldName(sFieldName);
+	return m_rCtx.nameStack.PopFullFieldName(sFieldName);
 }
 
 std::string DecoderBase::PopFullVectorName(size_t index)
