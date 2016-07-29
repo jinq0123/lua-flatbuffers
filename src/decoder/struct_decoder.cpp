@@ -12,7 +12,7 @@ LuaRef StructDecoder::DecodeStruct(const reflection::Object& object,
 	const flatbuffers::Struct& fbStruct)
 {
 	assert(object.is_struct());
-	PushName(object.name()->str());
+	PushName(object);
 	if (Verifier().Verify(&fbStruct, object.bytesize()))
 		ERR_RET_NIL("illegal struct " + PopFullName());
 
@@ -112,7 +112,7 @@ LuaRef StructDecoder::DecodeVectorField(
 	if (!pVec) return Nil();
 
 	const reflection::Type& type = *field.type();
-	PushName(field.name()->c_str());
+	PushName(field);
 	LuaRef luaTable = DecodeVector(type, *pVec);
 	SafePopName();
 	return luaTable;
@@ -138,7 +138,7 @@ LuaRef StructDecoder::DecodeUnionField(const Struct& fbStruct,
 	const reflection::Enum& e = *(*m_rCtx.schema.enums())[type.index()];
 	assert(e.is_union());
 	const reflection::Type& underlyingType = *e.underlying_type();
-	PushName(field.name()->c_str());
+	PushName(field);
 	LuaRef luaRef = DecodeUnion(underlyingType, pData);
 	SafePopName();
 	return luaRef;

@@ -97,7 +97,7 @@ LuaRef TableDecoder::DecodeVectorField(
 	if (!pVec) return Nil();
 
 	const reflection::Type& type = *field.type();
-	PushName(field.name()->c_str());
+	PushName(field);
 	LuaRef luaTable = DecodeVector(type, *pVec);
 	SafePopName();
 	return luaTable;
@@ -123,7 +123,7 @@ LuaRef TableDecoder::DecodeUnionField(const Table& fbTable,
 	const reflection::Enum& e = *(*m_rCtx.schema.enums())[type.index()];
 	assert(e.is_union());
 	const reflection::Type& underlyingType = *e.underlying_type();
-	PushName(field.name()->c_str());
+	PushName(field);
 	LuaRef luaRef = DecodeUnion(underlyingType, pData);
 	SafePopName();
 	return luaRef;
@@ -154,7 +154,7 @@ LuaRef TableDecoder::DecodeTable(
 	const Table& fbTable)
 {
 	assert(!object.is_struct());
-	PushName(object.name()->str());
+	PushName(object);
 	if (!fbTable.VerifyTableStart(Verifier()))
 		ERR_RET_NIL("illegal start of table " + PopFullName());
 
@@ -179,7 +179,7 @@ LuaRef TableDecoder::DecodeStruct(const reflection::Object& object,
 	const flatbuffers::Struct& fbStruct)
 {
 	assert(object.is_struct());
-	PushName(object.name()->str());
+	PushName(object);
 	if (Verifier().Verify(&fbStruct, object.bytesize()))
 		ERR_RET_NIL("illegal struct " + PopFullName());
 

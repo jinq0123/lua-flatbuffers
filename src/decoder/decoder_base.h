@@ -43,6 +43,14 @@ protected:
 	LuaRef Nil() const;
 	void SetError(const string& sError);
 	void PushName(const std::string& sName) { m_rCtx.nameStack.Push(sName); }
+	void PushName(const reflection::Object& object)
+	{
+		PushName(object.name()->c_str());
+	}
+	void PushName(const reflection::Field& field)
+	{
+		PushName(field.name()->c_str());
+	}
 	void SafePopName() { m_rCtx.nameStack.SafePop(); }
 	string PopFullName();
 	string PopFullFieldName(const string& sFieldName);
