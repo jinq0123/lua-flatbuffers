@@ -77,12 +77,11 @@ std::tuple<LuaRef, std::string> Decode(
 		return std::make_tuple(LuaRef(L, nullptr), "no type " + sName);
 
 	const char* pBuf = buf.data();
-	flatbuffers::Verifier verifier(reinterpret_cast<
-		const uint8_t *>(buf.data()), buf.size());
 	DecoderContext ctx{
 		L,
 		*pSchema,
-		verifier
+		flatbuffers::Verifier(reinterpret_cast<
+			const uint8_t *>(buf.data()), buf.size())
 	};
 	return std::make_tuple(RootDecoder(ctx).Decode(sName, pBuf), ctx.sError);
 }

@@ -25,10 +25,8 @@ private:
 	template<typename T>
 	LuaRef DecodeFieldF(const Table& fbTable, const Field &field);
 
-private:
 	template <typename T>
-	bool VerifyFieldOfTable(const Table& fbTable,
-		const Field &field);
+	bool VerifyFieldOfTable(const Table& fbTable, const Field &field);
 };  // class TableDecoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_TABLE_DECODER_H_

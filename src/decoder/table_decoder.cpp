@@ -1,8 +1,8 @@
 #include "table_decoder.h"
 
-#include "object_decoder.h"
-#include "union_decoder.h"
-#include "vector_decoder.h"
+#include "object_decoder.h"  // for ObjectDecoder
+#include "union_decoder.h"  // for UnionDecoder
+#include "vector_decoder.h"  // for VectorDecoder
 
 using LuaIntf::LuaRef;
 
@@ -11,7 +11,7 @@ TableDecoder::TableDecoder(DecoderContext& rCtx) : DecoderBase(rCtx)
 }
 
 LuaRef TableDecoder::DecodeFieldOfTable(
-	const Table& fbTable, const reflection::Field& field)
+	const Table& fbTable, const Field& field)
 {
 	if (field.deprecated()) return Nil();
 	reflection::BaseType eType = field.type()->base_type();
@@ -37,7 +37,7 @@ LuaRef TableDecoder::DecodeFieldOfTable(
 }
 
 LuaRef TableDecoder::DecodeScalarField(
-	const Table& fbTable, const reflection::Field& field)
+	const Table& fbTable, const Field& field)
 {
 	switch (field.type()->base_type())
 	{
@@ -69,7 +69,7 @@ LuaRef TableDecoder::DecodeScalarField(
 }
 
 LuaRef TableDecoder::DecodeStringField(
-	const Table& fbTable, const reflection::Field& field)
+	const Table& fbTable, const Field& field)
 {
 	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	const flatbuffers::String* pStr = flatbuffers::GetFieldS(fbTable, field);
@@ -83,8 +83,7 @@ LuaRef TableDecoder::DecodeStringField(
 }
 
 LuaRef TableDecoder::DecodeVectorField(
-	const Table& fbTable,
-	const reflection::Field& field)
+	const Table& fbTable, const Field& field)
 {
 	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	const auto* pVec = fbTable.GetPointer<
@@ -99,7 +98,7 @@ LuaRef TableDecoder::DecodeVectorField(
 }
 
 LuaRef TableDecoder::DecodeObjectField(
-	const Table& fbTable, const reflection::Field& field)
+	const Table& fbTable, const Field& field)
 {
 	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	const void* pData = fbTable.GetPointer<const void*>(field.offset());
@@ -107,8 +106,8 @@ LuaRef TableDecoder::DecodeObjectField(
 		*Objects()[field.type()->index()], pData);
 }
 
-LuaRef TableDecoder::DecodeUnionField(const Table& fbTable,
-	const reflection::Field& field)
+LuaRef TableDecoder::DecodeUnionField(
+	const Table& fbTable, const Field& field)
 {
 	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	const reflection::Type& type = *field.type();
@@ -126,8 +125,7 @@ LuaRef TableDecoder::DecodeUnionField(const Table& fbTable,
 }
 
 template<typename T>
-LuaRef TableDecoder::DecodeFieldI(const Table& fbTable,
-	const reflection::Field &field)
+LuaRef TableDecoder::DecodeFieldI(const Table& fbTable, const Field &field)
 {
 	if (!VerifyFieldOfTable<T>(fbTable, field))
 		return Nil();
@@ -136,8 +134,7 @@ LuaRef TableDecoder::DecodeFieldI(const Table& fbTable,
 }
 
 template<typename T>
-LuaRef TableDecoder::DecodeFieldF(const Table& fbTable,
-	const reflection::Field &field)
+LuaRef TableDecoder::DecodeFieldF(const Table& fbTable, const Field &field)
 {
 	if (!VerifyFieldOfTable<T>(fbTable, field))
 		return Nil();
@@ -146,8 +143,7 @@ LuaRef TableDecoder::DecodeFieldF(const Table& fbTable,
 }
 
 LuaRef TableDecoder::DecodeTable(
-	const reflection::Object& object,
-	const Table& fbTable)
+	const reflection::Object& object, const Table& fbTable)
 {
 	assert(!object.is_struct());
 	PushName(object);
@@ -155,7 +151,7 @@ LuaRef TableDecoder::DecodeTable(
 		ERR_RET_NIL("illegal start of table " + PopFullName());
 
 	LuaRef luaTable = CreateLuaTable();
-	for (const reflection::Field* pField : *object.fields())
+	for (const Field* pField : *object.fields())
 	{
 		assert(pField);
 		const char* pName = pField->name()->c_str();
@@ -173,7 +169,7 @@ LuaRef TableDecoder::DecodeTable(
 
 template <typename T>
 bool TableDecoder::VerifyFieldOfTable(
-	const Table& fbTable, const reflection::Field &field)
+	const Table& fbTable, const Field &field)
 {
 	static_assert(std::is_scalar<T>::value, "T must be a scalar type");
 

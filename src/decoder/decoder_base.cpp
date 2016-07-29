@@ -13,6 +13,10 @@ DecoderBase::DecoderBase(DecoderContext& rCtx) : m_rCtx(rCtx)
 	assert(rCtx.pLuaState);
 }
 
+DecoderBase::~DecoderBase()
+{
+}
+
 LuaRef DecoderBase::Nil() const
 {
 	return LuaRef(m_rCtx.pLuaState, nullptr);

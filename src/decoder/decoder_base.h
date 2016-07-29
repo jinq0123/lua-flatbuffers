@@ -22,6 +22,7 @@ class DecoderBase
 {
 public:
 	explicit DecoderBase(DecoderContext& rCtx);
+	virtual ~DecoderBase();
 
 public:
 	using LuaRef = LuaIntf::LuaRef;
