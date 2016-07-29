@@ -18,5 +18,5 @@ LuaIntf::LuaRef ObjectDecoder::DecodeObject(
 			*reinterpret_cast<const flatbuffers::Struct*>(pData));
 	}
 	return TableDecoder(m_rCtx).DecodeTable(object,
-		*reinterpret_cast<const Table*>(pData));
+		*reinterpret_cast<const flatbuffers::Table*>(pData));
 }
