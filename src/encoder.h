@@ -15,6 +15,7 @@ namespace reflection {
 struct Field;
 struct Object;
 struct Schema;
+struct Type;
 }
 
 class Encoder final
@@ -37,7 +38,7 @@ private:
 	uoffset_t EncodeObject(const Object& obj, const LuaRef& luaTable);
 	uoffset_t EncodeStruct(const Object& obj, const LuaRef& luaTable);
 	uoffset_t EncodeTable(const Object& obj, const LuaRef& luaTable);
-	uoffset_t EncodeVector(const Object& elemObj, const LuaRef& luaArray);
+	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaArray);
 
 	// Cache to map before StartTable().
 	using Field2Scalar = std::unordered_map<const Field*, LuaRef>;

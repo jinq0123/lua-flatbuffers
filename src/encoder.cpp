@@ -54,6 +54,8 @@ uoffset_t Encoder::EncodeStruct(const Object& obj, const LuaRef& luaTable)
 	const auto& vFields = *obj.fields();
 	(void)m_fbb.StartStruct(obj.minalign());
 
+	// XXX struct should traverse all fields of obj...
+	// Todo: prepare struct outside of fbb, then PushBytes() to fbb.
 	for (const auto& e : luaTable)
 	{
 		string sKey = e.key<string>();
@@ -68,6 +70,7 @@ uoffset_t Encoder::EncodeStruct(const Object& obj, const LuaRef& luaTable)
 		reflection::BaseType eBaseType = type.base_type();
 		if (eBaseType <= reflection::Double)
 		{
+			// XXX struct can not use AddElement()! default_value?
 			AddElement(*pField, value);  // XXX throw?
 			continue;
 		}
@@ -99,8 +102,10 @@ uoffset_t Encoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
 	return m_fbb.EndTable(start, obj.fields()->size());
 }
 
-uoffset_t Encoder::EncodeVector(const Object& elemObj, const LuaRef& luaArray)
+uoffset_t Encoder::EncodeVector(
+	const reflection::Type& type, const LuaRef& luaArray)
 {
+	assert(type.base_type() == reflection::Vector);
 	// todo: check luaArray is array
 	return 0;
 }
@@ -138,16 +143,18 @@ void Encoder::CacheField(const Field* pField, const LuaRef& luaValue,
 			luaValue.toValue<const char*>()).o;
 		break;
 	case reflection::Vector:
-		rMapOffset[pField] = EncodeVector(
-			*m_vObjects[type.index()], luaValue);
+		rMapOffset[pField] = EncodeVector(type, luaValue);
 		break;
 	case reflection::Obj:
-		// Todo: is_struct...
-		rMapOffset[pField] = EncodeObject(
-			*m_vObjects[type.index()], luaValue);
+	{
+		const Object* pObj = m_vObjects[type.index()];
+		assert(pObj);
+		if (pObj->is_struct()) rMapScalar[pField] = luaValue;
+		else rMapOffset[pField] = EncodeObject(*pObj, luaValue);
 		break;
+	}
 	case reflection::Union:
-		// XXX
+		// XXX get union underlying type...
 		break;
 	default:
 		rMapScalar[pField] = luaValue;
@@ -206,8 +213,11 @@ void Encoder::AddElement(const Field& field, const LuaRef& elementValue)
 	case reflection::Double:
 		AddElement<double>(offset, elementValue, defReal);
 		break;
+	case reflection::Obj:
+		// XXX struct...
+		break;
 	default:
-		assert(false);
+		assert(!"Illegal type.");
 		break;
 	}
 }
