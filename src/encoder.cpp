@@ -99,6 +99,12 @@ uoffset_t Encoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
 	return m_fbb.EndTable(start, obj.fields()->size());
 }
 
+uoffset_t Encoder::EncodeVector(const Object& elemObj, const LuaRef& luaArray)
+{
+	// todo: check luaArray is array
+	return 0;
+}
+
 // Cache fields to 2 maps.
 bool Encoder::CacheFields(const Object& obj, const LuaRef& luaTable,
 	Field2Scalar& rMapScalar, Field2Offset& rMapOffset)
@@ -110,33 +116,43 @@ bool Encoder::CacheFields(const Object& obj, const LuaRef& luaTable,
 		const Field* pField = vFields.LookupByKey(sKey.c_str());
 		if (!CheckObjectField(pField, sKey))
 			return false;
+		assert(pField);
 
 		LuaRef value = e.value<LuaRef>();
-		const reflection::Type& type = *pField->type();
-		// Todo: check type of value...
-		switch (type.base_type())
-		{
-		case reflection::String:
-			rMapOffset[pField] = m_fbb.CreateString(
-				value.toValue<const char*>()).o;
-			break;
-		case reflection::Vector:
-			// Todo: check key (may be map)
-			// XXX
-			break;
-		case reflection::Obj:
-			assert(type.index() >= 0);
-			rMapOffset[pField] = EncodeObject(*m_vObjects[type.index()], value);
-			break;
-		case reflection::Union:
-			// XXX
-			break;
-		default:
-			rMapScalar[pField] = value;
-			break;
-		}
+		CacheField(pField, value, rMapScalar, rMapOffset);
 	}
 	return true;
+}
+
+// Cache field to 2 maps.
+void Encoder::CacheField(const Field* pField, const LuaRef& luaValue,
+	Field2Scalar& rMapScalar, Field2Offset& rMapOffset)
+{
+	assert(pField);
+	const reflection::Type& type = *pField->type();
+	// Todo: check type of value...
+	switch (type.base_type())
+	{
+	case reflection::String:
+		rMapOffset[pField] = m_fbb.CreateString(
+			luaValue.toValue<const char*>()).o;
+		break;
+	case reflection::Vector:
+		rMapOffset[pField] = EncodeVector(
+			*m_vObjects[type.index()], luaValue);
+		break;
+	case reflection::Obj:
+		// Todo: is_struct...
+		rMapOffset[pField] = EncodeObject(
+			*m_vObjects[type.index()], luaValue);
+		break;
+	case reflection::Union:
+		// XXX
+		break;
+	default:
+		rMapScalar[pField] = luaValue;
+		break;
+	}  // switch
 }
 
 void Encoder::AddElements(const Field2Scalar& mapScalar)

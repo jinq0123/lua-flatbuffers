@@ -37,12 +37,16 @@ private:
 	uoffset_t EncodeObject(const Object& obj, const LuaRef& luaTable);
 	uoffset_t EncodeStruct(const Object& obj, const LuaRef& luaTable);
 	uoffset_t EncodeTable(const Object& obj, const LuaRef& luaTable);
+	uoffset_t EncodeVector(const Object& elemObj, const LuaRef& luaArray);
 
 	// Cache to map before StartTable().
 	using Field2Scalar = std::unordered_map<const Field*, LuaRef>;
 	using Field2Offset = std::unordered_map<const Field*, uoffset_t>;
 	bool CacheFields(const Object& obj, const LuaRef& luaTable,
 		Field2Scalar& rMapScalar, Field2Offset& rMapOffset);
+	void CacheField(const Field* pField, const LuaRef& luaValue,
+		Field2Scalar& rMapScalar, Field2Offset& rMapOffset);
+
 	void AddElements(const Field2Scalar& mapScalar);
 	void AddOffsets(const Field2Offset& mapOffset);
 	void AddElement(const Field& field, const LuaRef& value);
