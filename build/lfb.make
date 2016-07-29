@@ -70,6 +70,8 @@ OBJECTS := \
 	$(OBJDIR)/root_decoder.o \
 	$(OBJDIR)/struct_decoder.o \
 	$(OBJDIR)/table_decoder.o \
+	$(OBJDIR)/union_decoder.o \
+	$(OBJDIR)/vector_decoder.o \
 	$(OBJDIR)/encoder.o \
 	$(OBJDIR)/flatbuffers.o \
 	$(OBJDIR)/name_stack.o \
@@ -144,6 +146,12 @@ $(OBJDIR)/struct_decoder.o: ../src/decoder/struct_decoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/table_decoder.o: ../src/decoder/table_decoder.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/union_decoder.o: ../src/decoder/union_decoder.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/vector_decoder.o: ../src/decoder/vector_decoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/encoder.o: ../src/encoder.cpp

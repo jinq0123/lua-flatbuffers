@@ -98,6 +98,8 @@
     <ClInclude Include="..\src\decoder\root_decoder.h" />
     <ClInclude Include="..\src\decoder\struct_decoder.h" />
     <ClInclude Include="..\src\decoder\table_decoder.h" />
+    <ClInclude Include="..\src\decoder\union_decoder.h" />
+    <ClInclude Include="..\src\decoder\vector_decoder.h" />
     <ClInclude Include="..\src\encoder.h" />
     <ClInclude Include="..\src\name_stack.h" />
     <ClInclude Include="..\src\schema_cache.h" />
@@ -108,6 +110,8 @@
     <ClCompile Include="..\src\decoder\root_decoder.cpp" />
     <ClCompile Include="..\src\decoder\struct_decoder.cpp" />
     <ClCompile Include="..\src\decoder\table_decoder.cpp" />
+    <ClCompile Include="..\src\decoder\union_decoder.cpp" />
+    <ClCompile Include="..\src\decoder\vector_decoder.cpp" />
     <ClCompile Include="..\src\encoder.cpp" />
     <ClCompile Include="..\src\flatbuffers.cpp" />
     <ClCompile Include="..\src\name_stack.cpp" />
