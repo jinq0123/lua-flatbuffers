@@ -69,10 +69,9 @@ LuaRef TableDecoder::DecodeStringField(
 {
 	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	const flatbuffers::String* pStr = flatbuffers::GetFieldS(fbTable, field);
+	if (!pStr) return Nil();
 	if (!Verifier().Verify(pStr))
 		ERR_RET_NIL("illegal string field " + PopFullFieldName(field));
-
-	if (!pStr) return Nil();
 	return LuaRef::fromValue(LuaState(), pStr->str());
 }
 
