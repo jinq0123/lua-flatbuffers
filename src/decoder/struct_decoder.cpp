@@ -1,7 +1,5 @@
 #include "struct_decoder.h"
 
-#include <flatbuffers/reflection.h>
-
 using LuaIntf::LuaRef;
 
 StructDecoder::StructDecoder(DecoderContext& rCtx) : DecoderBase(rCtx)
