@@ -6,7 +6,7 @@
 class UnionDecoder final : public DecoderBase
 {
 public:
-	explicit UnionDecoder(DecoderContext& rCtx);
+	explicit UnionDecoder(DecoderContext& rCtx) : DecoderBase(rCtx) {};
 
 	LuaRef DecodeUnion(const reflection::Type& type, const void* pData);
 

@@ -14,15 +14,14 @@
 	return Nil(); \
 } while(0)
 
-namespace LuaIntf {
-class LuaRef;
-}
-
 class DecoderBase
 {
 public:
-	explicit DecoderBase(DecoderContext& rCtx);
-	virtual ~DecoderBase();
+	explicit DecoderBase(DecoderContext& rCtx) : m_rCtx(rCtx)
+	{
+		assert(rCtx.pLuaState);
+	}
+	virtual ~DecoderBase() {};
 
 public:
 	using LuaRef = LuaIntf::LuaRef;
@@ -43,7 +42,7 @@ protected:
 	bool Bad() const { return !m_rCtx.sError.empty(); }
 	LuaRef Nil() const;
 	void SetError(const string& sError);
-	void PushName(const std::string& sName) { m_rCtx.nameStack.Push(sName); }
+	void PushName(const string& sName) { m_rCtx.nameStack.Push(sName); }
 	void PushName(const reflection::Object& object)
 	{
 		PushName(object.name()->c_str());

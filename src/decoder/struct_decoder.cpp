@@ -2,10 +2,6 @@
 
 using LuaIntf::LuaRef;
 
-StructDecoder::StructDecoder(DecoderContext& rCtx) : DecoderBase(rCtx)
-{
-}
-
 LuaRef StructDecoder::DecodeStruct(const reflection::Object& object,
 	const flatbuffers::Struct& fbStruct)
 {
@@ -67,4 +63,3 @@ LuaRef StructDecoder::DecodeObjectField(
 	return StructDecoder(m_rCtx).DecodeStruct(*pObj,
 		*reinterpret_cast<const flatbuffers::Struct*>(pData));
 }
-

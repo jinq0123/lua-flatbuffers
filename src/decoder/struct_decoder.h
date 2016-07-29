@@ -6,7 +6,7 @@
 class StructDecoder final : public DecoderBase
 {
 public:
-	explicit StructDecoder(DecoderContext& rCtx);
+	explicit StructDecoder(DecoderContext& rCtx) : DecoderBase(rCtx) {};
 
 public:
 	using Struct = flatbuffers::Struct;

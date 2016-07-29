@@ -1,17 +1,12 @@
 #include "vector_decoder.h"
 
-#include "struct_decoder.h"
-#include "table_decoder.h"
+#include "struct_decoder.h"  // for StructDecoder
+#include "table_decoder.h"  // for TableDecoder
 
 using LuaIntf::LuaRef;
 
-VectorDecoder::VectorDecoder(DecoderContext& rCtx) : DecoderBase(rCtx)
-{
-}
-
 LuaRef VectorDecoder::DecodeVector(
-	const reflection::Type& type,
-	const VectorOfAny& v)
+	const reflection::Type& type, const VectorOfAny& v)
 {
 	assert(reflection::Vector == type.base_type());
 	reflection::BaseType elemType = type.element();
@@ -30,8 +25,8 @@ LuaRef VectorDecoder::DecodeVector(
 	return Nil();
 }
 
-LuaRef VectorDecoder::DecodeScalarVector(reflection::BaseType elemType,
-	const VectorOfAny& v)
+LuaRef VectorDecoder::DecodeScalarVector(
+	reflection::BaseType elemType, const VectorOfAny& v)
 {
 	assert(elemType <= reflection::Double);
 
@@ -81,16 +76,16 @@ LuaRef VectorDecoder::DecodeStringVector(const VectorOfAny& v)
 	return luaArray;
 }
 
-LuaRef VectorDecoder::DecodeObjVector(const reflection::Object& elemObj,
-	const VectorOfAny& v)
+LuaRef VectorDecoder::DecodeObjVector(
+	const reflection::Object& elemObj, const VectorOfAny& v)
 {
 	if (elemObj.is_struct())
 		return DecodeStructVector(elemObj, v);
 	return DecodeTableVector(elemObj, v);
 }
 
-LuaRef VectorDecoder::DecodeStructVector(const reflection::Object& elemObj,
-	const VectorOfAny& v)
+LuaRef VectorDecoder::DecodeStructVector(
+	const reflection::Object& elemObj, const VectorOfAny& v)
 {
 	assert(elemObj.is_struct());
 	const uint8_t* end;
@@ -110,8 +105,8 @@ LuaRef VectorDecoder::DecodeStructVector(const reflection::Object& elemObj,
 	return luaArray;
 }
 
-LuaRef VectorDecoder::DecodeTableVector(const reflection::Object& elemObj,
-	const VectorOfAny& v)
+LuaRef VectorDecoder::DecodeTableVector(
+	const reflection::Object& elemObj, const VectorOfAny& v)
 {
 	assert(!elemObj.is_struct());
 	const uint8_t* end;
@@ -131,4 +126,3 @@ LuaRef VectorDecoder::DecodeTableVector(const reflection::Object& elemObj,
 	}
 	return luaArray;
 }
-

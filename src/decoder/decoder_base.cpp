@@ -2,27 +2,14 @@
 
 #include "name_stack.h"
 
-#include <flatbuffers/reflection.h>  // for Schema
+#include <sstream>  // for ostringstream
 
-#include <sstream>
-
-using LuaIntf::LuaRef;
-
-DecoderBase::DecoderBase(DecoderContext& rCtx) : m_rCtx(rCtx)
-{
-	assert(rCtx.pLuaState);
-}
-
-DecoderBase::~DecoderBase()
-{
-}
-
-LuaRef DecoderBase::Nil() const
+LuaIntf::LuaRef DecoderBase::Nil() const
 {
 	return LuaRef(m_rCtx.pLuaState, nullptr);
 }
 
-void DecoderBase::SetError(const std::string& sError)
+void DecoderBase::SetError(const string& sError)
 {
 	m_rCtx.sError = sError;
 }
@@ -32,7 +19,7 @@ std::string DecoderBase::PopFullName()
 	return m_rCtx.nameStack.PopFullName();
 }
 
-std::string DecoderBase::PopFullFieldName(const std::string& sFieldName)
+std::string DecoderBase::PopFullFieldName(const string& sFieldName)
 {
 	return m_rCtx.nameStack.PopFullFieldName(sFieldName);
 }

@@ -6,7 +6,7 @@
 class ObjectDecoder final : public DecoderBase
 {
 public:
-	explicit ObjectDecoder(DecoderContext& rCtx);
+	explicit ObjectDecoder(DecoderContext& rCtx) : DecoderBase(rCtx) {};
 
 public:
 	LuaRef DecodeObject(const reflection::Object& object, const void* pData);

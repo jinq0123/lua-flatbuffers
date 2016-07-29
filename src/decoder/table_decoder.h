@@ -6,7 +6,7 @@
 class TableDecoder final : public DecoderBase
 {
 public:
-	explicit TableDecoder(DecoderContext& rCtx);
+	explicit TableDecoder(DecoderContext& rCtx) : DecoderBase(rCtx) {};
 
 	using Table = flatbuffers::Table;
 	LuaRef DecodeTable(const reflection::Object& object, const Table& fbTable);

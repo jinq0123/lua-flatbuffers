@@ -1,17 +1,10 @@
 #include "union_decoder.h"
 
-#include "object_decoder.h"
-#include "vector_decoder.h"
+#include "object_decoder.h"  // for ObjectDecoder
+#include "vector_decoder.h"  // for VectorDecoder
 
-using LuaIntf::LuaRef;
-
-UnionDecoder::UnionDecoder(DecoderContext& rCtx) : DecoderBase(rCtx)
-{
-}
-
-LuaRef UnionDecoder::DecodeUnion(
-	const reflection::Type& type,
-	const void* pData)
+LuaIntf::LuaRef UnionDecoder::DecodeUnion(
+	const reflection::Type& type, const void* pData)
 {
 	assert(pData);
 	switch (type.base_type())
@@ -62,9 +55,8 @@ LuaRef UnionDecoder::DecodeUnion(
 	return Nil();
 }
 
-
 template <typename T>
-inline LuaRef UnionDecoder::DecodeScalar(const void* pData)
+inline LuaIntf::LuaRef UnionDecoder::DecodeScalar(const void* pData)
 {
 	assert(pData);
 	if (!Verifier().Verify<T>(pData))

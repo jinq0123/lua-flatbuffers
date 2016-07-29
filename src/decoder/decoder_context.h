@@ -1,9 +1,9 @@
 #ifndef LUA_FLATBUFFERS_DECODER_DECODER_CONTEXT_H_
 #define LUA_FLATBUFFERS_DECODER_DECODER_CONTEXT_H_
 
-#include "name_stack.h"
+#include "name_stack.h"  // for NameStack
 
-#include <flatbuffers/flatbuffers.h>
+#include <flatbuffers/flatbuffers.h>  // for Verifier
 
 #include <string>
 

@@ -6,10 +6,6 @@
 
 using LuaIntf::LuaRef;
 
-TableDecoder::TableDecoder(DecoderContext& rCtx) : DecoderBase(rCtx)
-{
-}
-
 LuaRef TableDecoder::DecodeFieldOfTable(
 	const Table& fbTable, const Field& field)
 {
@@ -78,8 +74,8 @@ LuaRef TableDecoder::DecodeStringField(
 		ERR_RET_NIL("illegal string field "
 			+ PopFullFieldName(field.name()->c_str()));
 	}
-	if (pStr) return LuaRef::fromValue(LuaState(), pStr->str());
-	return Nil();
+	if (!pStr) return Nil();
+	return LuaRef::fromValue(LuaState(), pStr->str());
 }
 
 LuaRef TableDecoder::DecodeVectorField(
@@ -168,8 +164,7 @@ LuaRef TableDecoder::DecodeTable(
 }
 
 template <typename T>
-bool TableDecoder::VerifyFieldOfTable(
-	const Table& fbTable, const Field &field)
+bool TableDecoder::VerifyFieldOfTable(const Table& fbTable, const Field &field)
 {
 	static_assert(std::is_scalar<T>::value, "T must be a scalar type");
 
@@ -190,4 +185,3 @@ bool TableDecoder::VerifyFieldOfTable(
 		+ PopFullFieldName(field.name()->c_str()));
 	return false;
 }
-

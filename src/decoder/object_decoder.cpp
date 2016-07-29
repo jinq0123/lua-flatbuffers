@@ -1,15 +1,10 @@
 #include "object_decoder.h"
 
-#include "struct_decoder.h"
-#include "table_decoder.h"
-
-ObjectDecoder::ObjectDecoder(DecoderContext& rCtx) : DecoderBase(rCtx)
-{
-}
+#include "struct_decoder.h"  // for StructDecoder
+#include "table_decoder.h"  // for TableDecoder
 
 LuaIntf::LuaRef ObjectDecoder::DecodeObject(
-	const reflection::Object& object,
-	const void* pData)
+	const reflection::Object& object, const void* pData)
 {
 	if (!pData) return Nil();
 	if (object.is_struct())

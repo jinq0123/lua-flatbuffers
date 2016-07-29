@@ -6,11 +6,11 @@
 class RootDecoder final : public DecoderBase
 {
 public:
-	RootDecoder(DecoderContext& rCtx);
+	RootDecoder(DecoderContext& rCtx) : DecoderBase(rCtx) {};
 
 public:
 	// Decode buffer to lua table.
-	LuaRef Decode(const std::string& sName, const void* pBuf);
+	LuaRef Decode(const string& sName, const void* pBuf);
 };  // class RootDecoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_ROOT_DECODER_H_
