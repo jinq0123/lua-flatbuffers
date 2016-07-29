@@ -48,10 +48,10 @@ local monster = {
 }
 
 -- Build a buffer.
-local buf = lfb:encode("Monster", monster)
+local buf = assert(lfb:encode("Monster", monster))
 
 -- Decode a flatbuffer string back to a Lua table.
-local monster2 = lfbs:decode("Monster", buf)
+local monster2 = assert(lfbs:decode("Monster", buf))
 ```
 
 Test
@@ -98,5 +98,5 @@ DavidFeng/lua-flatbuffers
 https://github.com/DavidFeng/lua-flatbuffers
 
 Another FlatBuffers library for lua 5.3,
-which implemented the reading of FlatBuffers.
-Writing is to be implemented.
+which implemented the reading of FlatBuffers
+but writing is to be implemented.
