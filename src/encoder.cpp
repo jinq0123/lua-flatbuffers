@@ -51,8 +51,45 @@ uoffset_t Encoder::EncodeObject(const Object& obj, const LuaRef& luaTable)
 uoffset_t Encoder::EncodeStruct(const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
-	// XXX
-	return 0;
+	const auto& vFields = *obj.fields();
+	(void)m_fbb.StartStruct(obj.minalign());
+
+	for (const auto& e : luaTable)
+	{
+		string sKey = e.key<string>();
+		const Field* pField = vFields.LookupByKey(sKey.c_str());
+		if (!pField)
+		{
+			m_sError = "illegal field " + PopFullFieldName(sKey);
+			return 0;
+		}
+		if (pField->deprecated())
+		{
+			m_sError = "deprecated field " + PopFullFieldName(sKey);
+			return 0;
+		}
+
+		LuaRef value = e.value<LuaRef>();
+		const reflection::Type& type = *pField->type();
+		// Todo: check type of value...
+
+		reflection::BaseType eBaseType = type.base_type();
+		if (eBaseType <= reflection::Double)
+		{
+			AddElement(*pField, value);  // XXX throw?
+			continue;
+		}
+
+		assert(eBaseType == reflection::Obj);
+		const Object* pFieldObj = m_vObjects[type.index()];
+		assert(pFieldObj);
+		assert(pFieldObj->is_struct());
+		m_nameStack.Push(sKey);
+		if (0 == EncodeStruct(*pFieldObj, value))
+			return 0;
+		m_nameStack.SafePop();
+	}
+	return m_fbb.EndStruct();
 }
 
 uoffset_t Encoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
