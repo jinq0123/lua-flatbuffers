@@ -6,6 +6,11 @@
 
 #include <unordered_map>
 
+#define ERR_RET_FALSE(ErrorStr) do { \
+	m_sError = ErrorStr; \
+	return false; \
+} while(0)
+
 using flatbuffers::uoffset_t;
 using std::string;
 
@@ -17,6 +22,9 @@ Encoder::Encoder(const reflection::Schema& schema) :
 
 bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
 {
+	if (!luaTable.isTable())
+		ERR_RET_FALSE("lua data is not table");
+
 	Reset();
 
 	const Object* pObj = m_vObjects.LookupByKey(sName.c_str());
@@ -51,41 +59,61 @@ uoffset_t Encoder::EncodeObject(const Object& obj, const LuaRef& luaTable)
 uoffset_t Encoder::EncodeStruct(const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
-	const auto& vFields = *obj.fields();
 	(void)m_fbb.StartStruct(obj.minalign());
-
-	// XXX struct should traverse all fields of obj...
-	// Todo: prepare struct outside of fbb, then PushBytes() to fbb.
-	for (const auto& e : luaTable)
-	{
-		string sKey = e.key<string>();
-		const Field* pField = vFields.LookupByKey(sKey.c_str());
-		if (!CheckObjectField(pField, sKey))
-			return 0;
-
-		LuaRef value = e.value<LuaRef>();
-		const reflection::Type& type = *pField->type();
-		// Todo: check type of value...
-
-		reflection::BaseType eBaseType = type.base_type();
-		if (eBaseType <= reflection::Double)
-		{
-			// XXX struct can not use AddElement()! default_value?
-			AddElement(*pField, value);  // XXX throw?
-			continue;
-		}
-
-		assert(eBaseType == reflection::Obj);
-		const Object* pFieldObj = m_vObjects[type.index()];
-		assert(pFieldObj);
-		assert(pFieldObj->is_struct());
-		m_nameStack.Push(sKey);
-		if (0 == EncodeStruct(*pFieldObj, value))
-			return 0;
-		m_nameStack.SafePop();
-	}
+	uint8_t* pBuf = m_fbb.ReserveElements(obj.bytesize(), 1);
+	assert(pBuf);
+	if (!EncodeStructToBuf(obj, luaTable, pBuf))
+		return 0;
 	return m_fbb.EndStruct();
 }
+
+bool Encoder::EncodeStructToBuf(const Object& obj,
+	const LuaRef& luaTable, uint8_t* pBuf)
+{
+	assert(pBuf);
+	// Struct should traverse all fields of object.
+	// Lua table traverse is better, to check fields count.
+	for (const Field* pField : *obj.fields())
+	{
+		assert(pField);
+		assert(!pField->deprecated());  // Struct has no deprecated field.
+		if (!EncodeStructFieldToBuf(*pField, luaTable, pBuf))
+			return false;
+	}  // for
+	return true;
+}  // EncodeStructToBuf()
+
+bool Encoder::EncodeStructFieldToBuf(const Field& field,
+	const LuaRef& luaTable, uint8_t* pBuf)
+{
+	assert(pBuf);
+	const char* pFieldName = field.name()->c_str();
+	LuaRef luaValue = luaTable.get(pFieldName);
+	if (!luaValue)
+		ERR_RET_FALSE("missing struct field " + PopFullFieldName(pFieldName));
+
+	const reflection::Type& type = *field.type();
+	// Todo: check type of value...
+
+	uint16_t offset = field.offset();
+	uint8_t* pDest = pBuf + offset;
+	reflection::BaseType eBaseType = type.base_type();
+	if (eBaseType <= reflection::Double)
+	{
+		// XXX set field value);  // XXX throw?
+		return true;
+	}
+
+	assert(eBaseType == reflection::Obj);
+	const Object* pFieldObj = m_vObjects[type.index()];
+	assert(pFieldObj);
+	assert(pFieldObj->is_struct());
+	m_nameStack.Push(pFieldName);
+	if (!EncodeStructToBuf(*pFieldObj, luaValue, pDest))
+		return false;
+	m_nameStack.SafePop();
+	return true;
+}  // EncodeStructFieldToBuf()
 
 uoffset_t Encoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
 {
@@ -259,15 +287,9 @@ void Encoder::Reset()
 bool Encoder::CheckObjectField(const Field* pField, const string& sFieldName)
 {
 	if (!pField)
-	{
-		m_sError = "illegal field " + PopFullFieldName(sFieldName);
-		return false;
-	}
+		ERR_RET_FALSE("illegal field " + PopFullFieldName(sFieldName));
 	if (pField->deprecated())
-	{
-		m_sError = "deprecated field " + PopFullFieldName(sFieldName);
-		return false;
-	}
+		ERR_RET_FALSE("deprecated field " + PopFullFieldName(sFieldName));
 	return true;
 }
 
