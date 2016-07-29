@@ -24,6 +24,11 @@ std::string DecoderBase::PopFullFieldName(const string& sFieldName)
 	return m_rCtx.nameStack.PopFullFieldName(sFieldName);
 }
 
+std::string DecoderBase::PopFullFieldName(const reflection::Field& field)
+{
+	return PopFullFieldName(field.name()->c_str());
+}
+
 std::string DecoderBase::PopFullVectorName(size_t index)
 {
 	std::ostringstream oss;

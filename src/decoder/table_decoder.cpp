@@ -70,10 +70,8 @@ LuaRef TableDecoder::DecodeStringField(
 	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
 	const flatbuffers::String* pStr = flatbuffers::GetFieldS(fbTable, field);
 	if (!Verifier().Verify(pStr))
-	{
-		ERR_RET_NIL("illegal string field "
-			+ PopFullFieldName(field.name()->c_str()));
-	}
+		ERR_RET_NIL("illegal string field " + PopFullFieldName(field));
+
 	if (!pStr) return Nil();
 	return LuaRef::fromValue(LuaState(), pStr->str());
 }
@@ -173,15 +171,13 @@ bool TableDecoder::VerifyFieldOfTable(const Table& fbTable, const Field &field)
 		if (fbTable.VerifyFieldRequired<T>(Verifier(), field.offset()))
 			return true;
 
-		SetError("illegal required field "
-			+ PopFullFieldName(field.name()->c_str()));
+		SetError("illegal required field " + PopFullFieldName(field));
 		return false;
 	}
 
 	if (fbTable.VerifyField<T>(Verifier(), field.offset()))
 		return true;
 
-	SetError("illegal offset of field "
-		+ PopFullFieldName(field.name()->c_str()));
+	SetError("illegal offset of field " + PopFullFieldName(field));
 	return false;
 }

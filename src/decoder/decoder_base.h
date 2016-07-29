@@ -54,6 +54,7 @@ protected:
 	void SafePopName() { m_rCtx.nameStack.SafePop(); }
 	string PopFullName();
 	string PopFullFieldName(const string& sFieldName);
+	string PopFullFieldName(const reflection::Field& field);
 	string PopFullVectorName(size_t index);
 
 protected:
