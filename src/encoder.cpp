@@ -58,16 +58,8 @@ uoffset_t Encoder::EncodeStruct(const Object& obj, const LuaRef& luaTable)
 	{
 		string sKey = e.key<string>();
 		const Field* pField = vFields.LookupByKey(sKey.c_str());
-		if (!pField)
-		{
-			m_sError = "illegal field " + PopFullFieldName(sKey);
+		if (!CheckObjectField(pField, sKey))
 			return 0;
-		}
-		if (pField->deprecated())
-		{
-			m_sError = "deprecated field " + PopFullFieldName(sKey);
-			return 0;
-		}
 
 		LuaRef value = e.value<LuaRef>();
 		const reflection::Type& type = *pField->type();
@@ -112,22 +104,12 @@ bool Encoder::CacheFields(const Object& obj, const LuaRef& luaTable,
 	Field2Scalar& rMapScalar, Field2Offset& rMapOffset)
 {
 	const auto& vFields = *obj.fields();
-	// bool isStruct = obj.is_struct();
-
 	for (const auto& e : luaTable)
 	{
 		string sKey = e.key<string>();
 		const Field* pField = vFields.LookupByKey(sKey.c_str());
-		if (!pField)
-		{
-			m_sError = "illegal field " + PopFullFieldName(sKey);
+		if (!CheckObjectField(pField, sKey))
 			return false;
-		}
-		if (pField->deprecated())
-		{
-			m_sError = "deprecated field " + PopFullFieldName(sKey);
-			return false;
-		}
 
 		LuaRef value = e.value<LuaRef>();
 		const reflection::Type& type = *pField->type();
@@ -244,5 +226,22 @@ void Encoder::Reset()
 	m_fbb.Clear();
 	m_sError.clear();
 	m_nameStack.Reset();
+}
+
+// Set error and return false if field is illegal.
+// sFieldName is only used for error message.
+bool Encoder::CheckObjectField(const Field* pField, const string& sFieldName)
+{
+	if (!pField)
+	{
+		m_sError = "illegal field " + PopFullFieldName(sFieldName);
+		return false;
+	}
+	if (pField->deprecated())
+	{
+		m_sError = "deprecated field " + PopFullFieldName(sFieldName);
+		return false;
+	}
+	return true;
 }
 

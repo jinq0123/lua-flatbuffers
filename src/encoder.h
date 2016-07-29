@@ -54,6 +54,7 @@ private:
 private:
 	string PopFullFieldName(const string& sFieldName);
 	void Reset();
+	bool CheckObjectField(const Field* pField, const string& sFieldName);
 
 private:
 	flatbuffers::FlatBufferBuilder m_fbb;
