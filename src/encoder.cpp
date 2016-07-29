@@ -6,20 +6,23 @@
 
 #include <unordered_map>
 
+using flatbuffers::uoffset_t;
+using std::string;
+
 Encoder::Encoder(const reflection::Schema& schema) :
 	m_schema(schema),
 	m_vObjects(*schema.objects())
 {
 }
 
-bool Encoder::Encode(const std::string& sName, const LuaRef& table)
+bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
 {
 	Reset();
 
 	const Object* pObj = m_vObjects.LookupByKey(sName.c_str());
 	assert(pObj);
 	m_nameStack.Push(sName);
-	flatbuffers::uoffset_t offset = EncodeObject(*pObj, table);
+	uoffset_t offset = EncodeObject(*pObj, luaTable);
 	m_nameStack.SafePop();
 	if (!offset)  // An offset of 0 means error.
 		return false;
@@ -28,59 +31,56 @@ bool Encoder::Encode(const std::string& sName, const LuaRef& table)
 	return true;
 }
 
-std::string Encoder::GetResultStr() const
+string Encoder::GetResultStr() const
 {
 	const char* pBuffer = reinterpret_cast<const char*>(
 		m_fbb.GetBufferPointer());
-	return std::string(pBuffer, m_fbb.GetSize());
+	return string(pBuffer, m_fbb.GetSize());
 }
 
 // Todo: check required fields.
 // Todo: Skip default value.
 
-flatbuffers::uoffset_t
-Encoder::EncodeObject(const Object& obj, const LuaRef& luaTable)
+uoffset_t Encoder::EncodeObject(const Object& obj, const LuaRef& luaTable)
 {
 	return obj.is_struct() ?
 		EncodeStruct(obj, luaTable) :
 		EncodeTable(obj, luaTable);
 }
 
-flatbuffers::uoffset_t
-Encoder::EncodeStruct(const Object& obj, const LuaRef& table)
+uoffset_t Encoder::EncodeStruct(const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
 	// XXX
 	return 0;
 }
 
-flatbuffers::uoffset_t
-Encoder::EncodeTable(const Object& obj, const LuaRef& table)
+uoffset_t Encoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
 {
 	assert(!obj.is_struct());
 	// Cache to map before StartTable().
 	Field2Scalar mapScalar;
 	Field2Offset mapOffset;
-	if (!CacheFields(obj, table, mapScalar, mapOffset))
+	if (!CacheFields(obj, luaTable, mapScalar, mapOffset))
 		return 0;
 
-	flatbuffers::uoffset_t start = m_fbb.StartTable();
+	uoffset_t start = m_fbb.StartTable();
 	AddElements(mapScalar);
 	AddOffsets(mapOffset);
 	return m_fbb.EndTable(start, obj.fields()->size());
 }
 
 // Cache fields to 2 maps.
-bool Encoder::CacheFields(const Object& obj, const LuaRef& table,
+bool Encoder::CacheFields(const Object& obj, const LuaRef& luaTable,
 	Field2Scalar& rMapScalar, Field2Offset& rMapOffset)
 {
 	const auto& vFields = *obj.fields();
 	// bool isStruct = obj.is_struct();
 
-	for (const auto& e : table)
+	for (const auto& e : luaTable)
 	{
-		std::string sKey = e.key<std::string>();
-		const reflection::Field* pField = vFields.LookupByKey(sKey.c_str());
+		string sKey = e.key<string>();
+		const Field* pField = vFields.LookupByKey(sKey.c_str());
 		if (!pField)
 		{
 			m_sError = "illegal field " + PopFullFieldName(sKey);
@@ -124,14 +124,13 @@ void Encoder::AddElements(const Field2Scalar& mapScalar)
 {
 	for (const auto& e : mapScalar)
 	{
-		const reflection::Field* pField = e.first;
+		const Field* pField = e.first;
 		assert(pField);
 		AddElement(*pField, e.second);
 	}
 }
 
-void Encoder::AddElement(const reflection::Field& field,
-	const LuaRef& elementValue)
+void Encoder::AddElement(const Field& field, const LuaRef& elementValue)
 {
 	const reflection::Type& type = *field.type();
 	int64_t defInt = field.default_integer();
@@ -182,9 +181,9 @@ void Encoder::AddOffsets(const Field2Offset& mapOffset)
 {
 	for (const auto& e : mapOffset)
 	{
-		const reflection::Field* pField = e.first;
+		const Field* pField = e.first;
 		assert(pField);
-		flatbuffers::uoffset_t offset = e.second;
+		uoffset_t offset = e.second;
 		m_fbb.AddOffset(pField->offset(), flatbuffers::Offset<void>(offset));
 	}
 }
@@ -198,7 +197,7 @@ inline void Encoder::AddElement(uint16_t offset,
 		static_cast<ElementType>(defaultValue));
 }
 
-std::string Encoder::PopFullFieldName(const std::string& sFieldName)
+string Encoder::PopFullFieldName(const string& sFieldName)
 {
 	return m_nameStack.PopFullFieldName(sFieldName);
 }
