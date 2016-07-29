@@ -13,6 +13,14 @@ LuaRef VectorDecoder::DecodeVector(
 	assert(reflection::Vector != elemType && "Nesting vectors is not supported.");
 	assert(reflection::Union != elemType && "Union must always be part of a table.");
 
+	int32_t iTypeIndex = type.index();
+	size_t uElemSize = flatbuffers::GetTypeSizeInline(
+		elemType, iTypeIndex, m_rCtx.schema);
+	const uint8_t* end;
+	if (!Verifier().VerifyVector(reinterpret_cast<
+		const uint8_t*>(&v), uElemSize, &end))
+		ERR_RET_NIL("illegal vector " + PopFullName());
+
 	// Todo: Check key order.
 
 	if (elemType <= reflection::Double)
@@ -20,7 +28,7 @@ LuaRef VectorDecoder::DecodeVector(
 	if (reflection::String == elemType)
 		return DecodeStringVector(v);
 	if (reflection::Obj == elemType)
-		return DecodeObjVector(*Objects()[type.index()], v);
+		return DecodeObjVector(*Objects()[iTypeIndex], v);
 	assert(!"Illegal element type.");
 	return Nil();
 }
@@ -29,12 +37,6 @@ LuaRef VectorDecoder::DecodeScalarVector(
 	reflection::BaseType elemType, const VectorOfAny& v)
 {
 	assert(elemType <= reflection::Double);
-
-	const uint8_t* end;
-	if (!Verifier().VerifyVector(
-		reinterpret_cast<const uint8_t*>(&v),
-		flatbuffers::GetTypeSize(elemType), &end))
-		ERR_RET_NIL("illegal scalar vector " + PopFullName());
 
 	LuaRef luaArray = CreateLuaTable();
 	const VectorOfAny* pVec = &v;
@@ -59,11 +61,6 @@ LuaRef VectorDecoder::DecodeScalarVector(
 
 LuaRef VectorDecoder::DecodeStringVector(const VectorOfAny& v)
 {
-	const uint8_t* end;
-	if (!Verifier().VerifyVector(reinterpret_cast<const uint8_t*>(&v),
-		sizeof(flatbuffers::uoffset_t), &end))
-		ERR_RET_NIL("illegal string vector " + PopFullName());
-
 	LuaRef luaArray = CreateLuaTable();
 	for (size_t i = 0; i < v.size(); ++i)
 	{
@@ -88,10 +85,6 @@ LuaRef VectorDecoder::DecodeStructVector(
 	const reflection::Object& elemObj, const VectorOfAny& v)
 {
 	assert(elemObj.is_struct());
-	const uint8_t* end;
-	if (!Verifier().VerifyVector(reinterpret_cast<const uint8_t*>(&v),
-		elemObj.bytesize(), &end))
-		ERR_RET_NIL("illegal struct vector " + PopFullName());
 
 	LuaRef luaArray = CreateLuaTable();
 	for (size_t i = 0; i < v.size(); ++i)
@@ -109,10 +102,6 @@ LuaRef VectorDecoder::DecodeTableVector(
 	const reflection::Object& elemObj, const VectorOfAny& v)
 {
 	assert(!elemObj.is_struct());
-	const uint8_t* end;
-	if (!Verifier().VerifyVector(reinterpret_cast<const uint8_t*>(&v),
-		sizeof(flatbuffers::uoffset_t), &end))
-		ERR_RET_NIL("illegal table vector " + PopFullName());
 
 	LuaRef luaArray = CreateLuaTable();
 	for (size_t i = 0; i < v.size(); ++i)
