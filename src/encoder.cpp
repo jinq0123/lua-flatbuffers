@@ -18,7 +18,9 @@ bool Encoder::Encode(const std::string& sName, const LuaRef& table)
 
 	const Object* pObj = m_vObjects.LookupByKey(sName.c_str());
 	assert(pObj);
-	flatbuffers::uoffset_t offset = Encode(*pObj, table);
+	m_nameStack.Push(sName);
+	flatbuffers::uoffset_t offset = EncodeObject(*pObj, table);
+	m_nameStack.SafePop();
 	if (!offset)  // An offset of 0 means error.
 		return false;
 
@@ -37,10 +39,25 @@ std::string Encoder::GetResultStr() const
 // Todo: Skip default value.
 
 flatbuffers::uoffset_t
-Encoder::Encode(const Object& obj, const LuaRef& table)
+Encoder::EncodeObject(const Object& obj, const LuaRef& luaTable)
 {
-	m_nameStack.Push(obj.name()->str());
+	return obj.is_struct() ?
+		EncodeStruct(obj, luaTable) :
+		EncodeTable(obj, luaTable);
+}
 
+flatbuffers::uoffset_t
+Encoder::EncodeStruct(const Object& obj, const LuaRef& table)
+{
+	assert(obj.is_struct());
+	// XXX
+	return 0;
+}
+
+flatbuffers::uoffset_t
+Encoder::EncodeTable(const Object& obj, const LuaRef& table)
+{
+	assert(!obj.is_struct());
 	// Cache to map before StartTable().
 	Field2Scalar mapScalar;
 	Field2Offset mapOffset;
@@ -50,7 +67,6 @@ Encoder::Encode(const Object& obj, const LuaRef& table)
 	flatbuffers::uoffset_t start = m_fbb.StartTable();
 	AddElements(mapScalar);
 	AddOffsets(mapOffset);
-	m_nameStack.SafePop();
 	return m_fbb.EndTable(start, obj.fields()->size());
 }
 
@@ -91,7 +107,7 @@ bool Encoder::CacheFields(const Object& obj, const LuaRef& table,
 			break;
 		case reflection::Obj:
 			assert(type.index() >= 0);
-			rMapOffset[pField] = Encode(*m_vObjects[type.index()], value);
+			rMapOffset[pField] = EncodeObject(*m_vObjects[type.index()], value);
 			break;
 		case reflection::Union:
 			// XXX

@@ -31,7 +31,11 @@ public:
 private:
 	// Encode recursively. Return 0 and set m_sError if any error.
 	using Object = reflection::Object;
-	flatbuffers::uoffset_t Encoder::Encode(
+	flatbuffers::uoffset_t EncodeObject(
+		const Object& obj, const LuaRef& table);
+	flatbuffers::uoffset_t EncodeStruct(
+		const Object& obj, const LuaRef& table);
+	flatbuffers::uoffset_t EncodeTable(
 		const Object& obj, const LuaRef& table);
 
 	// Cache to map before StartTable().
