@@ -16,9 +16,9 @@ flatbuffers::uoffset_t TableEncoder::EncodeTable(
 		return 0;
 
 	uoffset_t start = Builder().StartTable();
-	AddStructs();
-	AddElements();
-	AddOffsets();
+	EncodeCachedStructs();
+	EncodeCachedScalars();
+	EncodeCachedOffsets();
 	return Builder().EndTable(start, obj.fields()->size());
 }
 
@@ -84,22 +84,22 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 	}  // switch
 }
 
-void TableEncoder::AddStructs()
+void TableEncoder::EncodeCachedStructs()
 {
 	// XXX
 }
 
-void TableEncoder::AddElements()
+void TableEncoder::EncodeCachedScalars()
 {
 	for (const auto& e : m_mapScalar)
 	{
 		const Field* pField = e.first;
 		assert(pField);
-		AddElement(*pField, e.second);
+		EncodeScalar(*pField, e.second);
 	}
 }
 
-void TableEncoder::AddElement(const Field& field, const LuaRef& elementValue)
+void TableEncoder::EncodeScalar(const Field& field, const LuaRef& elementValue)
 {
 	using namespace reflection;
 	const Type& type = *field.type();
@@ -107,6 +107,7 @@ void TableEncoder::AddElement(const Field& field, const LuaRef& elementValue)
 	double defReal = field.default_real();
 	uint16_t offset = field.offset();
 
+	assert(type.base_type() <= Double);  // Only scalar.
 	switch (type.base_type())
 	{
 	case UType:
@@ -141,16 +142,13 @@ void TableEncoder::AddElement(const Field& field, const LuaRef& elementValue)
 	case Double:
 		AddElement<double>(offset, elementValue, defReal);
 		break;
-	case Obj:
-		// XXX struct...
-		break;
 	default:
 		assert(!"Illegal type.");
 		break;
 	}
 }
 
-void TableEncoder::AddOffsets()
+void TableEncoder::EncodeCachedOffsets()
 {
 	for (const auto& e : m_mapOffset)
 	{

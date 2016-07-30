@@ -25,10 +25,10 @@ private:
 	bool CacheFields(const Object& obj, const LuaRef& luaTable);
 	void CacheField(const Field* pField, const LuaRef& luaValue);
 
-	void AddStructs();
-	void AddElements();
-	void AddOffsets();
-	void AddElement(const Field& field, const LuaRef& value);
+	void EncodeCachedStructs();
+	void EncodeCachedScalars();
+	void EncodeCachedOffsets();
+	void EncodeScalar(const Field& field, const LuaRef& value);
 
 	template <typename ElementType, typename DefaultValueType>
 	inline void AddElement(uint16_t offset, const LuaRef& elementValue,
