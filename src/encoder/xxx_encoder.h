@@ -3,6 +3,8 @@
 
 #include "encoder_base.h"  // EncoderBase
 
+#include <unordered_map>
+
 class XXXEncoder final : EncoderBase
 {
 public:

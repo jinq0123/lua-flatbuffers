@@ -1,29 +1,29 @@
-#include "encoder.h"
+#include "xxx_encoder.h"
 
 using flatbuffers::uoffset_t;
 
 // Todo: check required fields.
 // Todo: Skip default value.
 
-uoffset_t Encoder::EncodeObject(const Object& obj, const LuaRef& luaTable)
+uoffset_t XXXEncoder::EncodeObject(const Object& obj, const LuaRef& luaTable)
 {
 	return obj.is_struct() ?
 		EncodeStruct(obj, luaTable) :
 		EncodeTable(obj, luaTable);
 }
 
-uoffset_t Encoder::EncodeStruct(const Object& obj, const LuaRef& luaTable)
+uoffset_t XXXEncoder::EncodeStruct(const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
-	(void)m_fbb.StartStruct(obj.minalign());
-	uint8_t* pBuf = m_fbb.ReserveElements(obj.bytesize(), 1);
+	(void)Builder().StartStruct(obj.minalign());
+	uint8_t* pBuf = Builder().ReserveElements(obj.bytesize(), 1);
 	assert(pBuf);
 	if (!EncodeStructToBuf(obj, luaTable, pBuf))
 		return 0;
-	return m_fbb.EndStruct();
+	return Builder().EndStruct();
 }
 
-bool Encoder::EncodeStructToBuf(const Object& obj,
+bool XXXEncoder::EncodeStructToBuf(const Object& obj,
 	const LuaRef& luaTable, uint8_t* pBuf)
 {
 	assert(pBuf);
@@ -39,7 +39,7 @@ bool Encoder::EncodeStructToBuf(const Object& obj,
 	return true;
 }  // EncodeStructToBuf()
 
-bool Encoder::CheckStructFields(const Object& obj, const LuaRef& luaTable)
+bool XXXEncoder::CheckStructFields(const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
 	const auto& vFields = *obj.fields();
@@ -54,7 +54,7 @@ bool Encoder::CheckStructFields(const Object& obj, const LuaRef& luaTable)
 	return true;
 }  // CheckStructFields()
 
-bool Encoder::EncodeStructFieldToBuf(const Field& field,
+bool XXXEncoder::EncodeStructFieldToBuf(const Field& field,
 	const LuaRef& luaTable, uint8_t* pBuf)
 {
 	assert(pBuf);
@@ -76,13 +76,13 @@ bool Encoder::EncodeStructFieldToBuf(const Field& field,
 	}
 
 	assert(eBaseType == reflection::Obj);
-	const Object* pFieldObj = m_vObjects[type.index()];
+	const Object* pFieldObj = Objects()[type.index()];
 	assert(pFieldObj);
 	assert(pFieldObj->is_struct());
-	m_nameStack.Push(pFieldName);
+	PushName(pFieldName);
 	if (!EncodeStructToBuf(*pFieldObj, luaValue, pDest))
 		return false;
-	m_nameStack.SafePop();
+	SafePopName();
 	return true;
 }  // EncodeStructFieldToBuf()
 
@@ -94,7 +94,7 @@ static void CopyToBuf(const LuaIntf::LuaRef& luaValue, uint8_t* pDest)
 }
 
 // Encode struct scalar element to buffer.
-void Encoder::EncodeStructElementToBuf(reflection::BaseType eType,
+void XXXEncoder::EncodeStructElementToBuf(reflection::BaseType eType,
 	const LuaRef& luaValue, uint8_t* pDest)
 {
 	assert(pDest);
@@ -136,7 +136,7 @@ void Encoder::EncodeStructElementToBuf(reflection::BaseType eType,
 	assert(!"Illegal type.");
 }
 
-uoffset_t Encoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
+uoffset_t XXXEncoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
 {
 	assert(!obj.is_struct());
 	// Cache to map before StartTable().
@@ -145,13 +145,13 @@ uoffset_t Encoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
 	if (!CacheFields(obj, luaTable, mapScalar, mapOffset))
 		return 0;
 
-	uoffset_t start = m_fbb.StartTable();
+	uoffset_t start = Builder().StartTable();
 	AddElements(mapScalar);
 	AddOffsets(mapOffset);
-	return m_fbb.EndTable(start, obj.fields()->size());
+	return Builder().EndTable(start, obj.fields()->size());
 }
 
-uoffset_t Encoder::EncodeVector(
+uoffset_t XXXEncoder::EncodeVector(
 	const reflection::Type& type, const LuaRef& luaArray)
 {
 	assert(type.base_type() == reflection::Vector);
@@ -160,7 +160,7 @@ uoffset_t Encoder::EncodeVector(
 }
 
 // Cache fields to 2 maps.
-bool Encoder::CacheFields(const Object& obj, const LuaRef& luaTable,
+bool XXXEncoder::CacheFields(const Object& obj, const LuaRef& luaTable,
 	Field2Lua& rMapLuaRef, Field2Offset& rMapOffset)
 {
 	const auto& vFields = *obj.fields();
@@ -179,7 +179,7 @@ bool Encoder::CacheFields(const Object& obj, const LuaRef& luaTable,
 }
 
 // Cache field to 2 maps.
-void Encoder::CacheField(const Field* pField, const LuaRef& luaValue,
+void XXXEncoder::CacheField(const Field* pField, const LuaRef& luaValue,
 	Field2Lua& rMapLuaRef, Field2Offset& rMapOffset)
 {
 	assert(pField);
@@ -188,7 +188,7 @@ void Encoder::CacheField(const Field* pField, const LuaRef& luaValue,
 	switch (type.base_type())
 	{
 	case reflection::String:
-		rMapOffset[pField] = m_fbb.CreateString(
+		rMapOffset[pField] = Builder().CreateString(
 			luaValue.toValue<const char*>()).o;
 		break;
 	case reflection::Vector:
@@ -196,7 +196,7 @@ void Encoder::CacheField(const Field* pField, const LuaRef& luaValue,
 		break;
 	case reflection::Obj:
 	{
-		const Object* pObj = m_vObjects[type.index()];
+		const Object* pObj = Objects()[type.index()];
 		assert(pObj);
 		if (pObj->is_struct()) rMapLuaRef[pField] = luaValue;
 		else rMapOffset[pField] = EncodeObject(*pObj, luaValue);
@@ -211,7 +211,7 @@ void Encoder::CacheField(const Field* pField, const LuaRef& luaValue,
 	}  // switch
 }
 
-void Encoder::AddElements(const Field2Lua& mapScalar)
+void XXXEncoder::AddElements(const Field2Lua& mapScalar)
 {
 	for (const auto& e : mapScalar)
 	{
@@ -221,7 +221,7 @@ void Encoder::AddElements(const Field2Lua& mapScalar)
 	}
 }
 
-void Encoder::AddElement(const Field& field, const LuaRef& elementValue)
+void XXXEncoder::AddElement(const Field& field, const LuaRef& elementValue)
 {
 	const reflection::Type& type = *field.type();
 	int64_t defInt = field.default_integer();
@@ -271,34 +271,29 @@ void Encoder::AddElement(const Field& field, const LuaRef& elementValue)
 	}
 }
 
-void Encoder::AddOffsets(const Field2Offset& mapOffset)
+void XXXEncoder::AddOffsets(const Field2Offset& mapOffset)
 {
 	for (const auto& e : mapOffset)
 	{
 		const Field* pField = e.first;
 		assert(pField);
 		uoffset_t offset = e.second;
-		m_fbb.AddOffset(pField->offset(), flatbuffers::Offset<void>(offset));
+		Builder().AddOffset(pField->offset(), flatbuffers::Offset<void>(offset));
 	}
 }
 
 template <typename ElementType, typename DefaultValueType>
-inline void Encoder::AddElement(uint16_t offset,
+inline void XXXEncoder::AddElement(uint16_t offset,
 	const LuaRef& elementValue, DefaultValueType defaultValue)
 {
-	m_fbb.AddElement(offset,
+	Builder().AddElement(offset,
 		elementValue.toValue<ElementType>(),
 		static_cast<ElementType>(defaultValue));
 }
 
-string Encoder::PopFullFieldName(const string& sFieldName)
-{
-	return m_nameStack.PopFullFieldName(sFieldName);
-}
-
 // Set error and return false if field is illegal.
 // sFieldName is only used for error message.
-bool Encoder::CheckObjectField(const Field* pField, const string& sFieldName)
+bool XXXEncoder::CheckObjectField(const Field* pField, const string& sFieldName)
 {
 	if (!pField)
 		ERR_RET_FALSE("illegal field " + PopFullFieldName(sFieldName));

@@ -33,7 +33,6 @@
     <ClInclude Include="..\src\decoder\vector_decoder.h">
       <Filter>decoder</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\encoder.h" />
     <ClInclude Include="..\src\encoder\encoder.h">
       <Filter>encoder</Filter>
     </ClInclude>
@@ -41,6 +40,9 @@
       <Filter>encoder</Filter>
     </ClInclude>
     <ClInclude Include="..\src\encoder\encoder_context.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\encoder\xxx_encoder.h">
       <Filter>encoder</Filter>
     </ClInclude>
     <ClInclude Include="..\src\name_stack.h" />
@@ -68,11 +70,13 @@
     <ClCompile Include="..\src\decoder\vector_decoder.cpp">
       <Filter>decoder</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\encoder.cpp" />
     <ClCompile Include="..\src\encoder\encoder.cpp">
       <Filter>encoder</Filter>
     </ClCompile>
     <ClCompile Include="..\src\encoder\encoder_base.cpp">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\encoder\xxx_encoder.cpp">
       <Filter>encoder</Filter>
     </ClCompile>
     <ClCompile Include="..\src\flatbuffers.cpp" />
