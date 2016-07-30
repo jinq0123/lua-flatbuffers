@@ -67,16 +67,8 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 		m_mapOffsets[pField] = EncodeVector(type, luaValue);
 		break;
 	case Obj:
-	{
-		const Object* pObj = Objects()[type.index()];
-		assert(pObj);
-		if (pObj->is_struct())
-			m_mapStructs[pField] = luaValue;
-		else
-			m_mapOffsets[pField] = TableEncoder(m_rCtx)
-				.EncodeTable(*pObj, luaValue);
+		CacheObjField(pField, luaValue);
 		break;
-	}
 	case Union:
 		// XXX get union underlying type...
 		break;
@@ -84,6 +76,20 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 		m_mapScalars[pField] = luaValue;
 		break;
 	}  // switch
+}
+
+void TableEncoder::CacheObjField(const Field* pField, const LuaRef& luaValue)
+{
+	assert(pField);
+	const reflection::Type& type = *pField->type();
+	assert(reflection::Obj == type.base_type());
+	const Object* pObj = Objects()[type.index()];
+	assert(pObj);
+	if (pObj->is_struct())
+		m_mapStructs[pField] = luaValue;
+	else
+		m_mapOffsets[pField] = TableEncoder(m_rCtx)
+			.EncodeTable(*pObj, luaValue);
 }
 
 void TableEncoder::EncodeCachedStructs()
