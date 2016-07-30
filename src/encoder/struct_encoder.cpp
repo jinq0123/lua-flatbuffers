@@ -1,13 +1,12 @@
 #include "struct_encoder.h"
 
-using flatbuffers::uoffset_t;
-
-// Todo: check required fields.
-// Todo: Skip default value.
-
-uoffset_t StructEncoder::EncodeStruct(const Object& obj, const LuaRef& luaTable)
+flatbuffers::uoffset_t StructEncoder::EncodeStruct(
+	const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
+	if (!CheckLuaTable(obj, luaTable))
+		return 0;
+
 	(void)Builder().StartStruct(obj.minalign());
 	uint8_t* pBuf = Builder().ReserveElements(obj.bytesize(), 1);
 	assert(pBuf);
@@ -21,7 +20,6 @@ bool StructEncoder::EncodeStructToBuf(const Object& obj,
 {
 	assert(pBuf);
 	// Struct should traverse all fields of object.
-	// Lua table traverse is better, to check fields count.
 	for (const Field* pField : *obj.fields())
 	{
 		assert(pField);
@@ -32,7 +30,7 @@ bool StructEncoder::EncodeStructToBuf(const Object& obj,
 	return true;
 }  // EncodeStructToBuf()
 
-bool StructEncoder::CheckStructFields(const Object& obj, const LuaRef& luaTable)
+bool StructEncoder::CheckLuaTable(const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
 	const auto& vFields = *obj.fields();
@@ -45,7 +43,7 @@ bool StructEncoder::CheckStructFields(const Object& obj, const LuaRef& luaTable)
 		assert(!pField->deprecated());
 	}
 	return true;
-}  // CheckStructFields()
+}  // CheckLuaTable()
 
 bool StructEncoder::EncodeStructFieldToBuf(const Field& field,
 	const LuaRef& luaTable, uint8_t* pBuf)
@@ -64,7 +62,7 @@ bool StructEncoder::EncodeStructFieldToBuf(const Field& field,
 	reflection::BaseType eBaseType = type.base_type();
 	if (eBaseType <= reflection::Double)
 	{
-		EncodeStructElementToBuf(eBaseType, luaValue, pBuf + offset);  // XXX throw?
+		EncodeScalarToBuf(eBaseType, luaValue, pBuf + offset);  // XXX throw?
 		return true;
 	}
 
@@ -87,45 +85,46 @@ static void CopyToBuf(const LuaIntf::LuaRef& luaValue, uint8_t* pDest)
 }
 
 // Encode struct scalar element to buffer.
-void StructEncoder::EncodeStructElementToBuf(reflection::BaseType eType,
+void StructEncoder::EncodeScalarToBuf(reflection::BaseType eType,
 	const LuaRef& luaValue, uint8_t* pDest)
 {
+	using namespace reflection;
 	assert(pDest);
+	assert(eType <= Double);
 	switch (eType)
 	{
-	case reflection::UType:
-	case reflection::Bool:
-	case reflection::UByte:
+	case UType:
+	case Bool:
+	case UByte:
 		CopyToBuf<uint8_t>(luaValue, pDest);
 		break;
-	case reflection::Byte:
+	case Byte:
 		CopyToBuf<int8_t>(luaValue, pDest);
 		break;
-	case reflection::Short:
+	case Short:
 		CopyToBuf<int16_t>(luaValue, pDest);
 		break;
-	case reflection::UShort:
+	case UShort:
 		CopyToBuf<uint16_t>(luaValue, pDest);
 		break;
-	case reflection::Int:
+	case Int:
 		CopyToBuf<int32_t>(luaValue, pDest);
 		break;
-	case reflection::UInt:
+	case UInt:
 		CopyToBuf<uint32_t>(luaValue, pDest);
 		break;
-	case reflection::Long:
+	case Long:
 		CopyToBuf<int64_t>(luaValue, pDest);
 		break;
-	case reflection::ULong:
+	case ULong:
 		CopyToBuf<uint64_t>(luaValue, pDest);
 		break;
-	case reflection::Float:
+	case Float:
 		CopyToBuf<float>(luaValue, pDest);
 		break;
-	case reflection::Double:
+	case Double:
 		CopyToBuf<double>(luaValue, pDest);
 		break;
-	}
+	}  // switch
 	assert(!"Illegal type.");
-}
-
+}  // EncodeScalarToBuf()

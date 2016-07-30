@@ -3,28 +3,25 @@
 
 #include "encoder_base.h"  // EncoderBase
 
-#include <unordered_map>
-
 class StructEncoder final : EncoderBase
 {
 public:
 	explicit StructEncoder(EncoderContext& rCtx) : EncoderBase(rCtx) {};
 
 public:
-	// Encode recursively. Return 0 and set m_sError if any error.
+	// Encode recursively. Return 0 and set sError if any error.
 	using Object = reflection::Object;
-	using uoffset_t = flatbuffers::uoffset_t;
-	using Field = reflection::Field;
-
-	uoffset_t EncodeStruct(const Object& obj, const LuaRef& luaTable);
+	flatbuffers::uoffset_t EncodeStruct(const Object& obj, const LuaRef& luaTable);
 
 private:
-	bool CheckStructFields(const Object& obj, const LuaRef& luaTable);
+	using Field = reflection::Field;
+
+	bool CheckLuaTable(const Object& obj, const LuaRef& luaTable);
 	bool EncodeStructToBuf(const Object& obj,
 		const LuaRef& luaTable, uint8_t* pBuf);
 	bool EncodeStructFieldToBuf(const Field& field,
 		const LuaRef& luaTable, uint8_t* pBuf);
-	void EncodeStructElementToBuf(reflection::BaseType eType,
+	void EncodeScalarToBuf(reflection::BaseType eType,
 		const LuaRef& luaValue, uint8_t* pDest);
 };  // class StructEncoder
 
