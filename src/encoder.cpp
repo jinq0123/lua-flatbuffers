@@ -103,7 +103,7 @@ bool Encoder::EncodeStructFieldToBuf(const Field& field,
 {
 	assert(pBuf);
 	const char* pFieldName = field.name()->c_str();
-	LuaRef luaValue = luaTable.get(pFieldName);
+	const LuaRef luaValue = luaTable.get(pFieldName);
 	if (!luaValue)
 		ERR_RET_FALSE("missing struct field " + PopFullFieldName(pFieldName));
 
@@ -115,7 +115,7 @@ bool Encoder::EncodeStructFieldToBuf(const Field& field,
 	reflection::BaseType eBaseType = type.base_type();
 	if (eBaseType <= reflection::Double)
 	{
-		// XXX set field value);  // XXX throw?
+		EncodeStructElementToBuf(eBaseType, luaValue, pBuf + offset);  // XXX throw?
 		return true;
 	}
 
@@ -129,6 +129,56 @@ bool Encoder::EncodeStructFieldToBuf(const Field& field,
 	m_nameStack.SafePop();
 	return true;
 }  // EncodeStructFieldToBuf()
+
+template <typename T>
+static void CopyToBuf(const LuaIntf::LuaRef& luaValue, uint8_t* pDest)
+{
+	T val = luaValue.toValue<T>();  // Todo: throw?
+	*reinterpret_cast<T*>(pDest) = val;
+}
+
+// Encode struct scalar element to buffer.
+void Encoder::EncodeStructElementToBuf(reflection::BaseType eType,
+	const LuaRef& luaValue, uint8_t* pDest)
+{
+	assert(pDest);
+	switch (eType)
+	{
+	case reflection::UType:
+	case reflection::Bool:
+	case reflection::UByte:
+		CopyToBuf<uint8_t>(luaValue, pDest);
+		break;
+	case reflection::Byte:
+		CopyToBuf<int8_t>(luaValue, pDest);
+		break;
+	case reflection::Short:
+		CopyToBuf<int16_t>(luaValue, pDest);
+		break;
+	case reflection::UShort:
+		CopyToBuf<uint16_t>(luaValue, pDest);
+		break;
+	case reflection::Int:
+		CopyToBuf<int32_t>(luaValue, pDest);
+		break;
+	case reflection::UInt:
+		CopyToBuf<uint32_t>(luaValue, pDest);
+		break;
+	case reflection::Long:
+		CopyToBuf<int64_t>(luaValue, pDest);
+		break;
+	case reflection::ULong:
+		CopyToBuf<uint64_t>(luaValue, pDest);
+		break;
+	case reflection::Float:
+		CopyToBuf<float>(luaValue, pDest);
+		break;
+	case reflection::Double:
+		CopyToBuf<double>(luaValue, pDest);
+		break;
+	}
+	assert(!"Illegal type.");
+}
 
 uoffset_t Encoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
 {
