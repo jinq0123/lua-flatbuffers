@@ -83,6 +83,21 @@ bool Encoder::EncodeStructToBuf(const Object& obj,
 	return true;
 }  // EncodeStructToBuf()
 
+bool Encoder::CheckStructFields(const Object& obj, const LuaRef& luaTable)
+{
+	assert(obj.is_struct());
+	const auto& vFields = *obj.fields();
+	for (const auto& e : luaTable)
+	{
+		string sKey = e.key<string>();
+		const Field* pField = vFields.LookupByKey(sKey.c_str());
+		if (!pField)
+			ERR_RET_FALSE("illegal field " + PopFullFieldName(sKey));
+		assert(!pField->deprecated());
+	}
+	return true;
+}  // CheckStructFields()
+
 bool Encoder::EncodeStructFieldToBuf(const Field& field,
 	const LuaRef& luaTable, uint8_t* pBuf)
 {

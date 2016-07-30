@@ -42,6 +42,7 @@ private:
 		const LuaRef& luaTable, uint8_t* pBuf);
 	bool EncodeStructFieldToBuf(const Field& field,
 		const LuaRef& luaTable, uint8_t* pBuf);
+	bool CheckStructFields(const Object& obj, const LuaRef& luaTable);
 
 	uoffset_t EncodeTable(const Object& obj, const LuaRef& luaTable);
 	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaArray);
