@@ -4,8 +4,6 @@ flatbuffers::uoffset_t StructEncoder::EncodeStruct(
 	const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
-	CheckLuaTable(obj, luaTable);
-	if (Bad()) return 0;
 
 	(void)Builder().StartStruct(obj.minalign());
 	uint8_t* pBuf = Builder().ReserveElements(obj.bytesize(), 1);
@@ -19,6 +17,9 @@ void StructEncoder::EncodeStructToBuf(const Object& obj,
 	const LuaRef& luaTable, uint8_t* pBuf)
 {
 	assert(pBuf);
+	CheckLuaTable(obj, luaTable);
+	if (Bad()) return;
+
 	// Struct should traverse all fields of object.
 	for (const Field* pField : *obj.fields())
 	{
