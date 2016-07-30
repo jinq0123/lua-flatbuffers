@@ -22,17 +22,12 @@ private:
 
 	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaArray);
 
-	// Cache to map before StartTable().
-	// Field2Lua caches scalar and struct LuaRef.
-	using Field2Lua = std::unordered_map<const Field*, LuaRef>;
-	using Field2Offset = std::unordered_map<const Field*, uoffset_t>;
-	bool CacheFields(const Object& obj, const LuaRef& luaTable,
-		Field2Lua& rMapLuaRef, Field2Offset& rMapOffset);
-	void CacheField(const Field* pField, const LuaRef& luaValue,
-		Field2Lua& rMapLuaRef, Field2Offset& rMapOffset);
+	bool CacheFields(const Object& obj, const LuaRef& luaTable);
+	void CacheField(const Field* pField, const LuaRef& luaValue);
 
-	void AddElements(const Field2Lua& mapScalar);
-	void AddOffsets(const Field2Offset& mapOffset);
+	void AddStructs();
+	void AddElements();
+	void AddOffsets();
 	void AddElement(const Field& field, const LuaRef& value);
 
 	template <typename ElementType, typename DefaultValueType>
@@ -41,6 +36,15 @@ private:
 
 private:
 	bool CheckObjectField(const Field* pField, const string& sFieldName);
+
+private:
+	// Cache to map before StartTable().
+	// Field2Lua caches scalar and struct LuaRef.
+	using Field2Lua = std::unordered_map<const Field*, LuaRef>;
+	using Field2Offset = std::unordered_map<const Field*, uoffset_t>;
+	Field2Lua m_mapScalar;
+	Field2Lua m_mapStruct;
+	Field2Offset m_mapOffset;
 };  // class TableEncoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_TABLE_ENCODER_H_

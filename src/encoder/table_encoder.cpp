@@ -7,15 +7,18 @@ flatbuffers::uoffset_t TableEncoder::EncodeTable(
 	const Object& obj, const LuaRef& luaTable)
 {
 	assert(!obj.is_struct());
+
 	// Cache to map before StartTable().
-	Field2Lua mapScalar;
-	Field2Offset mapOffset;
-	if (!CacheFields(obj, luaTable, mapScalar, mapOffset))
+	m_mapStruct.clear();
+	m_mapScalar.clear();
+	m_mapOffset.clear();
+	if (!CacheFields(obj, luaTable))
 		return 0;
 
 	uoffset_t start = Builder().StartTable();
-	AddElements(mapScalar);
-	AddOffsets(mapOffset);
+	AddStructs();
+	AddElements();
+	AddOffsets();
 	return Builder().EndTable(start, obj.fields()->size());
 }
 
@@ -27,9 +30,8 @@ flatbuffers::uoffset_t TableEncoder::EncodeVector(
 	return 0;
 }
 
-// Cache fields to 2 maps.
-bool TableEncoder::CacheFields(const Object& obj, const LuaRef& luaTable,
-	Field2Lua& rMapLuaRef, Field2Offset& rMapOffset)
+// Cache fields to 3 maps.
+bool TableEncoder::CacheFields(const Object& obj, const LuaRef& luaTable)
 {
 	const auto& vFields = *obj.fields();
 	for (const auto& e : luaTable)
@@ -41,14 +43,13 @@ bool TableEncoder::CacheFields(const Object& obj, const LuaRef& luaTable,
 		assert(pField);
 
 		LuaRef value = e.value<LuaRef>();
-		CacheField(pField, value, rMapLuaRef, rMapOffset);
+		CacheField(pField, value);
 	}
 	return true;
 }
 
-// Cache field to 2 maps.
-void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue,
-	Field2Lua& rMapLuaRef, Field2Offset& rMapOffset)
+// Cache field to 3 maps.
+void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 {
 	assert(pField);
 	using namespace reflection;
@@ -57,20 +58,20 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue,
 	switch (type.base_type())
 	{
 	case String:
-		rMapOffset[pField] = Builder().CreateString(
+		m_mapOffset[pField] = Builder().CreateString(
 			luaValue.toValue<const char*>()).o;
 		break;
 	case Vector:
-		rMapOffset[pField] = EncodeVector(type, luaValue);
+		m_mapOffset[pField] = EncodeVector(type, luaValue);
 		break;
 	case Obj:
 	{
 		const Object* pObj = Objects()[type.index()];
 		assert(pObj);
 		if (pObj->is_struct())
-			rMapLuaRef[pField] = luaValue;
+			m_mapStruct[pField] = luaValue;
 		else
-			rMapOffset[pField] = TableEncoder(m_rCtx)
+			m_mapOffset[pField] = TableEncoder(m_rCtx)
 				.EncodeTable(*pObj, luaValue);
 		break;
 	}
@@ -78,14 +79,19 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue,
 		// XXX get union underlying type...
 		break;
 	default:
-		rMapLuaRef[pField] = luaValue;
+		m_mapScalar[pField] = luaValue;
 		break;
 	}  // switch
 }
 
-void TableEncoder::AddElements(const Field2Lua& mapScalar)
+void TableEncoder::AddStructs()
 {
-	for (const auto& e : mapScalar)
+	// XXX
+}
+
+void TableEncoder::AddElements()
+{
+	for (const auto& e : m_mapScalar)
 	{
 		const Field* pField = e.first;
 		assert(pField);
@@ -144,9 +150,9 @@ void TableEncoder::AddElement(const Field& field, const LuaRef& elementValue)
 	}
 }
 
-void TableEncoder::AddOffsets(const Field2Offset& mapOffset)
+void TableEncoder::AddOffsets()
 {
-	for (const auto& e : mapOffset)
+	for (const auto& e : m_mapOffset)
 	{
 		const Field* pField = e.first;
 		assert(pField);
