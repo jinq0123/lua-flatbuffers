@@ -1,11 +1,10 @@
 #include "table_encoder.h"
 
-using flatbuffers::uoffset_t;
-
 // Todo: check required fields.
 // Todo: Skip default value.
 
-uoffset_t TableEncoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
+flatbuffers::uoffset_t TableEncoder::EncodeTable(
+	const Object& obj, const LuaRef& luaTable)
 {
 	assert(!obj.is_struct());
 	// Cache to map before StartTable().
@@ -20,7 +19,7 @@ uoffset_t TableEncoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
 	return Builder().EndTable(start, obj.fields()->size());
 }
 
-uoffset_t TableEncoder::EncodeVector(
+flatbuffers::uoffset_t TableEncoder::EncodeVector(
 	const reflection::Type& type, const LuaRef& luaArray)
 {
 	assert(type.base_type() == reflection::Vector);
@@ -52,18 +51,19 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue,
 	Field2Lua& rMapLuaRef, Field2Offset& rMapOffset)
 {
 	assert(pField);
-	const reflection::Type& type = *pField->type();
+	using namespace reflection;
+	const Type& type = *pField->type();
 	// Todo: check type of value...
 	switch (type.base_type())
 	{
-	case reflection::String:
+	case String:
 		rMapOffset[pField] = Builder().CreateString(
 			luaValue.toValue<const char*>()).o;
 		break;
-	case reflection::Vector:
+	case Vector:
 		rMapOffset[pField] = EncodeVector(type, luaValue);
 		break;
-	case reflection::Obj:
+	case Obj:
 	{
 		const Object* pObj = Objects()[type.index()];
 		assert(pObj);
@@ -74,7 +74,7 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue,
 				.EncodeTable(*pObj, luaValue);
 		break;
 	}
-	case reflection::Union:
+	case Union:
 		// XXX get union underlying type...
 		break;
 	default:
@@ -95,46 +95,47 @@ void TableEncoder::AddElements(const Field2Lua& mapScalar)
 
 void TableEncoder::AddElement(const Field& field, const LuaRef& elementValue)
 {
-	const reflection::Type& type = *field.type();
+	using namespace reflection;
+	const Type& type = *field.type();
 	int64_t defInt = field.default_integer();
 	double defReal = field.default_real();
 	uint16_t offset = field.offset();
 
 	switch (type.base_type())
 	{
-	case reflection::UType:
-	case reflection::Bool:
-	case reflection::UByte:
+	case UType:
+	case Bool:
+	case UByte:
 		AddElement<uint8_t>(offset, elementValue, defInt);
 		break;
-	case reflection::Byte:
+	case Byte:
 		AddElement<int8_t>(offset, elementValue, defInt);
 		break;
-	case reflection::Short:
+	case Short:
 		AddElement<int16_t>(offset, elementValue, defInt);
 		break;
-	case reflection::UShort:
+	case UShort:
 		AddElement<uint16_t>(offset, elementValue, defInt);
 		break;
-	case reflection::Int:
+	case Int:
 		AddElement<int32_t>(offset, elementValue, defInt);
 		break;
-	case reflection::UInt:
+	case UInt:
 		AddElement<uint32_t>(offset, elementValue, defInt);
 		break;
-	case reflection::Long:
+	case Long:
 		AddElement<int64_t>(offset, elementValue, defInt);
 		break;
-	case reflection::ULong:
+	case ULong:
 		AddElement<uint64_t>(offset, elementValue, defInt);
 		break;
-	case reflection::Float:
+	case Float:
 		AddElement<float>(offset, elementValue, defReal);
 		break;
-	case reflection::Double:
+	case Double:
 		AddElement<double>(offset, elementValue, defReal);
 		break;
-	case reflection::Obj:
+	case Obj:
 		// XXX struct...
 		break;
 	default:
@@ -173,4 +174,3 @@ bool TableEncoder::CheckObjectField(const Field* pField, const string& sFieldNam
 		ERR_RET_FALSE("deprecated field " + PopFullFieldName(sFieldName));
 	return true;
 }
-

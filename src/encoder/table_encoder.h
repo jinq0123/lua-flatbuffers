@@ -11,12 +11,15 @@ public:
 	explicit TableEncoder(EncoderContext& rCtx) : EncoderBase(rCtx) {};
 
 public:
-	// Encode recursively. Return 0 and set m_sError if any error.
 	using Object = reflection::Object;
 	using uoffset_t = flatbuffers::uoffset_t;
+
+	// Encode recursively. Return 0 and set sError if any error.
+	uoffset_t EncodeTable(const Object& obj, const LuaRef& luaTable);
+
+private:
 	using Field = reflection::Field;
 
-	uoffset_t EncodeTable(const Object& obj, const LuaRef& luaTable);
 	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaArray);
 
 	// Cache to map before StartTable().
