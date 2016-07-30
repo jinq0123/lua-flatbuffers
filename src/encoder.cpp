@@ -1,50 +1,6 @@
 #include "encoder.h"
 
-#include <flatbuffers/reflection_generated.h>  // for Schema
-
-#include <LuaIntf/LuaIntf.h>
-
-#include <unordered_map>
-
-#define ERR_RET_FALSE(ErrorStr) do { \
-	m_sError = ErrorStr; \
-	return false; \
-} while(0)
-
 using flatbuffers::uoffset_t;
-using std::string;
-
-Encoder::Encoder(const reflection::Schema& schema) :
-	m_schema(schema),
-	m_vObjects(*schema.objects())
-{
-}
-
-bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
-{
-	if (!luaTable.isTable())
-		ERR_RET_FALSE("lua data is not table");
-
-	Reset();
-
-	const Object* pObj = m_vObjects.LookupByKey(sName.c_str());
-	assert(pObj);
-	m_nameStack.Push(sName);
-	uoffset_t offset = EncodeObject(*pObj, luaTable);
-	m_nameStack.SafePop();
-	if (!offset)  // An offset of 0 means error.
-		return false;
-
-	m_fbb.Finish(flatbuffers::Offset<void>(offset));  // Todo: Add file_identifier if root_type
-	return true;
-}
-
-string Encoder::GetResultStr() const
-{
-	const char* pBuffer = reinterpret_cast<const char*>(
-		m_fbb.GetBufferPointer());
-	return string(pBuffer, m_fbb.GetSize());
-}
 
 // Todo: check required fields.
 // Todo: Skip default value.
@@ -338,13 +294,6 @@ inline void Encoder::AddElement(uint16_t offset,
 string Encoder::PopFullFieldName(const string& sFieldName)
 {
 	return m_nameStack.PopFullFieldName(sFieldName);
-}
-
-void Encoder::Reset()
-{
-	m_fbb.Clear();
-	m_sError.clear();
-	m_nameStack.Reset();
 }
 
 // Set error and return false if field is illegal.

@@ -1,35 +1,12 @@
-#ifndef LUA_FLATBUFFERS_ENCODER_H_
-#define LUA_FLATBUFFERS_ENCODER_H_
+#ifndef LUA_FLATBUFFERS_ENCODER_XXX_H_
+#define LUA_FLATBUFFERS_ENCODER_XXX_H_
 
-#include "name_stack.h"  // for NameStack
+#include "encoder_base.h"  // EncoderBase
 
-#include <flatbuffers/flatbuffers.h>
-
-#include <unordered_map>
-
-namespace LuaIntf {
-class LuaRef;
-}
-
-namespace reflection {
-enum BaseType;
-struct Field;
-struct Object;
-struct Schema;
-struct Type;
-}
-
-class Encoder final
+class XXXEncoder final : EncoderBase
 {
 public:
-	explicit Encoder(const reflection::Schema& schema);
-
-public:
-	using LuaRef = LuaIntf::LuaRef;
-	using string = std::string;
-	bool Encode(const string& sName, const LuaRef& luaTable);
-	string GetResultStr() const;
-	const string& GetErrorStr() const { return m_sError; }
+	explicit XXXEncoder(EncoderContext& rCtx) : EncoderBase(rCtx) {};
 
 private:
 	// Encode recursively. Return 0 and set m_sError if any error.
@@ -68,16 +45,7 @@ private:
 		DefaultValueType defaultValue);
 
 private:
-	string PopFullFieldName(const string& sFieldName);
-	void Reset();
 	bool CheckObjectField(const Field* pField, const string& sFieldName);
+};  // class XXXEncoder
 
-private:
-	flatbuffers::FlatBufferBuilder m_fbb;
-	const reflection::Schema& m_schema;
-	const flatbuffers::Vector<flatbuffers::Offset<Object>>& m_vObjects;
-	NameStack m_nameStack;  // For error message.
-	string m_sError;  // Encode error.
-};  // class Encoder
-
-#endif  // LUA_FLATBUFFERS_ENCODER_H_
+#endif  // LUA_FLATBUFFERS_ENCODER_XXX_H_
