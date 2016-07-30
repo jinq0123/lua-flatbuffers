@@ -74,7 +74,8 @@ OBJECTS := \
 	$(OBJDIR)/vector_decoder.o \
 	$(OBJDIR)/encoder.o \
 	$(OBJDIR)/encoder_base.o \
-	$(OBJDIR)/object_encoder.o \
+	$(OBJDIR)/struct_encoder.o \
+	$(OBJDIR)/table_encoder.o \
 	$(OBJDIR)/xxx_encoder.o \
 	$(OBJDIR)/flatbuffers.o \
 	$(OBJDIR)/name_stack.o \
@@ -163,7 +164,10 @@ $(OBJDIR)/encoder.o: ../src/encoder/encoder.cpp
 $(OBJDIR)/encoder_base.o: ../src/encoder/encoder_base.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
-$(OBJDIR)/object_encoder.o: ../src/encoder/object_encoder.cpp
+$(OBJDIR)/struct_encoder.o: ../src/encoder/struct_encoder.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/table_encoder.o: ../src/encoder/table_encoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/xxx_encoder.o: ../src/encoder/xxx_encoder.cpp

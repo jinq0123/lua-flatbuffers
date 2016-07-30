@@ -1,6 +1,7 @@
 #include "encoder.h"
 
-#include "object_encoder.h"  // for ObjectEncoder
+#include "struct_encoder.h"
+#include "table_encoder.h"
 
 bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
 {
@@ -11,7 +12,9 @@ bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
 	assert(pObj);
 	PushName(sName);
 	flatbuffers::uoffset_t offset =
-		ObjectEncoder(m_rCtx).EncodeObject(*pObj, luaTable);
+		pObj->is_struct() ?
+		StructEncoder(m_rCtx).EncodeStruct(*pObj, luaTable) :
+		TableEncoder(m_rCtx).EncodeTable(*pObj, luaTable);
 	SafePopName();
 	if (!offset)  // An offset of 0 means error.
 		return false;
@@ -21,3 +24,9 @@ bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
 	return true;
 }
 
+std::string Encoder::GetResultStr() const
+{
+	const char* pBuffer = reinterpret_cast<const char*>(
+		Builder().GetBufferPointer());
+	return string(pBuffer, Builder().GetSize());
+}

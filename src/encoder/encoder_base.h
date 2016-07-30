@@ -31,6 +31,7 @@ protected:
 		return *m_rCtx.schema.objects();
 	}
 	flatbuffers::FlatBufferBuilder& Builder() { return m_rCtx.fbb; }
+	const flatbuffers::FlatBufferBuilder& Builder() const { return m_rCtx.fbb; }
 
 protected:
 	bool Bad() const { return !m_rCtx.sError.empty(); }

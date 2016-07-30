@@ -1,30 +1,20 @@
-#ifndef LUA_FLATBUFFERS_ENCODER_OBJECT_ENCODER_H_
-#define LUA_FLATBUFFERS_ENCODER_OBJECT_ENCODER_H_
+#ifndef LUA_FLATBUFFERS_ENCODER_TABLE_ENCODER_H_
+#define LUA_FLATBUFFERS_ENCODER_TABLE_ENCODER_H_
 
 #include "encoder_base.h"  // EncoderBase
 
 #include <unordered_map>
 
-class ObjectEncoder final : EncoderBase
+class TableEncoder final : EncoderBase
 {
 public:
-	explicit ObjectEncoder(EncoderContext& rCtx) : EncoderBase(rCtx) {};
+	explicit TableEncoder(EncoderContext& rCtx) : EncoderBase(rCtx) {};
 
 public:
 	// Encode recursively. Return 0 and set m_sError if any error.
 	using Object = reflection::Object;
 	using uoffset_t = flatbuffers::uoffset_t;
 	using Field = reflection::Field;
-	uoffset_t EncodeObject(const Object& obj, const LuaRef& luaTable);
-
-	uoffset_t EncodeStruct(const Object& obj, const LuaRef& luaTable);
-	bool CheckStructFields(const Object& obj, const LuaRef& luaTable);
-	bool EncodeStructToBuf(const Object& obj,
-		const LuaRef& luaTable, uint8_t* pBuf);
-	bool EncodeStructFieldToBuf(const Field& field,
-		const LuaRef& luaTable, uint8_t* pBuf);
-	void EncodeStructElementToBuf(reflection::BaseType eType,
-		const LuaRef& luaValue, uint8_t* pDest);
 
 	uoffset_t EncodeTable(const Object& obj, const LuaRef& luaTable);
 	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaArray);
@@ -48,6 +38,6 @@ public:
 
 private:
 	bool CheckObjectField(const Field* pField, const string& sFieldName);
-};  // class ObjectEncoder
+};  // class TableEncoder
 
-#endif  // LUA_FLATBUFFERS_ENCODER_OBJECT_ENCODER_H_
+#endif  // LUA_FLATBUFFERS_ENCODER_TABLE_ENCODER_H_

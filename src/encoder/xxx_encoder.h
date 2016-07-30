@@ -15,18 +15,7 @@ private:
 	using Object = reflection::Object;
 	using uoffset_t = flatbuffers::uoffset_t;
 	using Field = reflection::Field;
-	uoffset_t EncodeObject(const Object& obj, const LuaRef& luaTable);
 
-	uoffset_t EncodeStruct(const Object& obj, const LuaRef& luaTable);
-	bool CheckStructFields(const Object& obj, const LuaRef& luaTable);
-	bool EncodeStructToBuf(const Object& obj,
-		const LuaRef& luaTable, uint8_t* pBuf);
-	bool EncodeStructFieldToBuf(const Field& field,
-		const LuaRef& luaTable, uint8_t* pBuf);
-	void EncodeStructElementToBuf(reflection::BaseType eType,
-		const LuaRef& luaValue, uint8_t* pDest);
-
-	uoffset_t EncodeTable(const Object& obj, const LuaRef& luaTable);
 	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaArray);
 
 	// Cache to map before StartTable().

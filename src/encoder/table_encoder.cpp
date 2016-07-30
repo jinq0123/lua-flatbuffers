@@ -1,4 +1,3 @@
-#include "xxx_encoder.h"
 #include "table_encoder.h"
 
 using flatbuffers::uoffset_t;
@@ -6,7 +5,22 @@ using flatbuffers::uoffset_t;
 // Todo: check required fields.
 // Todo: Skip default value.
 
-uoffset_t XXXEncoder::EncodeVector(
+uoffset_t TableEncoder::EncodeTable(const Object& obj, const LuaRef& luaTable)
+{
+	assert(!obj.is_struct());
+	// Cache to map before StartTable().
+	Field2Lua mapScalar;
+	Field2Offset mapOffset;
+	if (!CacheFields(obj, luaTable, mapScalar, mapOffset))
+		return 0;
+
+	uoffset_t start = Builder().StartTable();
+	AddElements(mapScalar);
+	AddOffsets(mapOffset);
+	return Builder().EndTable(start, obj.fields()->size());
+}
+
+uoffset_t TableEncoder::EncodeVector(
 	const reflection::Type& type, const LuaRef& luaArray)
 {
 	assert(type.base_type() == reflection::Vector);
@@ -15,7 +29,7 @@ uoffset_t XXXEncoder::EncodeVector(
 }
 
 // Cache fields to 2 maps.
-bool XXXEncoder::CacheFields(const Object& obj, const LuaRef& luaTable,
+bool TableEncoder::CacheFields(const Object& obj, const LuaRef& luaTable,
 	Field2Lua& rMapLuaRef, Field2Offset& rMapOffset)
 {
 	const auto& vFields = *obj.fields();
@@ -34,7 +48,7 @@ bool XXXEncoder::CacheFields(const Object& obj, const LuaRef& luaTable,
 }
 
 // Cache field to 2 maps.
-void XXXEncoder::CacheField(const Field* pField, const LuaRef& luaValue,
+void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue,
 	Field2Lua& rMapLuaRef, Field2Offset& rMapOffset)
 {
 	assert(pField);
@@ -69,7 +83,7 @@ void XXXEncoder::CacheField(const Field* pField, const LuaRef& luaValue,
 	}  // switch
 }
 
-void XXXEncoder::AddElements(const Field2Lua& mapScalar)
+void TableEncoder::AddElements(const Field2Lua& mapScalar)
 {
 	for (const auto& e : mapScalar)
 	{
@@ -79,7 +93,7 @@ void XXXEncoder::AddElements(const Field2Lua& mapScalar)
 	}
 }
 
-void XXXEncoder::AddElement(const Field& field, const LuaRef& elementValue)
+void TableEncoder::AddElement(const Field& field, const LuaRef& elementValue)
 {
 	const reflection::Type& type = *field.type();
 	int64_t defInt = field.default_integer();
@@ -129,7 +143,7 @@ void XXXEncoder::AddElement(const Field& field, const LuaRef& elementValue)
 	}
 }
 
-void XXXEncoder::AddOffsets(const Field2Offset& mapOffset)
+void TableEncoder::AddOffsets(const Field2Offset& mapOffset)
 {
 	for (const auto& e : mapOffset)
 	{
@@ -141,7 +155,7 @@ void XXXEncoder::AddOffsets(const Field2Offset& mapOffset)
 }
 
 template <typename ElementType, typename DefaultValueType>
-inline void XXXEncoder::AddElement(uint16_t offset,
+inline void TableEncoder::AddElement(uint16_t offset,
 	const LuaRef& elementValue, DefaultValueType defaultValue)
 {
 	Builder().AddElement(offset,
@@ -151,7 +165,7 @@ inline void XXXEncoder::AddElement(uint16_t offset,
 
 // Set error and return false if field is illegal.
 // sFieldName is only used for error message.
-bool XXXEncoder::CheckObjectField(const Field* pField, const string& sFieldName)
+bool TableEncoder::CheckObjectField(const Field* pField, const string& sFieldName)
 {
 	if (!pField)
 		ERR_RET_FALSE("illegal field " + PopFullFieldName(sFieldName));
