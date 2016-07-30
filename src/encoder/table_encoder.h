@@ -22,7 +22,7 @@ private:
 
 	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaArray);
 
-	bool CacheFields(const Object& obj, const LuaRef& luaTable);
+	void CacheFields(const Object& obj, const LuaRef& luaTable);
 	void CacheField(const Field* pField, const LuaRef& luaValue);
 	void CacheObjField(const Field* pField, const LuaRef& luaValue);
 
@@ -37,7 +37,7 @@ private:
 		DefaultValueType defaultValue);
 
 private:
-	bool CheckObjectField(const Field* pField, const string& sFieldName);
+	void CheckObjectField(const Field* pField, const string& sFieldName);
 
 private:
 	// Cache to map before StartTable().
@@ -47,6 +47,8 @@ private:
 	Field2Lua m_mapScalars;
 	Field2Lua m_mapStructs;
 	Field2Offset m_mapOffsets;
+
+	LuaRef m_luaTable;
 };  // class TableEncoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_TABLE_ENCODER_H_

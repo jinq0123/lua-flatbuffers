@@ -6,7 +6,10 @@
 bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
 {
 	if (!luaTable.isTable())
-		ERR_RET_FALSE("lua data is not table");
+	{
+		SetError(string("lua data is not table but ") + luaTable.typeName());
+		return false;
+	}
 
 	const reflection::Object* pObj = Objects().LookupByKey(sName.c_str());
 	assert(pObj);
@@ -16,8 +19,7 @@ bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
 		StructEncoder(m_rCtx).EncodeStruct(*pObj, luaTable) :
 		TableEncoder(m_rCtx).EncodeTable(*pObj, luaTable);
 	SafePopName();
-	if (!offset)  // An offset of 0 means error.
-		return false;
+	if (Bad()) return false;
 
 	// Todo: Add file_identifier if root_type
 	Builder().Finish(flatbuffers::Offset<void>(offset));

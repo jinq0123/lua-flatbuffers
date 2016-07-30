@@ -9,18 +9,22 @@ flatbuffers::uoffset_t TableEncoder::EncodeTable(
 	const Object& obj, const LuaRef& luaTable)
 {
 	assert(!obj.is_struct());
+	assert(luaTable.isTable());
 
 	// Cache to map before StartTable().
 	m_mapStructs.clear();
 	m_mapScalars.clear();
 	m_mapOffsets.clear();
-	if (!CacheFields(obj, luaTable))
-		return 0;
+	CacheFields(obj, luaTable);
+	if (Bad()) return 0;
 
 	uoffset_t start = Builder().StartTable();
 	EncodeCachedStructs();
+	if (Bad()) return 0;
 	EncodeCachedScalars();
+	if (Bad()) return 0;
 	EncodeCachedOffsets();
+	if (Bad()) return 0;
 	return Builder().EndTable(start, obj.fields()->size());
 }
 
@@ -33,21 +37,21 @@ flatbuffers::uoffset_t TableEncoder::EncodeVector(
 }
 
 // Cache fields to 3 maps.
-bool TableEncoder::CacheFields(const Object& obj, const LuaRef& luaTable)
+void TableEncoder::CacheFields(const Object& obj, const LuaRef& luaTable)
 {
 	const auto& vFields = *obj.fields();
 	for (const auto& e : luaTable)
 	{
 		string sKey = e.key<string>();
 		const Field* pField = vFields.LookupByKey(sKey.c_str());
-		if (!CheckObjectField(pField, sKey))
-			return false;
+		CheckObjectField(pField, sKey);
+		if (Bad()) return;
 		assert(pField);
 
 		LuaRef value = e.value<LuaRef>();
 		CacheField(pField, value);
+		if (Bad()) return;
 	}
-	return true;
 }
 
 // Cache field to 3 maps.
@@ -81,6 +85,13 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 void TableEncoder::CacheObjField(const Field* pField, const LuaRef& luaValue)
 {
 	assert(pField);
+
+	if (!luaValue.isTable())
+	{
+		ERR_RET("object " + PopFullFieldName(pField->name()->c_str())
+			+ " is not a table but " + luaValue.typeName());
+	}
+
 	const reflection::Type& type = *pField->type();
 	assert(reflection::Obj == type.base_type());
 	const Object* pObj = Objects()[type.index()];
@@ -193,13 +204,12 @@ inline void TableEncoder::AddElement(uint16_t offset,
 		static_cast<ElementType>(defaultValue));
 }
 
-// Set error and return false if field is illegal.
+// Set error if field is illegal.
 // sFieldName is only used for error message.
-bool TableEncoder::CheckObjectField(const Field* pField, const string& sFieldName)
+void TableEncoder::CheckObjectField(const Field* pField, const string& sFieldName)
 {
 	if (!pField)
-		ERR_RET_FALSE("illegal field " + PopFullFieldName(sFieldName));
+		ERR_RET("illegal field " + PopFullFieldName(sFieldName));
 	if (pField->deprecated())
-		ERR_RET_FALSE("deprecated field " + PopFullFieldName(sFieldName));
-	return true;
+		ERR_RET("deprecated field " + PopFullFieldName(sFieldName));
 }

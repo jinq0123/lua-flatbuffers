@@ -16,10 +16,10 @@ public:
 private:
 	using Field = reflection::Field;
 
-	bool CheckLuaTable(const Object& obj, const LuaRef& luaTable);
-	bool EncodeStructToBuf(const Object& obj,
+	void CheckLuaTable(const Object& obj, const LuaRef& luaTable);
+	void EncodeStructToBuf(const Object& obj,
 		const LuaRef& luaTable, uint8_t* pBuf);
-	bool EncodeStructFieldToBuf(const Field& field,
+	void EncodeStructFieldToBuf(const Field& field,
 		const LuaRef& luaTable, uint8_t* pBuf);
 	void EncodeScalarToBuf(reflection::BaseType eType,
 		const LuaRef& luaValue, uint8_t* pDest);

@@ -4,18 +4,18 @@ flatbuffers::uoffset_t StructEncoder::EncodeStruct(
 	const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
-	if (!CheckLuaTable(obj, luaTable))
-		return 0;
+	CheckLuaTable(obj, luaTable);
+	if (Bad()) return 0;
 
 	(void)Builder().StartStruct(obj.minalign());
 	uint8_t* pBuf = Builder().ReserveElements(obj.bytesize(), 1);
 	assert(pBuf);
-	if (!EncodeStructToBuf(obj, luaTable, pBuf))
-		return 0;
+	EncodeStructToBuf(obj, luaTable, pBuf);
+	if (Bad()) return 0;
 	return Builder().EndStruct();
 }
 
-bool StructEncoder::EncodeStructToBuf(const Object& obj,
+void StructEncoder::EncodeStructToBuf(const Object& obj,
 	const LuaRef& luaTable, uint8_t* pBuf)
 {
 	assert(pBuf);
@@ -24,13 +24,12 @@ bool StructEncoder::EncodeStructToBuf(const Object& obj,
 	{
 		assert(pField);
 		assert(!pField->deprecated());  // Struct has no deprecated field.
-		if (!EncodeStructFieldToBuf(*pField, luaTable, pBuf))
-			return false;
+		EncodeStructFieldToBuf(*pField, luaTable, pBuf);
+		if (Bad()) return;
 	}  // for
-	return true;
 }  // EncodeStructToBuf()
 
-bool StructEncoder::CheckLuaTable(const Object& obj, const LuaRef& luaTable)
+void StructEncoder::CheckLuaTable(const Object& obj, const LuaRef& luaTable)
 {
 	assert(obj.is_struct());
 	const auto& vFields = *obj.fields();
@@ -39,20 +38,19 @@ bool StructEncoder::CheckLuaTable(const Object& obj, const LuaRef& luaTable)
 		string sKey = e.key<string>();
 		const Field* pField = vFields.LookupByKey(sKey.c_str());
 		if (!pField)
-			ERR_RET_FALSE("illegal field " + PopFullFieldName(sKey));
+			ERR_RET("illegal field " + PopFullFieldName(sKey));
 		assert(!pField->deprecated());
 	}
-	return true;
 }  // CheckLuaTable()
 
-bool StructEncoder::EncodeStructFieldToBuf(const Field& field,
+void StructEncoder::EncodeStructFieldToBuf(const Field& field,
 	const LuaRef& luaTable, uint8_t* pBuf)
 {
 	assert(pBuf);
 	const char* pFieldName = field.name()->c_str();
 	const LuaRef luaValue = luaTable.get(pFieldName);
 	if (!luaValue)
-		ERR_RET_FALSE("missing struct field " + PopFullFieldName(pFieldName));
+		ERR_RET("missing struct field " + PopFullFieldName(pFieldName));
 
 	const reflection::Type& type = *field.type();
 	// Todo: check type of value...
@@ -63,7 +61,7 @@ bool StructEncoder::EncodeStructFieldToBuf(const Field& field,
 	if (eBaseType <= reflection::Double)
 	{
 		EncodeScalarToBuf(eBaseType, luaValue, pBuf + offset);  // XXX throw?
-		return true;
+		return;
 	}
 
 	assert(eBaseType == reflection::Obj);
@@ -71,10 +69,8 @@ bool StructEncoder::EncodeStructFieldToBuf(const Field& field,
 	assert(pFieldObj);
 	assert(pFieldObj->is_struct());
 	PushName(pFieldName);
-	if (!EncodeStructToBuf(*pFieldObj, luaValue, pDest))
-		return false;
+	EncodeStructToBuf(*pFieldObj, luaValue, pDest);
 	SafePopName();
-	return true;
 }  // EncodeStructFieldToBuf()
 
 template <typename T>

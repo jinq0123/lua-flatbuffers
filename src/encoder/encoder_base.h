@@ -9,9 +9,9 @@
 
 #include <string>
 
-#define ERR_RET_FALSE(ErrorStr) do { \
+#define ERR_RET(ErrorStr) do { \
 	SetError(ErrorStr); \
-	return false; \
+	return; \
 } while(0)
 
 class EncoderBase

@@ -110,8 +110,10 @@ LuaRef TableDecoder::DecodeUnionField(
 
 	const reflection::Enum& e = *(*m_rCtx.schema.enums())[type.index()];
 	assert(e.is_union());
+	// Enum underlying type: Byte Short or Int...
 	const reflection::Type& underlyingType = *e.underlying_type();
 	PushName(field);
+	// XXX Get union real type...
 	LuaRef luaRef = UnionDecoder(m_rCtx).DecodeUnion(underlyingType, pData);
 	SafePopName();
 	return luaRef;
