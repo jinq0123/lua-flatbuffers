@@ -101,6 +101,9 @@
     <ClInclude Include="..\src\decoder\union_decoder.h" />
     <ClInclude Include="..\src\decoder\vector_decoder.h" />
     <ClInclude Include="..\src\encoder.h" />
+    <ClInclude Include="..\src\encoder\encoder.h" />
+    <ClInclude Include="..\src\encoder\encoder_base.h" />
+    <ClInclude Include="..\src\encoder\encoder_context.h" />
     <ClInclude Include="..\src\name_stack.h" />
     <ClInclude Include="..\src\schema_cache.h" />
   </ItemGroup>
@@ -113,6 +116,11 @@
     <ClCompile Include="..\src\decoder\union_decoder.cpp" />
     <ClCompile Include="..\src\decoder\vector_decoder.cpp" />
     <ClCompile Include="..\src\encoder.cpp" />
+    <ClCompile Include="..\src\encoder\encoder.cpp">
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(IntDir)\encoder1.obj</ObjectFileName>
+      <ObjectFileName Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(IntDir)\encoder1.obj</ObjectFileName>
+    </ClCompile>
+    <ClCompile Include="..\src\encoder\encoder_base.cpp" />
     <ClCompile Include="..\src\flatbuffers.cpp" />
     <ClCompile Include="..\src\name_stack.cpp" />
     <ClCompile Include="..\src\schema_cache.cpp" />

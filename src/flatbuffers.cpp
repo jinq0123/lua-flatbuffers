@@ -4,7 +4,8 @@
 #include "schema_cache.h"  // for SchemaCache
 
 #include "decoder/root_decoder.h"
-#include "encoder.h"
+#include "encoder/encoder.h"
+#include "encoder/encoder_context.h"
 
 #include <LuaIntf/LuaIntf.h>
 
@@ -55,13 +56,14 @@ std::tuple<LuaRef, std::string> Encode(
 	if (!pSchema)
 		return std::make_tuple(LuaRef(L, nullptr), "no type " + sName);
 
-	Encoder encoder(*pSchema);
+	EncoderContext ctx{*pSchema};
+	Encoder encoder(ctx);
 	if (encoder.Encode(sName, table))
 	{
 		return std::make_tuple(LuaRef::fromValue(
 			L, encoder.GetResultStr()), "");
 	}
-	return std::make_tuple(LuaRef(L, nullptr), encoder.GetErrorStr());
+	return std::make_tuple(LuaRef(L, nullptr), ctx.sError);
 }
 
 // Decode buffer to lua table.

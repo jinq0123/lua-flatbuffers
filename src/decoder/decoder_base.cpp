@@ -1,6 +1,6 @@
 #include "decoder_base.h"
 
-#include "name_stack.h"
+#include "name_stack.h"  // for PopFullName()
 
 #include <sstream>  // for ostringstream
 

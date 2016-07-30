@@ -4,6 +4,9 @@
     <Filter Include="decoder">
       <UniqueIdentifier>{1B6F5608-874E-D5A3-9066-607AFCC43B05}</UniqueIdentifier>
     </Filter>
+    <Filter Include="encoder">
+      <UniqueIdentifier>{85194F6A-F1F8-CD05-FA10-59DC666F3467}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\src\decoder\decoder_base.h">
@@ -31,6 +34,15 @@
       <Filter>decoder</Filter>
     </ClInclude>
     <ClInclude Include="..\src\encoder.h" />
+    <ClInclude Include="..\src\encoder\encoder.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\encoder\encoder_base.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
+    <ClInclude Include="..\src\encoder\encoder_context.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\name_stack.h" />
     <ClInclude Include="..\src\schema_cache.h" />
   </ItemGroup>
@@ -57,6 +69,12 @@
       <Filter>decoder</Filter>
     </ClCompile>
     <ClCompile Include="..\src\encoder.cpp" />
+    <ClCompile Include="..\src\encoder\encoder.cpp">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\encoder\encoder_base.cpp">
+      <Filter>encoder</Filter>
+    </ClCompile>
     <ClCompile Include="..\src\flatbuffers.cpp" />
     <ClCompile Include="..\src\name_stack.cpp" />
     <ClCompile Include="..\src\schema_cache.cpp" />
