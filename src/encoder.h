@@ -51,14 +51,15 @@ private:
 	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaArray);
 
 	// Cache to map before StartTable().
-	using Field2Scalar = std::unordered_map<const Field*, LuaRef>;
+	// Field2Lua caches scalar and struct LuaRef.
+	using Field2Lua = std::unordered_map<const Field*, LuaRef>;
 	using Field2Offset = std::unordered_map<const Field*, uoffset_t>;
 	bool CacheFields(const Object& obj, const LuaRef& luaTable,
-		Field2Scalar& rMapScalar, Field2Offset& rMapOffset);
+		Field2Lua& rMapLuaRef, Field2Offset& rMapOffset);
 	void CacheField(const Field* pField, const LuaRef& luaValue,
-		Field2Scalar& rMapScalar, Field2Offset& rMapOffset);
+		Field2Lua& rMapLuaRef, Field2Offset& rMapOffset);
 
-	void AddElements(const Field2Scalar& mapScalar);
+	void AddElements(const Field2Lua& mapScalar);
 	void AddOffsets(const Field2Offset& mapOffset);
 	void AddElement(const Field& field, const LuaRef& value);
 
