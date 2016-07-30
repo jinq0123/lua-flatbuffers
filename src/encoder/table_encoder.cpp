@@ -10,12 +10,13 @@ flatbuffers::uoffset_t TableEncoder::EncodeTable(
 {
 	assert(!obj.is_struct());
 	assert(luaTable.isTable());
+	m_luaTable = luaTable;
 
 	// Cache to map before StartTable().
 	m_mapStructs.clear();
 	m_mapScalars.clear();
 	m_mapOffsets.clear();
-	CacheFields(obj, luaTable);
+	CacheFields(obj);
 	if (Bad()) return 0;
 
 	uoffset_t start = Builder().StartTable();
@@ -32,21 +33,22 @@ flatbuffers::uoffset_t TableEncoder::EncodeVector(
 	const reflection::Type& type, const LuaRef& luaArray)
 {
 	assert(type.base_type() == reflection::Vector);
-	// todo: check luaArray is array
+	// XXX: check luaArray is array
 	return 0;
 }
 
 // Cache fields to 3 maps.
-void TableEncoder::CacheFields(const Object& obj, const LuaRef& luaTable)
+void TableEncoder::CacheFields(const Object& obj)
 {
 	const auto& vFields = *obj.fields();
-	for (const auto& e : luaTable)
+	for (const auto& e : m_luaTable)
 	{
 		string sKey = e.key<string>();
 		const Field* pField = vFields.LookupByKey(sKey.c_str());
-		CheckObjectField(pField, sKey);
-		if (Bad()) return;
-		assert(pField);
+		if (!pField)
+			ERR_RET("illegal field " + PopFullFieldName(sKey));
+		if (pField->deprecated())
+			ERR_RET("deprecated field " + PopFullFieldName(sKey));
 
 		LuaRef value = e.value<LuaRef>();
 		CacheField(pField, value);
@@ -202,14 +204,4 @@ inline void TableEncoder::AddElement(uint16_t offset,
 	Builder().AddElement(offset,
 		elementValue.toValue<ElementType>(),
 		static_cast<ElementType>(defaultValue));
-}
-
-// Set error if field is illegal.
-// sFieldName is only used for error message.
-void TableEncoder::CheckObjectField(const Field* pField, const string& sFieldName)
-{
-	if (!pField)
-		ERR_RET("illegal field " + PopFullFieldName(sFieldName));
-	if (pField->deprecated())
-		ERR_RET("deprecated field " + PopFullFieldName(sFieldName));
 }

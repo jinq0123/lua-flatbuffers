@@ -22,7 +22,7 @@ private:
 
 	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaArray);
 
-	void CacheFields(const Object& obj, const LuaRef& luaTable);
+	void CacheFields(const Object& obj);
 	void CacheField(const Field* pField, const LuaRef& luaValue);
 	void CacheObjField(const Field* pField, const LuaRef& luaValue);
 
@@ -35,9 +35,6 @@ private:
 	template <typename ElementType, typename DefaultValueType>
 	inline void AddElement(uint16_t offset, const LuaRef& elementValue,
 		DefaultValueType defaultValue);
-
-private:
-	void CheckObjectField(const Field* pField, const string& sFieldName);
 
 private:
 	// Cache to map before StartTable().
