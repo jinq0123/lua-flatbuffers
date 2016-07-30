@@ -42,6 +42,9 @@
     <ClInclude Include="..\src\encoder\encoder_context.h">
       <Filter>encoder</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\encoder\object_encoder.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\encoder\xxx_encoder.h">
       <Filter>encoder</Filter>
     </ClInclude>
@@ -74,6 +77,9 @@
       <Filter>encoder</Filter>
     </ClCompile>
     <ClCompile Include="..\src\encoder\encoder_base.cpp">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\encoder\object_encoder.cpp">
       <Filter>encoder</Filter>
     </ClCompile>
     <ClCompile Include="..\src\encoder\xxx_encoder.cpp">

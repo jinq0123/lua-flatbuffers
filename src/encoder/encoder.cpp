@@ -1,5 +1,7 @@
 #include "encoder.h"
 
+#include "object_encoder.h"  // for ObjectEncoder
+
 bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
 {
 	if (!luaTable.isTable())
