@@ -26,9 +26,10 @@ private:
 	void CacheField(const Field* pField, const LuaRef& luaValue);
 
 	void EncodeCachedStructs();
+	void EncodeStruct(const Field& field, const LuaRef& luaValue);
 	void EncodeCachedScalars();
+	void EncodeScalar(const Field& field, const LuaRef& luaValue);
 	void EncodeCachedOffsets();
-	void EncodeScalar(const Field& field, const LuaRef& value);
 
 	template <typename ElementType, typename DefaultValueType>
 	inline void AddElement(uint16_t offset, const LuaRef& elementValue,
@@ -42,9 +43,9 @@ private:
 	// Field2Lua caches scalar and struct LuaRef.
 	using Field2Lua = std::unordered_map<const Field*, LuaRef>;
 	using Field2Offset = std::unordered_map<const Field*, uoffset_t>;
-	Field2Lua m_mapScalar;
-	Field2Lua m_mapStruct;
-	Field2Offset m_mapOffset;
+	Field2Lua m_mapScalars;
+	Field2Lua m_mapStructs;
+	Field2Offset m_mapOffsets;
 };  // class TableEncoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_TABLE_ENCODER_H_

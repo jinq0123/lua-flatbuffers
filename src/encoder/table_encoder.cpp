@@ -1,5 +1,7 @@
 #include "table_encoder.h"
 
+#include "struct_encoder.h"  // StructEncoder
+
 // Todo: check required fields.
 // Todo: Skip default value.
 
@@ -9,9 +11,9 @@ flatbuffers::uoffset_t TableEncoder::EncodeTable(
 	assert(!obj.is_struct());
 
 	// Cache to map before StartTable().
-	m_mapStruct.clear();
-	m_mapScalar.clear();
-	m_mapOffset.clear();
+	m_mapStructs.clear();
+	m_mapScalars.clear();
+	m_mapOffsets.clear();
 	if (!CacheFields(obj, luaTable))
 		return 0;
 
@@ -58,20 +60,20 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 	switch (type.base_type())
 	{
 	case String:
-		m_mapOffset[pField] = Builder().CreateString(
+		m_mapOffsets[pField] = Builder().CreateString(
 			luaValue.toValue<const char*>()).o;
 		break;
 	case Vector:
-		m_mapOffset[pField] = EncodeVector(type, luaValue);
+		m_mapOffsets[pField] = EncodeVector(type, luaValue);
 		break;
 	case Obj:
 	{
 		const Object* pObj = Objects()[type.index()];
 		assert(pObj);
 		if (pObj->is_struct())
-			m_mapStruct[pField] = luaValue;
+			m_mapStructs[pField] = luaValue;
 		else
-			m_mapOffset[pField] = TableEncoder(m_rCtx)
+			m_mapOffsets[pField] = TableEncoder(m_rCtx)
 				.EncodeTable(*pObj, luaValue);
 		break;
 	}
@@ -79,19 +81,35 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 		// XXX get union underlying type...
 		break;
 	default:
-		m_mapScalar[pField] = luaValue;
+		m_mapScalars[pField] = luaValue;
 		break;
 	}  // switch
 }
 
 void TableEncoder::EncodeCachedStructs()
 {
-	// XXX
+	for (const auto& e : m_mapStructs)
+	{
+		const Field* pField = e.first;
+		const LuaRef luaValue = e.second;
+		assert(pField);
+		EncodeStruct(*pField, luaValue);
+	}
+}
+
+void TableEncoder::EncodeStruct(const Field& field, const LuaRef& luaValue)
+{
+	const reflection::Type& type = *field.type();
+	const Object* pObj = Objects()[type.index()];
+	assert(pObj);
+	assert(pObj->is_struct());
+	uoffset_t offset = StructEncoder(m_rCtx).EncodeStruct(*pObj, luaValue);
+	Builder().AddStructOffset(field.offset(), offset);
 }
 
 void TableEncoder::EncodeCachedScalars()
 {
-	for (const auto& e : m_mapScalar)
+	for (const auto& e : m_mapScalars)
 	{
 		const Field* pField = e.first;
 		assert(pField);
@@ -99,7 +117,7 @@ void TableEncoder::EncodeCachedScalars()
 	}
 }
 
-void TableEncoder::EncodeScalar(const Field& field, const LuaRef& elementValue)
+void TableEncoder::EncodeScalar(const Field& field, const LuaRef& luaValue)
 {
 	using namespace reflection;
 	const Type& type = *field.type();
@@ -113,34 +131,34 @@ void TableEncoder::EncodeScalar(const Field& field, const LuaRef& elementValue)
 	case UType:
 	case Bool:
 	case UByte:
-		AddElement<uint8_t>(offset, elementValue, defInt);
+		AddElement<uint8_t>(offset, luaValue, defInt);
 		break;
 	case Byte:
-		AddElement<int8_t>(offset, elementValue, defInt);
+		AddElement<int8_t>(offset, luaValue, defInt);
 		break;
 	case Short:
-		AddElement<int16_t>(offset, elementValue, defInt);
+		AddElement<int16_t>(offset, luaValue, defInt);
 		break;
 	case UShort:
-		AddElement<uint16_t>(offset, elementValue, defInt);
+		AddElement<uint16_t>(offset, luaValue, defInt);
 		break;
 	case Int:
-		AddElement<int32_t>(offset, elementValue, defInt);
+		AddElement<int32_t>(offset, luaValue, defInt);
 		break;
 	case UInt:
-		AddElement<uint32_t>(offset, elementValue, defInt);
+		AddElement<uint32_t>(offset, luaValue, defInt);
 		break;
 	case Long:
-		AddElement<int64_t>(offset, elementValue, defInt);
+		AddElement<int64_t>(offset, luaValue, defInt);
 		break;
 	case ULong:
-		AddElement<uint64_t>(offset, elementValue, defInt);
+		AddElement<uint64_t>(offset, luaValue, defInt);
 		break;
 	case Float:
-		AddElement<float>(offset, elementValue, defReal);
+		AddElement<float>(offset, luaValue, defReal);
 		break;
 	case Double:
-		AddElement<double>(offset, elementValue, defReal);
+		AddElement<double>(offset, luaValue, defReal);
 		break;
 	default:
 		assert(!"Illegal type.");
@@ -150,12 +168,13 @@ void TableEncoder::EncodeScalar(const Field& field, const LuaRef& elementValue)
 
 void TableEncoder::EncodeCachedOffsets()
 {
-	for (const auto& e : m_mapOffset)
+	for (const auto& e : m_mapOffsets)
 	{
 		const Field* pField = e.first;
 		assert(pField);
 		uoffset_t offset = e.second;
-		Builder().AddOffset(pField->offset(), flatbuffers::Offset<void>(offset));
+		Builder().AddOffset(pField->offset(),
+			flatbuffers::Offset<void>(offset));
 	}
 }
 
