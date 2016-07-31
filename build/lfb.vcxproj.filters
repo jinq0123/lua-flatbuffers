@@ -48,7 +48,7 @@
     <ClInclude Include="..\src\encoder\table_encoder.h">
       <Filter>encoder</Filter>
     </ClInclude>
-    <ClInclude Include="..\src\encoder\xxx_encoder.h">
+    <ClInclude Include="..\src\encoder\union_encoder.h">
       <Filter>encoder</Filter>
     </ClInclude>
     <ClInclude Include="..\src\name_stack.h" />
@@ -88,7 +88,7 @@
     <ClCompile Include="..\src\encoder\table_encoder.cpp">
       <Filter>encoder</Filter>
     </ClCompile>
-    <ClCompile Include="..\src\encoder\xxx_encoder.cpp">
+    <ClCompile Include="..\src\encoder\union_encoder.cpp">
       <Filter>encoder</Filter>
     </ClCompile>
     <ClCompile Include="..\src\flatbuffers.cpp" />

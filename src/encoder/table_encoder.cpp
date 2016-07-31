@@ -1,6 +1,7 @@
 #include "table_encoder.h"
 
 #include "struct_encoder.h"  // StructEncoder
+#include "union_encoder.h"
 
 // Todo: check required fields.
 // Todo: Skip default value.
