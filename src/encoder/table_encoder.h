@@ -25,6 +25,7 @@ private:
 	void CacheFields(const Object& obj);
 	void CacheField(const Field* pField, const LuaRef& luaValue);
 	void CacheObjField(const Field* pField, const LuaRef& luaValue);
+	void CacheUnionField(const Field* pField, const LuaRef& luaValue);
 
 	void EncodeCachedStructs();
 	void EncodeStruct(const Field& field, const LuaRef& luaValue);
