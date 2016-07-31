@@ -12,7 +12,11 @@ bool Encoder::Encode(const string& sName, const LuaRef& luaTable)
 	}
 
 	const reflection::Object* pObj = Objects().LookupByKey(sName.c_str());
-	assert(pObj);
+	if (!pObj)
+	{
+		SetError("schema has no type " + sName);  // wrong schema
+		return false;
+	}
 	PushName(sName);
 	flatbuffers::uoffset_t offset =
 		pObj->is_struct() ?

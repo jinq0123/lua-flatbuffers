@@ -15,7 +15,8 @@ LuaIntf::LuaRef RootDecoder::Decode(const string& sName, const void* pBuf)
 		ERR_RET_NIL("illegal root");
 
 	const reflection::Object* pObj = Objects().LookupByKey(sName.c_str());
-	assert(pObj);
+	if (!pObj)
+		ERR_RET_NIL("schema has no type " + sName);  // wrong schema
 	
 	return ObjectDecoder(m_rCtx).DecodeObject(*pObj, pRoot);
 }
