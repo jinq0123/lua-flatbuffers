@@ -52,7 +52,9 @@ void TableEncoder::CacheFields(const Object& obj)
 			ERR_RET("deprecated field " + PopFullFieldName(sKey));
 
 		LuaRef value = e.value<LuaRef>();
+		PushName(*pField);
 		CacheField(pField, value);
+		SafePopName();
 		if (Bad()) return;
 	}
 }
@@ -126,7 +128,10 @@ void TableEncoder::EncodeCachedStructs()
 		const Field* pField = e.first;
 		const LuaRef luaValue = e.second;
 		assert(pField);
+		PushName(*pField);
 		EncodeStruct(*pField, luaValue);
+		SafePopName();
+		if (Bad()) return;
 	}
 }
 
@@ -146,7 +151,10 @@ void TableEncoder::EncodeCachedScalars()
 	{
 		const Field* pField = e.first;
 		assert(pField);
+		PushName(*pField);
 		EncodeScalar(*pField, e.second);
+		SafePopName();
+		if (Bad()) return;
 	}
 }
 
@@ -201,6 +209,7 @@ void TableEncoder::EncodeScalar(const Field& field, const LuaRef& luaValue)
 
 void TableEncoder::EncodeCachedOffsets()
 {
+	assert(!Bad());
 	for (const auto& e : m_mapOffsets)
 	{
 		const Field* pField = e.first;
@@ -209,6 +218,7 @@ void TableEncoder::EncodeCachedOffsets()
 		Builder().AddOffset(pField->offset(),
 			flatbuffers::Offset<void>(offset));
 	}
+	assert(!Bad());
 }
 
 template <typename ElementType, typename DefaultValueType>
