@@ -10,25 +10,50 @@ flatbuffers::uoffset_t UnionEncoder::EncodeUnion(
 	int64_t qwType = GetType(luaType);
 	if (Bad()) return 0;
 
+	const reflection::EnumVal* pEnumVal = enu.values()->LookupByKey(qwType);
+	if (!pEnumVal)
+	{
+		SetError("illegal union " + PopFullName() + "'s type "
+			+ luaType.toValue<string>());
+		return 0;
+	}
 	// XXX
+
 	return 0;
 }
 
-int64_t UnionEncoder::GetType(const LuaRef& luaType)
+// Return null if error.
+const reflection::EnumVal* UnionEncoder::GetEnumVal(
+	const reflection::Enum& enu, const LuaRef& luaType)
 {
 	if (!luaType)
 	{
 		SetError("missing type of union " + PopFullName());
-		return -1;
+		return nullptr;
 	}
+	LuaTypeID luaTypeId = luaType.type();
+	if (LuaTypeID::NUMBER == luaTypeId)
+	{
+		int64_t qwType = luaType.toValue<int64_t>();
+		return GetEnumValFromNum(qwType);
+		//const reflection::EnumVal* pEnumVal = m_pEnum->LookupByKey(qwType);
+		//if (!pEnumVal)
+		//	SetError("illegal union " + PopFullName() " "'s type " + )
 
-	try
-	{
-		return luaType.toValue<int64_t>();
 	}
-	catch (...)
+	if (LuaTypeID::STRING == luaTypeId)
 	{
+		string sType = luaType.toValue<string>();
+		return GetEnumValFromName(sType);
 	}
+	SetError("union " + PopFullName()
+		+ "'s type must be number or string but not " + luaType.typeName());
+	return nullptr;
+}
+
+int64_t UnionEncoder::GetType(const LuaRef& luaType)
+{
+
 
 	string sType = luaType.toValue<string>();
 	return GetTypeFromName(sType);

@@ -15,6 +15,7 @@ public:
 		const LuaRef& luaValue);
 
 public:
+	const reflection::EnumVal* GetEnumVal(const LuaRef& luaType);
 	int64_t GetType(const LuaRef& luaType);
 	int64_t GetTypeFromName(const string& sType);
 
