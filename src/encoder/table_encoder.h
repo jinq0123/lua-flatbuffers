@@ -46,7 +46,7 @@ private:
 	Field2Lua m_mapStructs;
 	Field2Offset m_mapOffsets;
 
-	LuaRef m_luaTable;
+	const LuaRef* m_pLuaTable;
 };  // class TableEncoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_TABLE_ENCODER_H_

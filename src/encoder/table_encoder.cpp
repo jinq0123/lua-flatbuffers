@@ -11,7 +11,7 @@ flatbuffers::uoffset_t TableEncoder::EncodeTable(
 {
 	assert(!obj.is_struct());
 	assert(luaTable.isTable());
-	m_luaTable = luaTable;
+	m_pLuaTable = &luaTable;
 
 	// Cache to map before StartTable().
 	m_mapStructs.clear();
@@ -42,7 +42,7 @@ flatbuffers::uoffset_t TableEncoder::EncodeVector(
 void TableEncoder::CacheFields(const Object& obj)
 {
 	const auto& vFields = *obj.fields();
-	for (const auto& e : m_luaTable)
+	for (const auto& e : *m_pLuaTable)
 	{
 		string sKey = e.key<string>();
 		const Field* pField = vFields.LookupByKey(sKey.c_str());
@@ -121,7 +121,7 @@ void TableEncoder::CacheUnionField(const Field* pField, const LuaRef& luaValue)
 	assert(pEnum);
 	string sFieldName(pField->name()->c_str());
 	string sTypeField = sFieldName + flatbuffers::UnionTypeFieldSuffix();
-	LuaRef luaType = m_luaTable.get(sTypeField);
+	LuaRef luaType = m_pLuaTable->get(sTypeField);
 	PushName(*pField);
 	m_mapOffsets[pField] =
 		UnionEncoder(m_rCtx).EncodeUnion(*pEnum, luaType, luaValue);
