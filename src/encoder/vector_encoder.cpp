@@ -1,6 +1,7 @@
 #include "vector_encoder.h"
 
 #include "struct_encoder.h"  // for StructEncoder
+#include "table_encoder.h"  // for TableEncoder
 
 // XXX: check luaArray is array
 
@@ -82,13 +83,13 @@ uoffset_t VectorEncoder::EncodeStructVector(
 	int32_t elemSize = elemObj.bytesize();
 	uoffset_t offset = Builder()
 		.CreateUninitializedVector(len, elemSize, &pBuf);
-	StructEncoder enc(m_rCtx);
+
 	for (int i = 1; i <= len; ++i)
 	{
 		LuaRef luaElem = luaArray.get(i);
 		uint8_t* pDest = pBuf + (i-1) * elemSize;
 		// Todo: Push indexed name...
-		enc.EncodeStructToBuf(elemObj, luaElem, pDest);
+		StructEncoder(m_rCtx).EncodeStructToBuf(elemObj, luaElem, pDest);
 		if (Bad()) return 0;
 	}
 	return offset;
@@ -98,8 +99,18 @@ uoffset_t VectorEncoder::EncodeTableVector(
 	const Object& elemObj, const LuaRef& luaArray)
 {
 	assert(!elemObj.is_struct());
-	// XXX
-	return 0;
+	int len = luaArray.len();
+	std::vector<uoffset_t> vOffsets;
+	for (int i = 1; i <= len; ++i)
+	{
+		LuaRef luaElem = luaArray.get(i);
+		// Todo: Push indexed name...
+		vOffsets.push_back(TableEncoder(m_rCtx).EncodeTable(elemObj, luaElem));
+		if (Bad()) return 0;
+	}
+
+	// Todo: Sort...
+	return Builder().CreateVector(vOffsets).o;
 }
 
 template<typename T>
