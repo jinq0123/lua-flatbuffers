@@ -13,12 +13,14 @@ public:
 	uoffset_t EncodeVector(const reflection::Type& type, const LuaRef& luaValue);
 
 private:
+	using Object = reflection::Object;
 	uoffset_t EncodeScalarVector(
 		reflection::BaseType elemType,
 		const LuaRef& luaArray);
 	uoffset_t EncodeStringVector(const LuaRef& luaArray);
-	uoffset_t EncoderObjectVectort(const reflection::Object& obj,
-		const LuaRef& luaArray);
+	uoffset_t EncoderObjectVectort(const Object& obj, const LuaRef& luaArray);
+	uoffset_t EncoderStructVectort(const Object& obj, const LuaRef& luaArray);
+	uoffset_t EncoderTableVectort(const Object& obj, const LuaRef& luaArray);
 
 	template<typename T>
 	uoffset_t CreateScalarVector(const LuaRef& luaArray);

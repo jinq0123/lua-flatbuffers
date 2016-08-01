@@ -8,6 +8,7 @@ uoffset_t VectorEncoder::EncodeVector(
 	const reflection::Type& type, const LuaRef& luaArray)
 {
 	using namespace reflection;
+	assert(luaArray.isTable());  // Todo: check array...
 	assert(type.base_type() == Vector);
 	BaseType elemType = type.element();
 	if (elemType <= Double)
@@ -65,8 +66,9 @@ uoffset_t VectorEncoder::EncodeStringVector(const LuaRef& luaArray)
 uoffset_t VectorEncoder::EncoderObjectVectort(
 	const reflection::Object& obj, const LuaRef& luaArray)
 {
-	// XXX
-	return 0;
+	if (obj.is_struct())
+		return EncodeStructVector(obj, luaArray);
+	return EncodeTableVector(obj, luaArray);
 }
 
 template<typename T>
