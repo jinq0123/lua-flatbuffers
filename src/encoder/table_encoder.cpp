@@ -116,6 +116,7 @@ void TableEncoder::CacheUnionField(const Field* pField, const LuaRef& luaValue)
 {
 	assert(pField);
 	const reflection::Type& type = *pField->type();
+	assert(reflection::Union == type.base_type());
 	const reflection::Enum* pEnum = (*m_rCtx.schema.enums())[type.index()];
 	assert(pEnum);
 	string sFieldName(pField->name()->c_str());
