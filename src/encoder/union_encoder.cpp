@@ -1,24 +1,31 @@
 #include "union_encoder.h"
 
+#include "table_encoder.h"  // for TableEncoder
+
 #include <sstream>  // for ostringstream
 
+using reflection::EnumVal;
+
 flatbuffers::uoffset_t UnionEncoder::EncodeUnion(
-	const reflection::Enum& enu,
+	const Enum& enu,
 	const LuaRef& luaType,
 	const LuaRef& luaValue)
 {
-	const reflection::EnumVal* pEnumVal = GetEnumVal(enu, luaType);
+	const EnumVal* pEnumVal = GetEnumVal(enu, luaType);
 	if (Bad()) return 0;
 	assert(pEnumVal);
 
 	// XXX
-
-	return 0;
+	const reflection::Object* pObj = pEnumVal->object();
+	assert(pObj);
+	// only tables can be union elements
+	assert(!pObj->is_struct());
+	return TableEncoder(m_rCtx).EncodeTable(*pObj, luaValue);
 }
 
 // Return null if error.
-const reflection::EnumVal* UnionEncoder::GetEnumVal(
-	const reflection::Enum& enu, const LuaRef& luaType)
+const EnumVal* UnionEncoder::GetEnumVal(
+	const Enum& enu, const LuaRef& luaType)
 {
 	if (!luaType)
 	{
@@ -44,10 +51,10 @@ const reflection::EnumVal* UnionEncoder::GetEnumVal(
 	return nullptr;
 }
 
-const reflection::EnumVal* UnionEncoder::GetEnumValFromNum(
-	const reflection::Enum& enu, int64_t qwType)
+const EnumVal* UnionEncoder::GetEnumValFromNum(
+	const Enum& enu, int64_t qwType)
 {
-	const reflection::EnumVal* pEnumVal = enu.values()->LookupByKey(qwType);
+	const EnumVal* pEnumVal = enu.values()->LookupByKey(qwType);
 	if (pEnumVal) return pEnumVal;
 	std::ostringstream oss;
 	oss << "illegal union " << PopFullName() << "'s type value " << qwType;
@@ -55,10 +62,10 @@ const reflection::EnumVal* UnionEncoder::GetEnumValFromNum(
 	return nullptr;
 }
 
-const reflection::EnumVal* UnionEncoder::GetEnumValFromName(
-	const reflection::Enum& enu, const std::string& sType)
+const EnumVal* UnionEncoder::GetEnumValFromName(
+	const Enum& enu, const std::string& sType)
 {
-	for (const reflection::EnumVal* pEnumVal : *enu.values())
+	for (const EnumVal* pEnumVal : *enu.values())
 	{
 		assert(pEnumVal);
 		if (pEnumVal->name()->c_str() == sType)
