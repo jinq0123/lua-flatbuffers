@@ -1,22 +1,16 @@
 #include "union_encoder.h"
 
+#include <sstream>  // for ostringstream
+
 flatbuffers::uoffset_t UnionEncoder::EncodeUnion(
 	const reflection::Enum& enu,
 	const LuaRef& luaType,
 	const LuaRef& luaValue)
 {
-	m_pEnum = &enu;
-
-	int64_t qwType = GetType(luaType);
+	const reflection::EnumVal* pEnumVal = GetEnumVal(enu, luaType);
 	if (Bad()) return 0;
+	assert(pEnumVal);
 
-	const reflection::EnumVal* pEnumVal = enu.values()->LookupByKey(qwType);
-	if (!pEnumVal)
-	{
-		SetError("illegal union " + PopFullName() + "'s type "
-			+ luaType.toValue<string>());
-		return 0;
-	}
 	// XXX
 
 	return 0;
@@ -31,43 +25,46 @@ const reflection::EnumVal* UnionEncoder::GetEnumVal(
 		SetError("missing type of union " + PopFullName());
 		return nullptr;
 	}
+
+	using LuaIntf::LuaTypeID;
 	LuaTypeID luaTypeId = luaType.type();
 	if (LuaTypeID::NUMBER == luaTypeId)
 	{
 		int64_t qwType = luaType.toValue<int64_t>();
-		return GetEnumValFromNum(qwType);
-		//const reflection::EnumVal* pEnumVal = m_pEnum->LookupByKey(qwType);
-		//if (!pEnumVal)
-		//	SetError("illegal union " + PopFullName() " "'s type " + )
-
+		return GetEnumValFromNum(enu, qwType);
 	}
+
 	if (LuaTypeID::STRING == luaTypeId)
 	{
 		string sType = luaType.toValue<string>();
-		return GetEnumValFromName(sType);
+		return GetEnumValFromName(enu, sType);
 	}
-	SetError("union " + PopFullName()
-		+ "'s type must be number or string but not " + luaType.typeName());
+
+	SetError("union " + PopFullName() + "'s type is " + luaType.typeName());
 	return nullptr;
 }
 
-int64_t UnionEncoder::GetType(const LuaRef& luaType)
+const reflection::EnumVal* UnionEncoder::GetEnumValFromNum(
+	const reflection::Enum& enu, int64_t qwType)
 {
-
-
-	string sType = luaType.toValue<string>();
-	return GetTypeFromName(sType);
+	const reflection::EnumVal* pEnumVal = enu.values()->LookupByKey(qwType);
+	if (pEnumVal) return pEnumVal;
+	std::ostringstream oss;
+	oss << "illegal union " << PopFullName() << "'s type value " << qwType;
+	SetError(oss.str());
+	return nullptr;
 }
 
-int64_t UnionEncoder::GetTypeFromName(const string& sType)
+const reflection::EnumVal* UnionEncoder::GetEnumValFromName(
+	const reflection::Enum& enu, const std::string& sType)
 {
-	for (const reflection::EnumVal* pEnumVal : *m_pEnum->values())
+	for (const reflection::EnumVal* pEnumVal : *enu.values())
 	{
 		assert(pEnumVal);
 		if (pEnumVal->name()->c_str() == sType)
-			return pEnumVal->value();
+			return pEnumVal;
 	}
 	SetError("illegal union " + PopFullName() + "'s type '" + sType + "'");
-	return -1;
+	return nullptr;
 }
 
