@@ -15,6 +15,7 @@ LuaRef TableDecoder::DecodeTable(
 		ERR_RET_NIL("illegal start of table " + PopFullName());
 
 	LuaRef luaTable = CreateLuaTable();
+	// Decode union_type before union fields. XXX
 	for (const Field* pField : *object.fields())
 	{
 		assert(pField);
