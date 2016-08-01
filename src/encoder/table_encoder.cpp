@@ -52,9 +52,7 @@ void TableEncoder::CacheFields(const Object& obj)
 			ERR_RET("deprecated field " + PopFullFieldName(sKey));
 
 		LuaRef value = e.value<LuaRef>();
-		PushName(*pField);
 		CacheField(pField, value);
-		SafePopName();
 		if (Bad()) return;
 	}
 }
@@ -73,7 +71,9 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 			luaValue.toValue<const char*>()).o;
 		break;
 	case Vector:
+		PushName(*pField);
 		m_mapOffsets[pField] = EncodeVector(type, luaValue);
+		SafePopName();
 		break;
 	case Obj:
 		CacheObjField(pField, luaValue);
@@ -102,10 +102,14 @@ void TableEncoder::CacheObjField(const Field* pField, const LuaRef& luaValue)
 	const Object* pObj = Objects()[type.index()];
 	assert(pObj);
 	if (pObj->is_struct())
+	{
 		m_mapStructs[pField] = luaValue;
-	else
-		m_mapOffsets[pField] = TableEncoder(m_rCtx)
-			.EncodeTable(*pObj, luaValue);
+		return;
+	}
+
+	PushName(*pField);
+	m_mapOffsets[pField] = TableEncoder(m_rCtx).EncodeTable(*pObj, luaValue);
+	SafePopName();
 }
 
 void TableEncoder::CacheUnionField(const Field* pField, const LuaRef& luaValue)
@@ -117,8 +121,10 @@ void TableEncoder::CacheUnionField(const Field* pField, const LuaRef& luaValue)
 	string sFieldName(pField->name()->c_str());
 	string sTypeField = sFieldName + flatbuffers::UnionTypeFieldSuffix();
 	LuaRef luaType = m_luaTable.get(sTypeField);
+	PushName(*pField);
 	m_mapOffsets[pField] =
 		UnionEncoder(m_rCtx).EncodeUnion(*pEnum, luaType, luaValue);
+	SafePopName();
 }
 
 void TableEncoder::EncodeCachedStructs()
