@@ -1,7 +1,8 @@
 #include "table_encoder.h"
 
-#include "struct_encoder.h"  // StructEncoder
-#include "union_encoder.h"
+#include "struct_encoder.h"  // for StructEncoder
+#include "union_encoder.h"  // for UnionEncoder
+#include "vector_encoder.h"  // for VectorEncoder
 
 // Todo: check required fields.
 // Todo: Skip default value.
@@ -28,14 +29,6 @@ flatbuffers::uoffset_t TableEncoder::EncodeTable(
 	EncodeCachedOffsets();
 	if (Bad()) return 0;
 	return Builder().EndTable(start, obj.fields()->size());
-}
-
-flatbuffers::uoffset_t TableEncoder::EncodeVector(
-	const reflection::Type& type, const LuaRef& luaArray)
-{
-	assert(type.base_type() == reflection::Vector);
-	// XXX: check luaArray is array
-	return 0;
 }
 
 // Cache fields to 3 maps.
@@ -71,9 +64,7 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 			luaValue.toValue<const char*>()).o;
 		break;
 	case Vector:
-		PushName(*pField);
-		m_mapOffsets[pField] = EncodeVector(type, luaValue);
-		SafePopName();
+		CacheVectorField(pField, luaValue);
 		break;
 	case Obj:
 		CacheObjField(pField, luaValue);
@@ -85,6 +76,15 @@ void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
 		m_mapScalars[pField] = luaValue;
 		break;
 	}  // switch
+}
+
+void TableEncoder::CacheVectorField(const Field* pField, const LuaRef& luaValue)
+{
+	const reflection::Type& type = *pField->type();
+	assert(reflection::Vector == type.base_type());
+	PushName(*pField);
+	m_mapOffsets[pField] = VectorEncoder(m_rCtx).EncodeVector(type, luaValue);
+	SafePopName();
 }
 
 void TableEncoder::CacheObjField(const Field* pField, const LuaRef& luaValue)

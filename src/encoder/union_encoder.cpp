@@ -15,7 +15,6 @@ flatbuffers::uoffset_t UnionEncoder::EncodeUnion(
 	if (Bad()) return 0;
 	assert(pEnumVal);
 
-	// XXX
 	const reflection::Object* pObj = pEnumVal->object();
 	assert(pObj);
 	// only tables can be union elements

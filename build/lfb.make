@@ -77,6 +77,7 @@ OBJECTS := \
 	$(OBJDIR)/struct_encoder.o \
 	$(OBJDIR)/table_encoder.o \
 	$(OBJDIR)/union_encoder.o \
+	$(OBJDIR)/vector_encoder.o \
 	$(OBJDIR)/flatbuffers.o \
 	$(OBJDIR)/name_stack.o \
 	$(OBJDIR)/schema_cache.o \
@@ -171,6 +172,9 @@ $(OBJDIR)/table_encoder.o: ../src/encoder/table_encoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/union_encoder.o: ../src/encoder/union_encoder.cpp
+	@echo $(notdir $<)
+	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
+$(OBJDIR)/vector_encoder.o: ../src/encoder/vector_encoder.cpp
 	@echo $(notdir $<)
 	$(SILENT) $(CXX) $(ALL_CXXFLAGS) $(FORCE_INCLUDE) -o "$@" -MF "$(@:%.o=%.d)" -c "$<"
 $(OBJDIR)/flatbuffers.o: ../src/flatbuffers.cpp

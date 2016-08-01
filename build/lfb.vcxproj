@@ -106,6 +106,7 @@
     <ClInclude Include="..\src\encoder\struct_encoder.h" />
     <ClInclude Include="..\src\encoder\table_encoder.h" />
     <ClInclude Include="..\src\encoder\union_encoder.h" />
+    <ClInclude Include="..\src\encoder\vector_encoder.h" />
     <ClInclude Include="..\src\name_stack.h" />
     <ClInclude Include="..\src\schema_cache.h" />
   </ItemGroup>
@@ -122,6 +123,7 @@
     <ClCompile Include="..\src\encoder\struct_encoder.cpp" />
     <ClCompile Include="..\src\encoder\table_encoder.cpp" />
     <ClCompile Include="..\src\encoder\union_encoder.cpp" />
+    <ClCompile Include="..\src\encoder\vector_encoder.cpp" />
     <ClCompile Include="..\src\flatbuffers.cpp" />
     <ClCompile Include="..\src\name_stack.cpp" />
     <ClCompile Include="..\src\schema_cache.cpp" />

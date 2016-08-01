@@ -51,6 +51,9 @@
     <ClInclude Include="..\src\encoder\union_encoder.h">
       <Filter>encoder</Filter>
     </ClInclude>
+    <ClInclude Include="..\src\encoder\vector_encoder.h">
+      <Filter>encoder</Filter>
+    </ClInclude>
     <ClInclude Include="..\src\name_stack.h" />
     <ClInclude Include="..\src\schema_cache.h" />
   </ItemGroup>
@@ -89,6 +92,9 @@
       <Filter>encoder</Filter>
     </ClCompile>
     <ClCompile Include="..\src\encoder\union_encoder.cpp">
+      <Filter>encoder</Filter>
+    </ClCompile>
+    <ClCompile Include="..\src\encoder\vector_encoder.cpp">
       <Filter>encoder</Filter>
     </ClCompile>
     <ClCompile Include="..\src\flatbuffers.cpp" />

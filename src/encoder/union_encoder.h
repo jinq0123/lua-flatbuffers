@@ -13,7 +13,7 @@ public:
 	flatbuffers::uoffset_t EncodeUnion(
 		const Enum& enu, const LuaRef& luaType, const LuaRef& luaValue);
 
-public:
+private:
 	using EnumVal = reflection::EnumVal;
 	const EnumVal* GetEnumVal(const Enum& enu, const LuaRef& luaType);
 	const EnumVal* GetEnumValFromNum(const Enum& enu, int64_t qwType);
