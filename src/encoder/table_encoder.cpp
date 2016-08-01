@@ -45,85 +45,81 @@ void TableEncoder::CacheFields(const Object& obj)
 			ERR_RET("deprecated field " + PopFullFieldName(sKey));
 
 		LuaRef value = e.value<LuaRef>();
-		CacheField(pField, value);
+		CacheField(*pField, value);
 		if (Bad()) return;
 	}
 }
 
 // Cache field to 3 maps.
-void TableEncoder::CacheField(const Field* pField, const LuaRef& luaValue)
+void TableEncoder::CacheField(const Field& field, const LuaRef& luaValue)
 {
-	assert(pField);
 	using namespace reflection;
-	const Type& type = *pField->type();
+	const Type& type = *field.type();
 	// Todo: check type of value...
 	switch (type.base_type())
 	{
 	case String:
-		m_mapOffsets[pField] = Builder().CreateString(
+		m_mapOffsets[&field] = Builder().CreateString(
 			luaValue.toValue<const char*>()).o;
 		break;
 	case Vector:
-		CacheVectorField(pField, luaValue);
+		CacheVectorField(field, luaValue);
 		break;
 	case Obj:
-		CacheObjField(pField, luaValue);
+		CacheObjField(field, luaValue);
 		break;
 	case Union:
-		CacheUnionField(pField, luaValue);
+		CacheUnionField(field, luaValue);
 		break;
 	default:
-		m_mapScalars[pField] = luaValue;
+		m_mapScalars[&field] = luaValue;
 		break;
 	}  // switch
 }
 
-void TableEncoder::CacheVectorField(const Field* pField, const LuaRef& luaValue)
+void TableEncoder::CacheVectorField(const Field& field, const LuaRef& luaValue)
 {
-	const reflection::Type& type = *pField->type();
+	const reflection::Type& type = *field.type();
 	assert(reflection::Vector == type.base_type());
-	PushName(*pField);
-	m_mapOffsets[pField] = VectorEncoder(m_rCtx).EncodeVector(type, luaValue);
+	PushName(field);
+	m_mapOffsets[&field] = VectorEncoder(m_rCtx).EncodeVector(type, luaValue);
 	SafePopName();
 }
 
-void TableEncoder::CacheObjField(const Field* pField, const LuaRef& luaValue)
+void TableEncoder::CacheObjField(const Field& field, const LuaRef& luaValue)
 {
-	assert(pField);
-
 	if (!luaValue.isTable())
 	{
-		ERR_RET("object " + PopFullFieldName(pField->name()->c_str())
+		ERR_RET("object " + PopFullFieldName(field.name()->c_str())
 			+ " is not a table but " + luaValue.typeName());
 	}
 
-	const reflection::Type& type = *pField->type();
+	const reflection::Type& type = *field.type();
 	assert(reflection::Obj == type.base_type());
 	const Object* pObj = Objects()[type.index()];
 	assert(pObj);
 	if (pObj->is_struct())
 	{
-		m_mapStructs[pField] = luaValue;
+		m_mapStructs[&field] = luaValue;
 		return;
 	}
 
-	PushName(*pField);
-	m_mapOffsets[pField] = TableEncoder(m_rCtx).EncodeTable(*pObj, luaValue);
+	PushName(field);
+	m_mapOffsets[&field] = TableEncoder(m_rCtx).EncodeTable(*pObj, luaValue);
 	SafePopName();
 }
 
-void TableEncoder::CacheUnionField(const Field* pField, const LuaRef& luaValue)
+void TableEncoder::CacheUnionField(const Field& field, const LuaRef& luaValue)
 {
-	assert(pField);
-	const reflection::Type& type = *pField->type();
+	const reflection::Type& type = *field.type();
 	assert(reflection::Union == type.base_type());
 	const reflection::Enum* pEnum = (*m_rCtx.schema.enums())[type.index()];
 	assert(pEnum);
-	string sFieldName(pField->name()->c_str());
+	string sFieldName(field.name()->c_str());
 	string sTypeField = sFieldName + flatbuffers::UnionTypeFieldSuffix();
 	LuaRef luaType = m_pLuaTable->get(sTypeField);
-	PushName(*pField);
-	m_mapOffsets[pField] =
+	PushName(field);
+	m_mapOffsets[&field] =
 		UnionEncoder(m_rCtx).EncodeUnion(*pEnum, luaType, luaValue);
 	SafePopName();
 }
