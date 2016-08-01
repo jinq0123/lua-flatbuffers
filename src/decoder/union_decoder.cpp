@@ -7,47 +7,48 @@ LuaIntf::LuaRef UnionDecoder::DecodeUnion(
 	const reflection::Type& type, const void* pData)
 {
 	assert(pData);
+	using namespace reflection;
 	switch (type.base_type())
 	{
-	case reflection::UType:
-	case reflection::Bool:
-	case reflection::UByte:
+	case UType:
+	case Bool:
+	case UByte:
 		return DecodeScalar<uint8_t>(pData);
-	case reflection::Byte:
+	case Byte:
 		return DecodeScalar<int8_t>(pData);
-	case reflection::Short:
+	case Short:
 		return DecodeScalar<int16_t>(pData);
-	case reflection::UShort:
+	case UShort:
 		return DecodeScalar<uint16_t>(pData);
-	case reflection::Int:
+	case Int:
 		return DecodeScalar<uint8_t>(pData);
-	case reflection::UInt:
+	case UInt:
 		return DecodeScalar<uint8_t>(pData);
-	case reflection::Long:
+	case Long:
 		return DecodeScalar<int64_t>(pData);
-	case reflection::ULong:
+	case ULong:
 		return DecodeScalar<uint64_t>(pData);
-	case reflection::Float:
+	case Float:
 		return DecodeScalar<float>(pData);
-	case reflection::Double:
+	case Double:
 		return DecodeScalar<double>(pData);
 
-	case reflection::String:
+	case String:
 	{
 		const auto* pStr = reinterpret_cast<const flatbuffers::String*>(pData);
 		if (!Verifier().Verify(pStr))
 			ERR_RET_NIL("illegal string " + PopFullName());
 		return LuaRef::fromValue(LuaState(), pStr->str());
 	}
-	case reflection::Vector:
+	case Vector:
 	{
 		const auto* pVec = reinterpret_cast<
 			const flatbuffers::VectorOfAny*>(pData);
 		return VectorDecoder(m_rCtx).DecodeVector(type, *pVec);
 	}
-	case reflection::Obj:
+	case Obj:
 		return ObjectDecoder(m_rCtx).DecodeObject(*Objects()[type.index()], pData);
-	case reflection::Union:
+	case Union:
 		assert(!"Union must always be part of a table.");
 	}  // switch
 

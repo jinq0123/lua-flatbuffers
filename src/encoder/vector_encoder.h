@@ -19,6 +19,9 @@ private:
 	uoffset_t EncodeStringVector(const LuaRef& luaArray);
 	uoffset_t EncoderObjectVectort(const reflection::Object& obj,
 		const LuaRef& luaArray);
+
+	template<typename T>
+	uoffset_t CreateScalarVector(const LuaRef& luaArray);
 };  // class VectorEncoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_VECTOR_ENCODER_H_

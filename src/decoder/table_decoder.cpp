@@ -9,9 +9,10 @@ using LuaIntf::LuaRef;
 LuaRef TableDecoder::DecodeFieldOfTable(
 	const Table& fbTable, const Field& field)
 {
+	using namespace reflection;
 	if (field.deprecated()) return Nil();
-	reflection::BaseType eType = field.type()->base_type();
-	if (eType <= reflection::Double)
+	BaseType eType = field.type()->base_type();
+	if (eType <= Double)
 		return DecodeScalarField(fbTable, field);
 
 	if (!VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field))
@@ -19,13 +20,13 @@ LuaRef TableDecoder::DecodeFieldOfTable(
 
 	switch (eType)
 	{
-	case reflection::String:
+	case String:
 		return DecodeStringField(fbTable, field);
-	case reflection::Vector:
+	case Vector:
 		return DecodeVectorField(fbTable, field);
-	case reflection::Obj:
+	case Obj:
 		return DecodeObjectField(fbTable, field);
-	case reflection::Union:
+	case Union:
 		return DecodeUnionField(fbTable, field);
 	}
 	assert(!"Illegal field type.");
@@ -35,29 +36,30 @@ LuaRef TableDecoder::DecodeFieldOfTable(
 LuaRef TableDecoder::DecodeScalarField(
 	const Table& fbTable, const Field& field)
 {
+	using namespace reflection;
 	switch (field.type()->base_type())
 	{
-	case reflection::UType:
-	case reflection::Bool:
-	case reflection::UByte:
+	case UType:
+	case Bool:
+	case UByte:
 		return DecodeFieldI<uint8_t>(fbTable, field);
-	case reflection::Byte:
+	case Byte:
 		return DecodeFieldI<int8_t>(fbTable, field);
-	case reflection::Short:
+	case Short:
 		return DecodeFieldI<int16_t>(fbTable, field);
-	case reflection::UShort:
+	case UShort:
 		return DecodeFieldI<uint16_t>(fbTable, field);
-	case reflection::Int:
+	case Int:
 		return DecodeFieldI<int32_t>(fbTable, field);
-	case reflection::UInt:
+	case UInt:
 		return DecodeFieldI<uint32_t>(fbTable, field);
-	case reflection::Long:
+	case Long:
 		return DecodeFieldI<int64_t>(fbTable, field);
-	case reflection::ULong:
+	case ULong:
 		return DecodeFieldI<uint64_t>(fbTable, field);
-	case reflection::Float:
+	case Float:
 		return DecodeFieldF<float>(fbTable, field);
-	case reflection::Double:
+	case Double:
 		return DecodeFieldF<double>(fbTable, field);
 	}
 	assert(!"Illegal scalar field type.");
