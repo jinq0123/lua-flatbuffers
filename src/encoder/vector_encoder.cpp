@@ -1,5 +1,7 @@
 #include "vector_encoder.h"
 
+#include "struct_encoder.h"  // for StructEncoder
+
 // XXX: check luaArray is array
 
 using flatbuffers::uoffset_t;
@@ -19,7 +21,7 @@ uoffset_t VectorEncoder::EncodeVector(
 	assert(elemType = Obj);
 	const Object* pObj = Objects()[type.index()];
 	assert(pObj);
-	return EncoderObjectVectort(*pObj, luaArray);
+	return EncoderObjectVector(*pObj, luaArray);
 }
 
 uoffset_t VectorEncoder::EncodeScalarVector(
@@ -63,12 +65,41 @@ uoffset_t VectorEncoder::EncodeStringVector(const LuaRef& luaArray)
 	return Builder().CreateVectorOfStrings(vStr).o;
 }
 
-uoffset_t VectorEncoder::EncoderObjectVectort(
-	const reflection::Object& obj, const LuaRef& luaArray)
+uoffset_t VectorEncoder::EncoderObjectVector(
+	const reflection::Object& elemObj, const LuaRef& luaArray)
 {
-	if (obj.is_struct())
-		return EncodeStructVector(obj, luaArray);
-	return EncodeTableVector(obj, luaArray);
+	if (elemObj.is_struct())
+		return EncodeStructVector(elemObj, luaArray);
+	return EncodeTableVector(elemObj, luaArray);
+}
+
+uoffset_t VectorEncoder::EncodeStructVector(
+	const Object& elemObj, const LuaRef& luaArray)
+{
+	assert(elemObj.is_struct());
+	int len = luaArray.len();
+	uint8_t* pBuf = 0;
+	int32_t elemSize = elemObj.bytesize();
+	uoffset_t offset = Builder()
+		.CreateUninitializedVector(len, elemSize, &pBuf);
+	StructEncoder enc(m_rCtx);
+	for (int i = 1; i <= len; ++i)
+	{
+		LuaRef luaElem = luaArray.get(i);
+		uint8_t* pDest = pBuf + (i-1) * elemSize;
+		// Todo: Push indexed name...
+		enc.EncodeStructToBuf(elemObj, luaElem, pDest);
+		if (Bad()) return 0;
+	}
+	return offset;
+}
+
+uoffset_t VectorEncoder::EncodeTableVector(
+	const Object& elemObj, const LuaRef& luaArray)
+{
+	assert(!elemObj.is_struct());
+	// XXX
+	return 0;
 }
 
 template<typename T>

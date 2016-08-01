@@ -13,12 +13,13 @@ public:
 	using Object = reflection::Object;
 	flatbuffers::uoffset_t EncodeStruct(const Object& obj, const LuaRef& luaTable);
 
+	void EncodeStructToBuf(const Object& obj,
+		const LuaRef& luaTable, uint8_t* pBuf);
+
 private:
 	using Field = reflection::Field;
 
 	void CheckLuaTable(const Object& obj, const LuaRef& luaTable);
-	void EncodeStructToBuf(const Object& obj,
-		const LuaRef& luaTable, uint8_t* pBuf);
 	void EncodeStructFieldToBuf(const Field& field,
 		const LuaRef& luaTable, uint8_t* pBuf);
 	void EncodeScalarToBuf(reflection::BaseType eType,

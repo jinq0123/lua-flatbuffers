@@ -18,9 +18,9 @@ private:
 		reflection::BaseType elemType,
 		const LuaRef& luaArray);
 	uoffset_t EncodeStringVector(const LuaRef& luaArray);
-	uoffset_t EncoderObjectVectort(const Object& obj, const LuaRef& luaArray);
-	uoffset_t EncoderStructVectort(const Object& obj, const LuaRef& luaArray);
-	uoffset_t EncoderTableVectort(const Object& obj, const LuaRef& luaArray);
+	uoffset_t EncoderObjectVector(const Object& elemObj, const LuaRef& luaArray);
+	uoffset_t EncodeStructVector(const Object& elemObj, const LuaRef& luaArray);
+	uoffset_t EncodeTableVector(const Object& elemObj, const LuaRef& luaArray);
 
 	template<typename T>
 	uoffset_t CreateScalarVector(const LuaRef& luaArray);
