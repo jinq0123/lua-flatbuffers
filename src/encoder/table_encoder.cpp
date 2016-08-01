@@ -5,7 +5,6 @@
 #include "vector_encoder.h"  // for VectorEncoder
 
 // Todo: check required fields.
-// Todo: Skip default value.
 
 flatbuffers::uoffset_t TableEncoder::EncodeTable(
 	const Object& obj, const LuaRef& luaTable)
