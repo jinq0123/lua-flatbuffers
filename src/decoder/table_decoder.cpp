@@ -6,6 +6,31 @@
 
 using LuaIntf::LuaRef;
 
+LuaRef TableDecoder::DecodeTable(
+	const reflection::Object& object, const Table& fbTable)
+{
+	assert(!object.is_struct());
+	PushName(object);
+	if (!fbTable.VerifyTableStart(Verifier()))
+		ERR_RET_NIL("illegal start of table " + PopFullName());
+
+	LuaRef luaTable = CreateLuaTable();
+	for (const Field* pField : *object.fields())
+	{
+		assert(pField);
+		const char* pName = pField->name()->c_str();
+		assert(pName);
+		luaTable[pName] = DecodeFieldOfTable(fbTable, *pField);
+		if (Bad()) return Nil();
+	}
+
+	if (!Verifier().EndTable())
+		ERR_RET_NIL("illegal end of table " + PopFullName());
+
+	SafePopName();
+	return luaTable;
+}
+
 LuaRef TableDecoder::DecodeFieldOfTable(
 	const Table& fbTable, const Field& field)
 {
@@ -137,31 +162,6 @@ LuaRef TableDecoder::DecodeFieldF(const Table& fbTable, const Field &field)
 		return Nil();
 	T f = flatbuffers::GetFieldF<T>(fbTable, field);
 	return LuaRef::fromValue(LuaState(), f);
-}
-
-LuaRef TableDecoder::DecodeTable(
-	const reflection::Object& object, const Table& fbTable)
-{
-	assert(!object.is_struct());
-	PushName(object);
-	if (!fbTable.VerifyTableStart(Verifier()))
-		ERR_RET_NIL("illegal start of table " + PopFullName());
-
-	LuaRef luaTable = CreateLuaTable();
-	for (const Field* pField : *object.fields())
-	{
-		assert(pField);
-		const char* pName = pField->name()->c_str();
-		assert(pName);
-		luaTable[pName] = DecodeFieldOfTable(fbTable, *pField);
-		if (Bad()) return Nil();
-	}
-
-	if (!Verifier().EndTable())
-		ERR_RET_NIL("illegal end of table " + PopFullName());
-
-	SafePopName();
-	return luaTable;
 }
 
 template <typename T>
