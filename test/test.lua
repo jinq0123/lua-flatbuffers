@@ -57,6 +57,7 @@ function test_encode_struct()
 	assert(err == "illegal field Test.c")
 	buf = assert(lfb.encode("Test", {a=1, b=2}))
 	t = assert(lfb.decode("Test", buf))
+	assert(t.a == 1 and t.b == 2)
 end  -- test_encode_struct()
 
 function test_all()

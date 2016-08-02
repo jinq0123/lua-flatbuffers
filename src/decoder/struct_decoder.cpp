@@ -7,7 +7,7 @@ LuaRef StructDecoder::DecodeStruct(const reflection::Object& object,
 {
 	assert(object.is_struct());
 	PushName(object);
-	if (Verifier().Verify(&fbStruct, object.bytesize()))
+	if (!Verifier().Verify(&fbStruct, object.bytesize()))
 		ERR_RET_NIL("illegal struct " + PopFullName());
 
 	LuaRef luaTable = CreateLuaTable();
