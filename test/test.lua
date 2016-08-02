@@ -60,7 +60,17 @@ function test_encode_struct()
 	assert(t.a == 1 and t.b == 2)
 	buf, err = lfb.encode("Test", {a=1, b={}})
 	assert(err == "scalar field Test.b is table")
+	buf, err = lfb.encode("Test", {a=1, b=1.0000000000001})
+	assert(err == "integer field Test.b is 1.0000000000001")
+	buf, err = lfb.encode("Test", {a=1, b=1.00000000000001})
+	assert(err == "integer field Test.b is 1.0")
 end  -- test_encode_struct()
+
+function test_encode_nested_struct()
+	org = {x=1}
+	-- buf, err = lfb.encode("Vec3", org)
+	-- XXX
+end  -- test_encode_nested_struct()
 
 function test_all()
 	test_no_type()
@@ -69,6 +79,7 @@ function test_all()
 	test_not_table()
 	test_string_field()
 	test_encode_struct()
+	test_encode_nested_struct()
 end  -- test_all()
 
 test_all()

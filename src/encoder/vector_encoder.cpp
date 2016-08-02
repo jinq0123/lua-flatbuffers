@@ -119,5 +119,3 @@ uoffset_t VectorEncoder::CreateScalarVector(const LuaRef& luaArray)
 	auto v = luaArray.toValue<std::vector<T>>();  // ?
 	return Builder().CreateVector(v).o;
 }
-
-

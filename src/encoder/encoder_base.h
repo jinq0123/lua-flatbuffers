@@ -7,6 +7,7 @@
 #include <flatbuffers/reflection.h>  // for objects()
 #include <LuaIntf/LuaIntf.h>  // for createTable()
 
+#include <sstream>  // for ostringstream
 #include <string>
 
 #define ERR_RET(ErrorStr) do { \
@@ -31,6 +32,9 @@ public:
 
 protected:
 	inline void CheckScalarLuaValue(const LuaRef& luaValue);
+
+	template <typename T>
+	T LuaToNumber(const LuaRef& luaValue);
 
 protected:
 	const flatbuffers::Vector<flatbuffers::Offset<reflection::Object>>&
@@ -68,5 +72,33 @@ void EncoderBase::CheckScalarLuaValue(const LuaRef& luaValue)
 	if (IsLuaNumber(luaValue)) return;
 	SetError("scalar field " + PopFullName() + " is " + luaValue.typeName());
 }
+
+template <typename T>
+T EncoderBase::LuaToNumber(const LuaRef& luaValue)
+{
+	static_assert(std::is_scalar<T>::value,
+		"LuaToNumber() is only for scalar types.");
+	CheckScalarLuaValue(luaValue);
+	if (Bad()) return T();
+
+	double dVal = luaValue.toValue<double>();
+	// Figure out if int or float:
+	double dFract, dInt;
+	dFract = modf(dVal, &dInt);
+	if (0.0 != dFract)
+	{
+		SetError("integer field " + PopFullName() + " is "
+			+ luaValue.toValue<string>());
+		return T();
+	}
+
+	if (sizeof(T) >= sizeof(int64_t))
+		return luaValue.toValue<T>();
+	assert(static_cast<T>(dVal) == luaValue.toValue<T>());
+	return static_cast<T>(dVal);
+}
+
+template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue);
+template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue);
 
 #endif  // LUA_FLATBUFFERS_ENCODER_ENCODER_BASE_H_

@@ -24,6 +24,9 @@ private:
 		const LuaRef& luaTable, uint8_t* pBuf);
 	void EncodeScalarToBuf(reflection::BaseType eType,
 		const LuaRef& luaValue, uint8_t* pDest);
+
+	template <typename T>
+	void CopyScalarToBuf(const LuaIntf::LuaRef& luaValue, uint8_t* pDest);
 };  // class StructEncoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_STRUCT_ENCODER_H_

@@ -75,12 +75,13 @@ void StructEncoder::EncodeStructFieldToBuf(const Field& field,
 }  // EncodeStructFieldToBuf()
 
 template <typename T>
-static void CopyScalarToBuf(const LuaIntf::LuaRef& luaValue, uint8_t* pDest)
+void StructEncoder::CopyScalarToBuf(
+	const LuaIntf::LuaRef& luaValue, uint8_t* pDest)
 {
 	static_assert(std::is_scalar<T>::value,
 		"CopyScalarToBuf() is only for scalar types.");
-	assert(IsLuaNumber(luaValue));
-	T val = luaValue.toValue<T>();
+	T val = LuaToNumber<T>(luaValue);
+	if (Bad()) return;
 	*reinterpret_cast<T*>(pDest) = val;
 }
 
@@ -91,8 +92,6 @@ void StructEncoder::EncodeScalarToBuf(reflection::BaseType eType,
 	using namespace reflection;
 	assert(pDest);
 	assert(eType <= Double);
-	CheckScalarLuaValue(luaValue);
-	if (Bad()) return;
 
 	switch (eType)
 	{

@@ -36,7 +36,8 @@ const EnumVal* UnionEncoder::GetEnumVal(
 	LuaTypeID luaTypeId = luaType.type();
 	if (LuaTypeID::NUMBER == luaTypeId)
 	{
-		int64_t qwType = luaType.toValue<int64_t>();
+		int64_t qwType = LuaToNumber<int64_t>(luaType);
+		if (Bad()) return nullptr;
 		return GetEnumValFromNum(enu, qwType);
 	}
 
