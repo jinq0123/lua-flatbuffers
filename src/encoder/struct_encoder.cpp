@@ -25,7 +25,9 @@ void StructEncoder::EncodeStructToBuf(const Object& obj,
 	{
 		assert(pField);
 		assert(!pField->deprecated());  // Struct has no deprecated field.
+		PushName(*pField);
 		EncodeStructFieldToBuf(*pField, luaTable, pBuf);
+		SafePopName();
 		if (Bad()) return;
 	}  // for
 }  // EncodeStructToBuf()
@@ -51,7 +53,7 @@ void StructEncoder::EncodeStructFieldToBuf(const Field& field,
 	const char* pFieldName = field.name()->c_str();
 	const LuaRef luaValue = luaTable.get(pFieldName);
 	if (!luaValue)
-		ERR_RET("missing struct field " + PopFullFieldName(pFieldName));
+		ERR_RET("missing struct field " + PopFullName());
 
 	const reflection::Type& type = *field.type();
 	// Todo: check type of value...
@@ -61,7 +63,7 @@ void StructEncoder::EncodeStructFieldToBuf(const Field& field,
 	reflection::BaseType eBaseType = type.base_type();
 	if (eBaseType <= reflection::Double)
 	{
-		EncodeScalarToBuf(eBaseType, luaValue, pBuf + offset);  // XXX throw?
+		EncodeScalarToBuf(eBaseType, luaValue, pBuf + offset);
 		return;
 	}
 
@@ -69,9 +71,7 @@ void StructEncoder::EncodeStructFieldToBuf(const Field& field,
 	const Object* pFieldObj = Objects()[type.index()];
 	assert(pFieldObj);
 	assert(pFieldObj->is_struct());
-	PushName(pFieldName);
 	EncodeStructToBuf(*pFieldObj, luaValue, pDest);
-	SafePopName();
 }  // EncodeStructFieldToBuf()
 
 template <typename T>
@@ -88,6 +88,13 @@ void StructEncoder::EncodeScalarToBuf(reflection::BaseType eType,
 	using namespace reflection;
 	assert(pDest);
 	assert(eType <= Double);
+	if (luaValue.type() != LuaIntf::LuaTypeID::NUMBER)
+	{
+		SetError(string(EnumNameBaseType(eType)) + " struct field "
+			+ PopFullName() + " is " + luaValue.typeName());
+		return;
+	}
+
 	switch (eType)
 	{
 	case UType:
