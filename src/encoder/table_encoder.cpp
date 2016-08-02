@@ -58,8 +58,7 @@ void TableEncoder::CacheField(const Field& field, const LuaRef& luaValue)
 	switch (type.base_type())
 	{
 	case String:
-		m_mapOffsets[&field] = Builder().CreateString(
-			luaValue.toValue<const char*>()).o;
+		CacheStringField(field, luaValue);
 		break;
 	case Vector:
 		CacheVectorField(field, luaValue);
@@ -74,6 +73,18 @@ void TableEncoder::CacheField(const Field& field, const LuaRef& luaValue)
 		m_mapScalars[&field] = luaValue;
 		break;
 	}  // switch
+}
+
+void TableEncoder::CacheStringField(const Field& field, const LuaRef& luaValue)
+{
+	if (luaValue.type() == LuaIntf::LuaTypeID::STRING)
+	{
+		m_mapOffsets[&field] = Builder().CreateString(
+			luaValue.toValue<const char*>()).o;
+		return;
+	}
+	SetError("string field " + PopFullFieldName(field)
+		+ " is " + luaValue.typeName());
 }
 
 void TableEncoder::CacheVectorField(const Field& field, const LuaRef& luaValue)

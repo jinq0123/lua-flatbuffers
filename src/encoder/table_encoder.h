@@ -24,6 +24,7 @@ private:
 
 	void CacheFields(const Object& obj);
 	void CacheField(const Field& field, const LuaRef& luaValue);
+	void CacheStringField(const Field& field, const LuaRef& luaValue);
 	void CacheVectorField(const Field& field, const LuaRef& luaValue);
 	void CacheObjField(const Field& field, const LuaRef& luaValue);
 	void CacheUnionField(const Field& field, const LuaRef& luaValue);
