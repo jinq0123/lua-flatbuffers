@@ -45,7 +45,7 @@ float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue)
 	oss << "float field " << PopFullName() << "("
 		<< luaValue.toValue<string>() << ") is out of range ["
 		<< std::numeric_limits<float>::min() << ", "
-		<< std::numeric_limits<float>::max() << ")";
+		<< std::numeric_limits<float>::max() << "]";
 	SetError(oss.str());
 	return 0.0;
 }
