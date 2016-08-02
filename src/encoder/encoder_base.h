@@ -67,6 +67,9 @@ private:
 	template <typename T>
 	void CheckNumberRange(double dValue, const LuaRef& luaValue);
 
+	// Figure out if int or float.
+	bool IsInteger(double dValue) const;
+
 protected:
 	EncoderContext& m_rCtx;
 };  // class EncoderBase
@@ -86,10 +89,7 @@ T EncoderBase::LuaToNumber(const LuaRef& luaValue)
 	if (Bad()) return T();
 
 	double dVal = luaValue.toValue<double>();
-	// Figure out if int or float:
-	double dFract, dInt;
-	dFract = modf(dVal, &dInt);
-	if (0.0 != dFract)
+	if (!IsInteger(dVal))
 	{
 		SetError("integer field " + PopFullName() + " is "
 			+ luaValue.toValue<string>());

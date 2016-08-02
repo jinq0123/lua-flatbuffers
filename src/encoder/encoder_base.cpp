@@ -49,3 +49,10 @@ double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue)
 	if (Bad()) return 0.0;
 	return luaValue.toValue<double>();  // allow int64 -> double
 }
+
+bool EncoderBase::IsInteger(double dValue) const
+{
+	double dFract, dInt;
+	dFract = modf(dValue, &dInt);
+	return 0.0 == dFract;
+}
