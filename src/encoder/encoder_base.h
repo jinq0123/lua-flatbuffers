@@ -63,6 +63,10 @@ protected:
 	string PopFullFieldName(const reflection::Field& field);
 	string PopFullVectorName(size_t index);
 
+private:
+	template <typename T>
+	void CheckNumberRange(double dValue, const LuaRef& luaValue);
+
 protected:
 	EncoderContext& m_rCtx;
 };  // class EncoderBase
@@ -92,19 +96,33 @@ T EncoderBase::LuaToNumber(const LuaRef& luaValue)
 		return T();
 	}
 
-	if (dVal >= std::numeric_limits<T>::min() &&
-		dVal <= std::numeric_limits<T>::max())
-	{
-		if (sizeof(T) >= sizeof(int64_t))
-			return luaValue.toValue<T>();
-		assert(static_cast<T>(dVal) == luaValue.toValue<T>());
-		return static_cast<T>(dVal);
-	}
+	CheckNumberRange<T>(dVal, luaValue);
+	if (Bad()) return T();
+
+	if (sizeof(T) >= sizeof(int64_t))
+		return luaValue.toValue<T>();
+	assert(static_cast<T>(dVal) == luaValue.toValue<T>());
+	return static_cast<T>(dVal);
+}
+
+template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue);
+template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue);
+
+template <typename T>
+void EncoderBase::CheckNumberRange(double dValue, const LuaRef& luaValue)
+{
+	assert(IsLuaNumber(luaValue));
+	assert(dValue == luaValue.toValue<double>());
+
+	if (dValue >= std::numeric_limits<T>::min() &&
+		dValue <= std::numeric_limits<T>::max())
+		return;
 
 	std::ostringstream oss;
-	oss << "integer field " << PopFullName() << "("
-		<< luaValue.toValue<string>() << ") is out of range [";
-	if (sizeof(T) <= sizeof(int8_t))
+	oss << "field " << PopFullName() << "("
+		<< luaValue.toValue<string>()
+		<< ") is out of range [";
+	if (sizeof(T) <= sizeof(int8_t))  // or uint8_t
 	{
 		oss << static_cast<int>(std::numeric_limits<T>::min()) << ", "
 			<< static_cast<int>(std::numeric_limits<T>::max()) << "]";
@@ -115,10 +133,6 @@ T EncoderBase::LuaToNumber(const LuaRef& luaValue)
 			<< std::numeric_limits<T>::max() << "]";
 	}
 	SetError(oss.str());
-	return T();
 }
-
-template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue);
-template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue);
 
 #endif  // LUA_FLATBUFFERS_ENCODER_ENCODER_BASE_H_
