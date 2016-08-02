@@ -50,6 +50,13 @@ end  -- test_string_field()
 
 function test_encode_struct()
 	buf, err = lfb.encode("Test", {})
+	assert(err == "missing struct field Test.a")
+	buf, err = lfb.encode("Test", {a=1})
+	assert(err == "missing struct field Test.b")
+	buf, err = lfb.encode("Test", {a=1, b=2, c=3})
+	assert(err == "illegal field Test.c")
+	buf = assert(lfb.encode("Test", {a=1, b=2}))
+	t = assert(lfb.decode("Test", buf))
 end  -- test_encode_struct()
 
 function test_all()
