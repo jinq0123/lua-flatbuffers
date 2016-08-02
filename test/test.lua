@@ -5,6 +5,11 @@ inspect = require("inspect")
 
 assert(lfb.load_bfbs_file("../third_party/flatbuffers/tests/monster_test.bfbs"))
 
+function test_no_type()
+	buf, err = lfb.encode("Abcd", {})
+	assert(err == "no type Abcd")
+end
+
 function test_required()
 	buf = assert(lfb.encode("Monster", {}))
 	t, err = lfb.decode("Monster", buf)
@@ -43,11 +48,17 @@ function test_string_field()
 	assert(lfb.encode("Monster", {name=""}))
 end  -- test_string_field()
 
+function test_encode_struct()
+	buf, err = lfb.encode("Test", {})
+end  -- test_encode_struct()
+
 function test_all()
+	test_no_type()
 	test_required()
 	test_too_short()
 	test_not_table()
 	test_string_field()
+	test_encode_struct()
 end  -- test_all()
 
 test_all()

@@ -54,7 +54,6 @@ void TableEncoder::CacheField(const Field& field, const LuaRef& luaValue)
 {
 	using namespace reflection;
 	const Type& type = *field.type();
-	// Todo: check type of value...
 	switch (type.base_type())
 	{
 	case String:
