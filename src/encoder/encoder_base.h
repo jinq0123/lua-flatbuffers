@@ -92,10 +92,21 @@ T EncoderBase::LuaToNumber(const LuaRef& luaValue)
 		return T();
 	}
 
-	if (sizeof(T) >= sizeof(int64_t))
-		return luaValue.toValue<T>();
-	assert(static_cast<T>(dVal) == luaValue.toValue<T>());
-	return static_cast<T>(dVal);
+	if (dVal >= std::numeric_limits<T>::min() &&
+		dVal <= std::numeric_limits<T>::max())
+	{
+		if (sizeof(T) >= sizeof(int64_t))
+			return luaValue.toValue<T>();
+		assert(static_cast<T>(dVal) == luaValue.toValue<T>());
+		return static_cast<T>(dVal);
+	}
+
+	std::ostringstream oss;
+	oss << "integer field " << PopFullName() << "("
+		<< luaValue.toValue<string>() << ") is out of range ["
+		<< std::numeric_limits<T>::min() << ", "
+		<< std::numeric_limits<T>::max() << ")";
+	SetError(oss.str());
 }
 
 template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue);
