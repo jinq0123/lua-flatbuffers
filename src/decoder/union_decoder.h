@@ -8,11 +8,8 @@ class UnionDecoder final : public DecoderBase
 public:
 	explicit UnionDecoder(DecoderContext& rCtx) : DecoderBase(rCtx) {};
 
-	LuaRef DecodeUnion(const reflection::Type& type, const void* pData);
-
-private:
-	template <typename T>
-	inline LuaRef DecodeScalar(const void* pData);
+	LuaRef DecodeUnion(const reflection::Type& type,
+		int64_t nUnionType, const void* pData);
 };  // class UnionDecoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_UNION_DECODER_H_

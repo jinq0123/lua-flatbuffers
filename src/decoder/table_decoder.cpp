@@ -159,13 +159,14 @@ LuaRef TableDecoder::DecodeUnionField(
 	const void* pData = fbTable.GetPointer<const void*>(field.offset());
 	if (!pData) return Nil();
 
-	const reflection::Enum& e = *(*m_rCtx.schema.enums())[type.index()];
-	assert(e.is_union());
-	// Enum underlying type: Byte Short or Int...
-	const reflection::Type& underlyingType = *e.underlying_type();
-	PushName(field);
-	// XXX Get union real type...
-	LuaRef luaRef = UnionDecoder(m_rCtx).DecodeUnion(underlyingType, pData);
+	std::string sField = field.name()->str();
+	std::string sTypeField = sField + flatbuffers::UnionTypeFieldSuffix();
+	// Union type field must decode before this.
+	assert(m_luaTable.has(sTypeField));
+	int64_t nUnionType = m_luaTable.get<int64_t>(sTypeField);
+
+	PushName(sField);
+	LuaRef luaRef = UnionDecoder(m_rCtx).DecodeUnion(type, nUnionType, pData);
 	SafePopName();
 	return luaRef;
 }
