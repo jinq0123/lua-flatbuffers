@@ -13,7 +13,12 @@ public:
 
 private:
 	using Field = reflection::Field;
-	LuaRef DecodeFieldOfTable(const Table& fbTable, const Field& field);
+
+	void SplitFields(const reflection::Object& object);
+	void DecodeScalarFields(const Table& fbTable);
+	void DecodeNonScalarFields(const Table& fbTable);
+
+	LuaRef DecodeNonScalarField(const Table& fbTable, const Field& field);
 	LuaRef DecodeScalarField(const Table& fbTable, const Field& field);
 	LuaRef DecodeStringField(const Table& fbTable, const Field& field);
 	LuaRef DecodeVectorField(const Table& fbTable, const Field& field);
@@ -27,6 +32,13 @@ private:
 
 	template <typename T>
 	bool VerifyFieldOfTable(const Table& fbTable, const Field &field);
+
+private:
+	using FieldVec = std::vector<const Field*>;
+	FieldVec m_vScalarFields;
+	FieldVec m_vNonScalarFields;
+
+	LuaRef m_luaTable;
 };  // class TableDecoder
 
 #endif  // LUA_FLATBUFFERS_DECODER_TABLE_DECODER_H_

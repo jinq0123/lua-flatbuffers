@@ -14,32 +14,55 @@ LuaRef TableDecoder::DecodeTable(
 	if (!fbTable.VerifyTableStart(Verifier()))
 		ERR_RET_NIL("illegal start of table " + PopFullName());
 
-	LuaRef luaTable = CreateLuaTable();
-	// Decode union_type before union fields. XXX
-	for (const Field* pField : *object.fields())
-	{
-		assert(pField);
-		const char* pName = pField->name()->c_str();
-		assert(pName);
-		luaTable[pName] = DecodeFieldOfTable(fbTable, *pField);
-		if (Bad()) return Nil();
-	}
+	SplitFields(object);
+	m_luaTable = CreateLuaTable();
+
+	// Decode union_type before union fields.
+	DecodeScalarFields(fbTable);
+	if (Bad()) return Nil();
+	DecodeNonScalarFields(fbTable);
+	if (Bad()) return Nil();
 
 	if (!Verifier().EndTable())
 		ERR_RET_NIL("illegal end of table " + PopFullName());
 
 	SafePopName();
-	return luaTable;
+	return m_luaTable;
 }
 
-LuaRef TableDecoder::DecodeFieldOfTable(
+void TableDecoder::DecodeScalarFields(const Table& fbTable)
+{
+	for (const Field* pField : m_vScalarFields)
+	{
+		assert(pField);
+		assert(!pField->deprecated());
+		const char* pName = pField->name()->c_str();
+		assert(pName);
+		m_luaTable[pName] = DecodeScalarField(fbTable, *pField);
+		if (Bad()) return;
+	}
+}
+
+void TableDecoder::DecodeNonScalarFields(const Table& fbTable)
+{
+	for (const Field* pField : m_vNonScalarFields)
+	{
+		assert(pField);
+		assert(!pField->deprecated());
+		const char* pName = pField->name()->c_str();
+		assert(pName);
+		m_luaTable[pName] = DecodeNonScalarField(fbTable, *pField);
+		if (Bad()) return;
+	}
+}
+
+LuaRef TableDecoder::DecodeNonScalarField(
 	const Table& fbTable, const Field& field)
 {
 	using namespace reflection;
-	if (field.deprecated()) return Nil();
+	assert(!field.deprecated());
 	BaseType eType = field.type()->base_type();
-	if (eType <= Double)
-		return DecodeScalarField(fbTable, field);
+	assert(eType > Double);
 
 	if (!VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field))
 		return Nil();
@@ -185,3 +208,21 @@ bool TableDecoder::VerifyFieldOfTable(const Table& fbTable, const Field &field)
 	SetError("illegal offset of field " + PopFullFieldName(field));
 	return false;
 }
+
+void TableDecoder::SplitFields(const reflection::Object& object)
+{
+	m_vScalarFields.clear();
+	m_vNonScalarFields.clear();
+	for (const Field* pField : *object.fields())
+	{
+		assert(pField);
+		if (pField->deprecated()) continue;
+
+		reflection::BaseType eType = pField->type()->base_type();
+		if (eType <= reflection::Double)
+			m_vScalarFields.push_back(pField);
+		else
+			m_vNonScalarFields.push_back(pField);
+	}
+}
+
