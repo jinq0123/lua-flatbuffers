@@ -92,36 +92,16 @@ void StructEncoder::EncodeScalarToBuf(reflection::BaseType eType,
 	{
 	case UType:
 	case Bool:
-	case UByte:
-		CopyToBuf<uint8_t>(luaValue, pDest);
-		break;
-	case Byte:
-		CopyToBuf<int8_t>(luaValue, pDest);
-		break;
-	case Short:
-		CopyToBuf<int16_t>(luaValue, pDest);
-		break;
-	case UShort:
-		CopyToBuf<uint16_t>(luaValue, pDest);
-		break;
-	case Int:
-		CopyToBuf<int32_t>(luaValue, pDest);
-		break;
-	case UInt:
-		CopyToBuf<uint32_t>(luaValue, pDest);
-		break;
-	case Long:
-		CopyToBuf<int64_t>(luaValue, pDest);
-		break;
-	case ULong:
-		CopyToBuf<uint64_t>(luaValue, pDest);
-		break;
-	case Float:
-		CopyToBuf<float>(luaValue, pDest);
-		break;
-	case Double:
-		CopyToBuf<double>(luaValue, pDest);
-		break;
+	case UByte: return CopyToBuf<uint8_t>(luaValue, pDest);
+	case Byte: return CopyToBuf<int8_t>(luaValue, pDest);
+	case Short: return CopyToBuf<int16_t>(luaValue, pDest);
+	case UShort: return CopyToBuf<uint16_t>(luaValue, pDest);
+	case Int: return CopyToBuf<int32_t>(luaValue, pDest);
+	case UInt: return CopyToBuf<uint32_t>(luaValue, pDest);
+	case Long: return CopyToBuf<int64_t>(luaValue, pDest);
+	case ULong: return CopyToBuf<uint64_t>(luaValue, pDest);
+	case Float: return CopyToBuf<float>(luaValue, pDest);
+	case Double: return CopyToBuf<double>(luaValue, pDest);
 	}  // switch
 	assert(!"Illegal type.");
 }  // EncodeScalarToBuf()
