@@ -163,15 +163,21 @@ void TableEncoder::EncodeCachedScalars()
 	{
 		const Field* pField = e.first;
 		assert(pField);
+		const LuaRef& luaVal = e.second;
+
 		PushName(*pField);
-		EncodeScalar(*pField, e.second);
-		SafePopName();
+		CheckScalarLuaValue(luaVal);
 		if (Bad()) return;
+		EncodeScalar(*pField, e.second);
+		if (Bad()) return;
+		SafePopName();
 	}
 }
 
 void TableEncoder::EncodeScalar(const Field& field, const LuaRef& luaValue)
 {
+	assert(IsLuaNumber(luaValue));
+
 	using namespace reflection;
 	const Type& type = *field.type();
 	int64_t defInt = field.default_integer();
@@ -237,6 +243,9 @@ template <typename ElementType, typename DefaultValueType>
 inline void TableEncoder::AddElement(uint16_t offset,
 	const LuaRef& elementValue, DefaultValueType defaultValue)
 {
+	static_assert(std::is_scalar<ElementType>::value,
+		"AddElement() is only for scalar types.");
+	assert(IsLuaNumber(elementValue));
 	Builder().AddElement(offset,
 		elementValue.toValue<ElementType>(),
 		static_cast<ElementType>(defaultValue));

@@ -14,6 +14,11 @@
 	return; \
 } while(0)
 
+static inline bool IsLuaNumber(const LuaIntf::LuaRef& luaValue)
+{
+	return luaValue.type() == LuaIntf::LuaTypeID::NUMBER;
+}
+
 class EncoderBase
 {
 public:
@@ -23,6 +28,9 @@ public:
 public:
 	using LuaRef = LuaIntf::LuaRef;
 	using string = std::string;
+
+protected:
+	inline void CheckScalarLuaValue(const LuaRef& luaValue);
 
 protected:
 	const flatbuffers::Vector<flatbuffers::Offset<reflection::Object>>&
@@ -54,5 +62,11 @@ protected:
 protected:
 	EncoderContext& m_rCtx;
 };  // class EncoderBase
+
+void EncoderBase::CheckScalarLuaValue(const LuaRef& luaValue)
+{
+	if (IsLuaNumber(luaValue)) return;
+	SetError("scalar field " + PopFullName() + " is " + luaValue.typeName());
+}
 
 #endif  // LUA_FLATBUFFERS_ENCODER_ENCODER_BASE_H_

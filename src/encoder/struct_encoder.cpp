@@ -75,9 +75,12 @@ void StructEncoder::EncodeStructFieldToBuf(const Field& field,
 }  // EncodeStructFieldToBuf()
 
 template <typename T>
-static void CopyToBuf(const LuaIntf::LuaRef& luaValue, uint8_t* pDest)
+static void CopyScalarToBuf(const LuaIntf::LuaRef& luaValue, uint8_t* pDest)
 {
-	T val = luaValue.toValue<T>();  // Todo: throw?
+	static_assert(std::is_scalar<T>::value,
+		"CopyScalarToBuf() is only for scalar types.");
+	assert(IsLuaNumber(luaValue));
+	T val = luaValue.toValue<T>();
 	*reinterpret_cast<T*>(pDest) = val;
 }
 
@@ -88,27 +91,23 @@ void StructEncoder::EncodeScalarToBuf(reflection::BaseType eType,
 	using namespace reflection;
 	assert(pDest);
 	assert(eType <= Double);
-	if (luaValue.type() != LuaIntf::LuaTypeID::NUMBER)
-	{
-		SetError(string(EnumNameBaseType(eType)) + " struct field "
-			+ PopFullName() + " is " + luaValue.typeName());
-		return;
-	}
+	CheckScalarLuaValue(luaValue);
+	if (Bad()) return;
 
 	switch (eType)
 	{
 	case UType:
 	case Bool:
-	case UByte: return CopyToBuf<uint8_t>(luaValue, pDest);
-	case Byte: return CopyToBuf<int8_t>(luaValue, pDest);
-	case Short: return CopyToBuf<int16_t>(luaValue, pDest);
-	case UShort: return CopyToBuf<uint16_t>(luaValue, pDest);
-	case Int: return CopyToBuf<int32_t>(luaValue, pDest);
-	case UInt: return CopyToBuf<uint32_t>(luaValue, pDest);
-	case Long: return CopyToBuf<int64_t>(luaValue, pDest);
-	case ULong: return CopyToBuf<uint64_t>(luaValue, pDest);
-	case Float: return CopyToBuf<float>(luaValue, pDest);
-	case Double: return CopyToBuf<double>(luaValue, pDest);
+	case UByte: return CopyScalarToBuf<uint8_t>(luaValue, pDest);
+	case Byte: return CopyScalarToBuf<int8_t>(luaValue, pDest);
+	case Short: return CopyScalarToBuf<int16_t>(luaValue, pDest);
+	case UShort: return CopyScalarToBuf<uint16_t>(luaValue, pDest);
+	case Int: return CopyScalarToBuf<int32_t>(luaValue, pDest);
+	case UInt: return CopyScalarToBuf<uint32_t>(luaValue, pDest);
+	case Long: return CopyScalarToBuf<int64_t>(luaValue, pDest);
+	case ULong: return CopyScalarToBuf<uint64_t>(luaValue, pDest);
+	case Float: return CopyScalarToBuf<float>(luaValue, pDest);
+	case Double: return CopyScalarToBuf<double>(luaValue, pDest);
 	}  // switch
 	assert(!"Illegal type.");
 }  // EncodeScalarToBuf()

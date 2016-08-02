@@ -59,7 +59,7 @@ function test_encode_struct()
 	t = assert(lfb.decode("Test", buf))
 	assert(t.a == 1 and t.b == 2)
 	buf, err = lfb.encode("Test", {a=1, b={}})
-	assert(err == "Byte struct field Test.b is table")
+	assert(err == "scalar field Test.b is table")
 end  -- test_encode_struct()
 
 function test_all()
