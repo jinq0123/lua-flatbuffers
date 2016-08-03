@@ -88,6 +88,9 @@ true
 >
 </pre>
 
+* Number will be converted to string if necessary. 
+* Number will be converted from one type to another, such as from float to byte.
+
 Todo
 ------
 * Support namespace.
