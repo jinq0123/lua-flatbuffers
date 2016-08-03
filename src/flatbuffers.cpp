@@ -3,9 +3,9 @@
 
 #include "schema_cache.h"  // for SchemaCache
 
-#include "decoder/root_decoder.h"
-#include "encoder/encoder.h"
-#include "encoder/encoder_context.h"
+#include "decoder/root_decoder.h"  // for RootDecoder
+#include "encoder/encoder.h"  // for Encoder
+#include "encoder/encoder_context.h"  //  for EncoderContext
 
 #include <LuaIntf/LuaIntf.h>
 
@@ -18,6 +18,11 @@ namespace {
 void test()
 {
 	std::cout << "test...\n";
+}
+
+LuaRef TestToNum(const LuaRef& luaVal)
+{
+	return Encoder::TestToNum(luaVal);
 }
 
 SchemaCache& GetCache()
@@ -100,6 +105,7 @@ int luaopen_lfb(lua_State* L)
 	LuaRef mod = LuaRef::createTable(L);
 	LuaBinding(mod)
 		.addFunction("test", &test)
+		.addFunction("test_to_num", &TestToNum)
 		.addFunction("load_bfbs_file", &LoadBfbsFile)
 		.addFunction("load_bfbs", &LoadBfbs)
 		.addFunction("load_fbs_file", &LoadFbsFile)

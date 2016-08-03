@@ -11,6 +11,9 @@ public:
 public:
 	bool Encode(const string& sName, const LuaRef& luaTable);
 	string GetResultStr() const;
+
+public:
+	static LuaRef TestToNum(const LuaRef& luaVal);  // for test
 };  // class Encoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_ENCODER_H_
