@@ -31,8 +31,6 @@ public:
 	using string = std::string;
 
 protected:
-	inline void CheckScalarLuaValue(const LuaRef& luaValue);
-
 	template <typename T>
 	T LuaToNumber(const LuaRef& luaValue);
 
@@ -69,12 +67,6 @@ private:
 protected:
 	EncoderContext& m_rCtx;
 };  // class EncoderBase
-
-void EncoderBase::CheckScalarLuaValue(const LuaRef& luaValue)
-{
-	if (IsLuaNumber(luaValue)) return;
-	SetError("scalar field " + PopFullName() + " is " + luaValue.typeName());
-}
 
 template <typename T>
 T EncoderBase::LuaToNumber(const LuaRef& luaValue)
