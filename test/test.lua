@@ -66,7 +66,7 @@ function test_encode_struct()
 	t = assert(lfb.decode("Test", buf))
 	assert(t.a == 1 and t.b == 2)
 	buf, err = lfb.encode("Test", {a=1, b={}})
-	assert(err == "can not convert Test.b(table) to integer")
+	assert(err == "can not convert field Test.b(table) to integer")
 end  -- test_encode_struct()
 
 function test_encode_nested_struct()
@@ -74,6 +74,11 @@ function test_encode_nested_struct()
 	-- buf, err = lfb.encode("Vec3", org)
 	-- XXX
 end  -- test_encode_nested_struct()
+
+function test_to_num()
+	assert(lfb.test_to_num(0)["int8"] == 0)
+	assert(lfb.test_to_num("123")["int8"] == 123)
+end  -- test_to_num()
 
 function test_all()
 	test_no_type()
@@ -84,6 +89,8 @@ function test_all()
 	test_string_field()
 	test_encode_struct()
 	test_encode_nested_struct()
+
+	test_to_num()
 end  -- test_all()
 
 test_all()

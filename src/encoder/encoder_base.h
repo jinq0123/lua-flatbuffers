@@ -64,7 +64,7 @@ protected:
 	string PopFullVectorName(size_t index);
 
 private:
-	void SetLuaToIntError(const LuaRef& luaValue);
+	void SetLuaToNumError(const LuaRef& luaValue, bool bToInt);
 
 protected:
 	EncoderContext& m_rCtx;
@@ -81,14 +81,12 @@ T EncoderBase::LuaToNumber(const LuaRef& luaValue)
 {
 	static_assert(std::is_scalar<T>::value,
 		"LuaToNumber() is only for scalar types.");
-	// Directly toValue<int>() may throw.
-	LuaRef toInt(luaValue.state(), "math.tointeger");
-	LuaRef luaInt = toInt.call<LuaRef>(luaValue);
-	if (luaInt) return luaInt.toValue<T>();
-	SetLuaToIntError(luaValue);
-	return 0;
+	int64_t l = LuaToNumber<int64_t>(luaValue);
+	if (Bad()) return 0;
+	return static_cast<T>(l);
 }
 
+template <> int64_t EncoderBase::LuaToNumber<int64_t>(const LuaRef& luaValue);
 template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue);
 template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue);
 

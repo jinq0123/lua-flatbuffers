@@ -31,6 +31,17 @@ std::string EncoderBase::PopFullVectorName(size_t index)
 	return PopFullName() + oss.str();
 }
 
+template <> int64_t EncoderBase::LuaToNumber<int64_t>(const LuaRef& luaValue)
+{
+	// Directly toValue<int64_t>() may throw.
+	// And toValue<double>() is wrong for 9223372036854775807.1 (maxinteger + 0.1).
+	LuaRef toInt(luaValue.state(), "math.tointeger");
+	LuaRef luaInt = toInt.call<LuaRef>(luaValue);
+	if (luaInt) return luaInt.toValue<int64_t>();
+	SetLuaToNumError(luaValue, true/* bToInt */);
+	return 0;
+}
+
 template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue)
 {
 	CheckScalarLuaValue(luaValue);
@@ -40,12 +51,15 @@ template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue)
 
 template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue)
 {
-	CheckScalarLuaValue(luaValue);
-	if (Bad()) return 0.0;
-	return luaValue.toValue<double>();  // allow int64 -> double
+	// Allow string convert to number.
+	LuaRef toNum(luaValue.state(), "tonumber");
+	LuaRef luaNum = toNum.call<LuaRef>(luaValue);
+	if (luaNum) return luaNum.toValue<double>();  // allow int64 -> double
+	SetLuaToNumError(luaValue, false/* bToInt */);
+	return 0.0;
 }
 
-void EncoderBase::SetLuaToIntError(const LuaRef& luaValue)
+void EncoderBase::SetLuaToNumError(const LuaRef& luaValue, bool bToInt)
 {
 	LuaIntf::LuaTypeID luaTypeId = luaValue.type();
 	std::string sValue;
@@ -55,7 +69,6 @@ void EncoderBase::SetLuaToIntError(const LuaRef& luaValue)
 	else
 		sValue = luaValue.typeName();
 
-	SetError("can not convert " + PopFullName() +
-		"(" + sValue + ") to integer");
+	SetError("can not convert field " + PopFullName() +
+		"(" + sValue + ") to " + (bToInt ? "integer" : "float"));
 }
-
