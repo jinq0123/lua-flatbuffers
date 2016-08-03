@@ -25,10 +25,17 @@ LuaRef TestToNum(const LuaRef& luaVal)
 	return Encoder::TestToNum(luaVal);
 }
 
-LuaRef TestToStr(const LuaRef& luaVal)
+std::tuple<LuaRef, std::string> TestToStr(const LuaRef& luaVal)
 {
-	std::string s(luaVal.toValue<const char*>());
-	return LuaRef::fromValue(luaVal.state(), s);
+	try{
+		std::string s(luaVal.toValue<const char*>());
+		return std::make_tuple(LuaRef::fromValue(
+			luaVal.state(), "Hello, " + s), "OK");
+	}
+	catch(...)
+	{
+	}
+	return std::make_tuple(LuaRef(luaVal.state(), nullptr), "Exception");
 }
 
 SchemaCache& GetCache()
