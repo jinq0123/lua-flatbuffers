@@ -44,7 +44,7 @@ function test_type_convert()
 	buf = assert(lfb.encode("Monster", {name=123}))
 	t = assert(lfb.decode("Monster", buf))
 	assert("123" == t.name)
-	buf = assert(lfb.encode("Test", {a=1.1, b=256}))  -- Test.b is byte
+	buf = assert(lfb.encode("Test", {a=1, b=256}))  -- Test.b is byte
 	t = assert(lfb.decode("Test", buf))
 	assert(1 == t.a and 0 == t.b)
 end  -- test_type_convert()
@@ -66,7 +66,7 @@ function test_encode_struct()
 	t = assert(lfb.decode("Test", buf))
 	assert(t.a == 1 and t.b == 2)
 	buf, err = lfb.encode("Test", {a=1, b={}})
-	assert(err == "scalar field Test.b is table")
+	assert(err == "can not convert Test.b(table) to integer")
 end  -- test_encode_struct()
 
 function test_encode_nested_struct()

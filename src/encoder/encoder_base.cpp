@@ -31,21 +31,11 @@ std::string EncoderBase::PopFullVectorName(size_t index)
 	return PopFullName() + oss.str();
 }
 
-template <> int64_t EncoderBase::LuaToNumber<int64_t>(const LuaRef& luaValue)
+template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue)
 {
 	CheckScalarLuaValue(luaValue);
-	if (Bad()) return 0;
-	double dVal = luaValue.toValue<double>();
-	if (IsInteger(dVal))
-		return luaValue.toValue<int64_t>();
-	return static_cast<int64_t>(dVal);
-}
-
-template <> uint64_t EncoderBase::LuaToNumber<uint64_t>(const LuaRef& luaValue)
-{
-	int64_t l = LuaToNumber<int64_t>(luaValue);
-	if (Bad()) return 0;
-	return static_cast<uint64_t>(l);
+	if (Bad()) return 0.0;
+	return luaValue.toValue<float>();  // allow int64 -> float
 }
 
 template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue)
@@ -55,9 +45,17 @@ template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue)
 	return luaValue.toValue<double>();  // allow int64 -> double
 }
 
-bool EncoderBase::IsInteger(double dValue) const
+void EncoderBase::SetLuaToIntError(const LuaRef& luaValue)
 {
-	double dFract, dInt;
-	dFract = modf(dValue, &dInt);
-	return 0.0 == dFract;
+	LuaIntf::LuaTypeID luaTypeId = luaValue.type();
+	std::string sValue;
+	if (luaTypeId == LuaIntf::LuaTypeID::STRING ||
+		luaTypeId == LuaIntf::LuaTypeID::NUMBER)
+		sValue = luaValue.toValue<string>();
+	else
+		sValue = luaValue.typeName();
+
+	SetError("can not convert " + PopFullName() +
+		"(" + sValue + ") to integer");
 }
+

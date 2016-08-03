@@ -64,8 +64,7 @@ protected:
 	string PopFullVectorName(size_t index);
 
 private:
-	// Figure out if int or float.
-	bool IsInteger(double dValue) const;
+	void SetLuaToIntError(const LuaRef& luaValue);
 
 protected:
 	EncoderContext& m_rCtx;
@@ -82,16 +81,15 @@ T EncoderBase::LuaToNumber(const LuaRef& luaValue)
 {
 	static_assert(std::is_scalar<T>::value,
 		"LuaToNumber() is only for scalar types.");
-	static_assert(sizeof(T) < sizeof(int64_t),
-		"Need spacialized LuaToNumber<double/int64>().");
 	// Directly toValue<int>() may throw.
-	double dVal = LuaToNumber<double>(luaValue);
-	if (Bad()) return 0;
-	return static_cast<T>(dVal);
+	LuaRef toInt(luaValue.state(), "math.tointeger");
+	LuaRef luaInt = toInt.call<LuaRef>(luaValue);
+	if (luaInt) return luaInt.toValue<T>();
+	SetLuaToIntError(luaValue);
+	return 0;
 }
 
-template <> int64_t EncoderBase::LuaToNumber<int64_t>(const LuaRef& luaValue);
-template <> uint64_t EncoderBase::LuaToNumber<uint64_t>(const LuaRef& luaValue);
+template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue);
 template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue);
 
 #endif  // LUA_FLATBUFFERS_ENCODER_ENCODER_BASE_H_
