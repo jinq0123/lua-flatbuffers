@@ -25,6 +25,12 @@ LuaRef TestToNum(const LuaRef& luaVal)
 	return Encoder::TestToNum(luaVal);
 }
 
+LuaRef TestToStr(const LuaRef& luaVal)
+{
+	std::string s(luaVal.toValue<const char*>());
+	return LuaRef::fromValue(luaVal.state(), s);
+}
+
 SchemaCache& GetCache()
 {
 	static SchemaCache s_cache;
@@ -106,6 +112,7 @@ int luaopen_lfb(lua_State* L)
 	LuaBinding(mod)
 		.addFunction("test", &test)
 		.addFunction("test_to_num", &TestToNum)
+		.addFunction("test_to_str", &TestToStr)
 		.addFunction("load_bfbs_file", &LoadBfbsFile)
 		.addFunction("load_bfbs", &LoadBfbs)
 		.addFunction("load_fbs_file", &LoadFbsFile)

@@ -76,7 +76,9 @@ void TableEncoder::CacheField(const Field& field, const LuaRef& luaValue)
 
 void TableEncoder::CacheStringField(const Field& field, const LuaRef& luaValue)
 {
-	if (luaValue.type() == LuaIntf::LuaTypeID::STRING)
+	LuaIntf::LuaTypeID luaTypeId = luaValue.type();
+	if (luaTypeId == LuaIntf::LuaTypeID::STRING ||
+		luaTypeId == LuaIntf::LuaTypeID::NUMBER)
 	{
 		m_mapOffsets[&field] = Builder().CreateString(
 			luaValue.toValue<const char*>()).o;
