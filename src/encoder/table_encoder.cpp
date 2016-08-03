@@ -243,7 +243,6 @@ inline void TableEncoder::AddElement(uint16_t offset,
 		"AddElement() is only for scalar types.");
 	ElementType val = LuaToNumber<ElementType>(elementValue);
 	if (Bad()) return;
-	Builder().AddElement(offset,
-		elementValue.toValue<ElementType>(),
+	Builder().AddElement(offset, val,
 		static_cast<ElementType>(defaultValue));
 }
