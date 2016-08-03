@@ -70,9 +70,12 @@ function test_encode_struct()
 end  -- test_encode_struct()
 
 function test_encode_nested_struct()
-	org = {x=1}
-	-- buf, err = lfb.encode("Vec3", org)
-	-- XXX
+	org = {x=1,y=2,z=3.3,test1=0.001,test2=0,test3={a=1,b=2}}
+	buf = assert(lfb.encode("Vec3", org))
+	t = assert(lfb.decode("Vec3", buf))
+	assert(1 == t.test3.a)
+	assert(2 == t.test3.b)
+	assert(0 == t.test2)
 end  -- test_encode_nested_struct()
 
 function test_to_num()
