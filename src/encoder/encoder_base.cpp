@@ -31,17 +31,24 @@ std::string EncoderBase::PopFullVectorName(size_t index)
 	return PopFullName() + oss.str();
 }
 
-template <>
-float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue)
+template <> int64_t EncoderBase::LuaToNumber<int64_t>(const LuaRef& luaValue)
 {
 	CheckScalarLuaValue(luaValue);
-	if (Bad()) return 0.0;
+	if (Bad()) return 0;
 	double dVal = luaValue.toValue<double>();
-	return static_cast<float>(dVal);
+	if (IsInteger(dVal))
+		return luaValue.toValue<int64_t>();
+	return static_cast<int64_t>(dVal);
 }
 
-template <>
-double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue)
+template <> uint64_t EncoderBase::LuaToNumber<uint64_t>(const LuaRef& luaValue)
+{
+	int64_t l = LuaToNumber<int64_t>(luaValue);
+	if (Bad()) return 0;
+	return static_cast<uint64_t>(l);
+}
+
+template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue)
 {
 	CheckScalarLuaValue(luaValue);
 	if (Bad()) return 0.0;

@@ -64,9 +64,6 @@ protected:
 	string PopFullVectorName(size_t index);
 
 private:
-	template <typename T>
-	void CheckIntegerRange(double dValue, const LuaRef& luaValue);
-
 	// Figure out if int or float.
 	bool IsInteger(double dValue) const;
 
@@ -85,56 +82,16 @@ T EncoderBase::LuaToNumber(const LuaRef& luaValue)
 {
 	static_assert(std::is_scalar<T>::value,
 		"LuaToNumber() is only for scalar types.");
-	CheckScalarLuaValue(luaValue);
-	if (Bad()) return T();
-
-	double dVal = luaValue.toValue<double>();
-	if (!IsInteger(dVal))
-	{
-		SetError("integer field " + PopFullName() + " is "
-			+ luaValue.toValue<string>());
-		return T();
-	}
-
-	// No range check for int64_t and uint64_t.
-	if (sizeof(T) >= sizeof(int64_t))
-		return luaValue.toValue<T>();
-
-	CheckIntegerRange<T>(dVal, luaValue);
-	if (Bad()) return T();
-
-	assert(static_cast<T>(dVal) == luaValue.toValue<T>());
+	static_assert(sizeof(T) < sizeof(int64_t),
+		"Need spacialized LuaToNumber<double/int64>().");
+	// Directly toValue<int>() may throw.
+	double dVal = LuaToNumber<double>(luaValue);
+	if (Bad()) return 0;
 	return static_cast<T>(dVal);
 }
 
-template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue);
+template <> int64_t EncoderBase::LuaToNumber<int64_t>(const LuaRef& luaValue);
+template <> uint64_t EncoderBase::LuaToNumber<uint64_t>(const LuaRef& luaValue);
 template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue);
-
-template <typename T>
-void EncoderBase::CheckIntegerRange(double dValue, const LuaRef& luaValue)
-{
-	assert(IsLuaNumber(luaValue));
-	assert(dValue == luaValue.toValue<double>());
-
-	if (dValue >= std::numeric_limits<T>::min() &&
-		dValue <= std::numeric_limits<T>::max())
-		return;
-
-	std::ostringstream oss;
-	oss << "field " << PopFullName() << "("
-		<< luaValue.toValue<string>()
-		<< ") is out of range [";
-	if (sizeof(T) <= sizeof(int8_t))  // or uint8_t
-	{
-		oss << static_cast<int>(std::numeric_limits<T>::min()) << ", "
-			<< static_cast<int>(std::numeric_limits<T>::max()) << "]";
-	}
-	else
-	{
-		oss << std::numeric_limits<T>::min() << ", "
-			<< std::numeric_limits<T>::max() << "]";
-	}
-	SetError(oss.str());
-}
 
 #endif  // LUA_FLATBUFFERS_ENCODER_ENCODER_BASE_H_
