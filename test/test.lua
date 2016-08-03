@@ -91,6 +91,13 @@ function test_to_num()
 	assert(lfb.test_to_num(nil)["uint8"] == "can not convert field test(nil) to integer")
 end  -- test_to_num()
 
+function test_enum()
+	local name = "TestSimpleTableWithEnum"
+	buf = assert(lfb.encode(name, {color = 123}))
+	t = assert(lfb.decode(name, buf))
+	assert(123 == t.color)
+end
+
 function test_all()
 	test_no_type()
 	test_required()
@@ -100,8 +107,8 @@ function test_all()
 	test_string_field()
 	test_encode_struct()
 	test_encode_nested_struct()
-
 	test_to_num()
+	test_enum()
 end  -- test_all()
 
 test_all()

@@ -56,22 +56,14 @@ void TableEncoder::CacheField(const Field& field, const LuaRef& luaValue)
 	const Type& type = *field.type();
 	switch (type.base_type())
 	{
-	case String:
-		CacheStringField(field, luaValue);
-		break;
-	case Vector:
-		CacheVectorField(field, luaValue);
-		break;
-	case Obj:
-		CacheObjField(field, luaValue);
-		break;
-	case Union:
-		CacheUnionField(field, luaValue);
-		break;
-	default:
-		m_mapScalars[&field] = luaValue;
-		break;
+	case String: return CacheStringField(field, luaValue);
+	case Vector: return CacheVectorField(field, luaValue);
+	case Obj: return CacheObjField(field, luaValue);
+	case Union: return CacheUnionField(field, luaValue);
 	}  // switch
+
+	// Allow enum field using string value. Enum fields? XXX
+	m_mapScalars[&field] = luaValue;
 }
 
 void TableEncoder::CacheStringField(const Field& field, const LuaRef& luaValue)
