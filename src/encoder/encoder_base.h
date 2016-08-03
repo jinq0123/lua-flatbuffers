@@ -65,7 +65,7 @@ protected:
 
 private:
 	template <typename T>
-	void CheckNumberRange(double dValue, const LuaRef& luaValue);
+	void CheckIntegerRange(double dValue, const LuaRef& luaValue);
 
 	// Figure out if int or float.
 	bool IsInteger(double dValue) const;
@@ -96,11 +96,13 @@ T EncoderBase::LuaToNumber(const LuaRef& luaValue)
 		return T();
 	}
 
-	CheckNumberRange<T>(dVal, luaValue);
-	if (Bad()) return T();
-
+	// No range check for int64_t and uint64_t.
 	if (sizeof(T) >= sizeof(int64_t))
 		return luaValue.toValue<T>();
+
+	CheckIntegerRange<T>(dVal, luaValue);
+	if (Bad()) return T();
+
 	assert(static_cast<T>(dVal) == luaValue.toValue<T>());
 	return static_cast<T>(dVal);
 }
@@ -109,7 +111,7 @@ template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue);
 template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue);
 
 template <typename T>
-void EncoderBase::CheckNumberRange(double dValue, const LuaRef& luaValue)
+void EncoderBase::CheckIntegerRange(double dValue, const LuaRef& luaValue)
 {
 	assert(IsLuaNumber(luaValue));
 	assert(dValue == luaValue.toValue<double>());

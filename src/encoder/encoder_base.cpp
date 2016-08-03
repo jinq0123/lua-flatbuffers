@@ -37,8 +37,6 @@ float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue)
 	CheckScalarLuaValue(luaValue);
 	if (Bad()) return 0.0;
 	double dVal = luaValue.toValue<double>();
-	CheckNumberRange<float>(dVal, luaValue);
-	if (Bad()) return 0.0;
 	return static_cast<float>(dVal);
 }
 
