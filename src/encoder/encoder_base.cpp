@@ -44,9 +44,9 @@ template <> int64_t EncoderBase::LuaToNumber<int64_t>(const LuaRef& luaValue)
 
 template <> float EncoderBase::LuaToNumber<float>(const LuaRef& luaValue)
 {
-	CheckScalarLuaValue(luaValue);
+	double d = LuaToNumber<double>(luaValue);
 	if (Bad()) return 0.0;
-	return luaValue.toValue<float>();  // allow int64 -> float
+	return static_cast<float>(d);
 }
 
 template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue)
