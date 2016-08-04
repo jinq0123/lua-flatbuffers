@@ -103,6 +103,16 @@ Enum is integer, and converts string enum to integer automatically.
 	assert(8 == t.color)
 ```
 
+Array only read from index 1 to len, ignore others.
+```
+	buf = assert(lfb.encode("Monster", {name="", inventory={
+		1,2, [-1]=-1, [100]=100, x=101}}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(2 == #t.inventory)
+	assert(nil == t.inventory[-1])
+	assert(nil == t.inventory[100])
+```
+
 Todo
 ------
 * Support namespace.

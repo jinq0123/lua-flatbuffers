@@ -143,6 +143,16 @@ function test_vector_field()
 	assert(err == "array field Monster.inventory is not array but number")
 	buf, err = lfb.encode("Monster", {name="", inventory={1.1}})
 	assert(err == "can not convert field Monster.inventory[1](1.1) to integer")
+	buf = assert(lfb.encode("Monster", {name="", inventory={1,2}}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(1 == t.inventory[1] and 2 == t.inventory[2])
+	buf = assert(lfb.encode("Monster", {name="", inventory={
+		1,2, [-1]=-1, [100]=100, x=101}}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(2 == #t.inventory)
+	assert(nil == t.inventory[-1] and
+		nil == t.inventory[100] and
+		nil == t.inventory.x)
 end  -- test_vector_field()
 
 function test_all()
