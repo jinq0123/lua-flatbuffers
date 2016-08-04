@@ -31,7 +31,7 @@ std::string EncoderBase::PopFullVectorName(size_t index)
 	return PopFullName() + oss.str();
 }
 
-template <> int64_t EncoderBase::LuaToNumber<int64_t>(const LuaRef& luaValue)
+int64_t EncoderBase::LuaToInt64(const LuaRef& luaValue)
 {
 	// Directly toValue<int64_t>() may throw.
 	// And toValue<double>() is wrong for 9223372036854775807.1 (maxinteger + 0.1).
