@@ -44,6 +44,7 @@ private:
 
 	int64_t GetEnumFromLuaStr(const reflection::Type& type,
 		const LuaRef& luaValue);
+	void CheckRequiredFields(const Object& obj);
 
 private:
 	// Cache to map before StartTable().

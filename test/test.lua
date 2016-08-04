@@ -15,10 +15,10 @@ function test_required()
 	t = assert(lfb.decode("TestSimpleTableWithEnum", buf))
 	assert(t.color == 2)
 	
-	buf = assert(lfb.encode("Monster", {}))
-	-- XXX required name?
-	t, err = lfb.decode("Monster", buf)
+	buf, err = lfb.encode("Monster", {})
 	assert(err == "missing required field Monster.name")
+	-- t, err = lfb.decode("Monster", buf)
+	-- assert(err == "missing required field Monster.name")
 
 	buf = assert(lfb.encode("Monster", {name="abc"}))
 	t = assert(lfb.decode("Monster", buf))
@@ -117,7 +117,7 @@ function test_enum()
 end  -- test_enum()
 
 function test_encode_illegal_field()
-	buf, err = lfb.encode("Monster", {abcd=1})
+	buf, err = lfb.encode("Monster", {name="", abcd=1})
 	assert(err == "illegal field Monster.abcd")
 end  -- test_encode_illegal_field()
 
@@ -127,7 +127,7 @@ function test_mygame_example2_monster()
 end  -- test_mygame_example2_monster()
 
 function test_encode_depricated_field()
-	buf, err = lfb.encode("Monster", {friendly=true})
+	buf, err = lfb.encode("Monster", {name="", friendly=true})
 	assert(err == "deprecated field Monster.friendly")
 end  -- test_encode_depricated_field()
 

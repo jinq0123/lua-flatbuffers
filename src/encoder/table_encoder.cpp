@@ -12,6 +12,8 @@ flatbuffers::uoffset_t TableEncoder::EncodeTable(
 	assert(!obj.is_struct());
 	assert(luaTable.isTable());
 	m_pLuaTable = &luaTable;
+	CheckRequiredFields(obj);
+	if (Bad()) return 0;
 
 	// Cache to map before StartTable().
 	m_mapStructs.clear();
@@ -281,5 +283,17 @@ int64_t TableEncoder::GetEnumFromLuaStr(
 	SetError(string("illegal enum ") + pEnum->name()->str() + " field "
 		+ PopFullName() + "(" + sEnumVal + ")");
 	return 0;
+}
+
+void TableEncoder::CheckRequiredFields(const Object& obj)
+{
+	assert(m_pLuaTable);
+	for (const Field* pField : *obj.fields())
+	{
+		assert(pField);
+		if (pField->required() &&
+			!m_pLuaTable->has(pField->name()->c_str()))
+			ERR_RET("missing required field " + PopFullFieldName(*pField));
+	}
 }
 
