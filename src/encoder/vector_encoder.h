@@ -26,12 +26,9 @@ private:
 	uoffset_t CreateScalarVector(const LuaRef& luaArray);
 
 private:
-	string GetVectorIndex() const override;
-
-private:
-	// Lua array index 1..n. For error message.
-	enum : int { ILLEGAL_INDEX = 0 };
-	int m_idx = ILLEGAL_INDEX;
+	void PushIndex(int idx);
+	string GetIndexStr(int idx) const;
+	string PopFullItemName(int idx);
 };  // class VectorEncoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_VECTOR_ENCODER_H_

@@ -69,24 +69,22 @@ uoffset_t VectorEncoder::EncodeScalarVector(
 
 uoffset_t VectorEncoder::EncodeStringVector(const LuaRef& luaArray)
 {
-	assert(ILLEGAL_INDEX == m_idx);
 	std::vector<string> v;
 	int len = luaArray.len();
-	for (m_idx = 1; m_idx <= len; ++m_idx)
+	for (int i = 1; i <= len; ++i)
 	{
 		using LuaIntf::LuaTypeID;
-		LuaRef luaElem = luaArray.get(m_idx);
+		LuaRef luaElem = luaArray.get(i);
 		LuaTypeID luaTypeId = luaElem.type();
 		if (LuaTypeID::STRING != luaTypeId && LuaTypeID::NUMBER != luaTypeId)
 		{
-			SetError("string vector item " + PopFullName()
+			SetError("string vector item " + PopFullItemName(i)
 				+ " is " + luaElem.typeName());
 			return 0;
 		}
 		v.push_back(luaElem.toValue<string>());
 	}
-	m_idx = ILLEGAL_INDEX;
-	
+
 	return Builder().CreateVectorOfStrings(v).o;
 }
 
@@ -108,16 +106,15 @@ uoffset_t VectorEncoder::EncodeStructVector(
 	uoffset_t offset = Builder()
 		.CreateUninitializedVector(len, elemSize, &pBuf);
 
-	assert(ILLEGAL_INDEX == m_idx);
-	for (m_idx = 1; m_idx <= len; ++m_idx)
+	for (int i = 1; i <= len; ++i)
 	{
-		LuaRef luaElem = luaArray.get(m_idx);
-		uint8_t* pDest = pBuf + (m_idx-1) * elemSize;
-		// Todo: Push indexed name...
+		LuaRef luaElem = luaArray.get(i);
+		uint8_t* pDest = pBuf + (i-1) * elemSize;
+		PushIndex(i);
 		StructEncoder(m_rCtx).EncodeStructToBuf(elemObj, luaElem, pDest);
+		SafePopName();
 		if (Bad()) return 0;
 	}
-	m_idx = ILLEGAL_INDEX;
 	return offset;
 }
 
@@ -125,17 +122,16 @@ uoffset_t VectorEncoder::EncodeTableVector(
 	const Object& elemObj, const LuaRef& luaArray)
 {
 	assert(!elemObj.is_struct());
-	assert(ILLEGAL_INDEX == m_idx);
 	int len = luaArray.len();
 	std::vector<uoffset_t> vOffsets;
-	for (m_idx = 1; m_idx <= len; ++m_idx)
+	for (int i = 1; i <= len; ++i)
 	{
-		LuaRef luaElem = luaArray.get(m_idx);
-		// Todo: Push indexed name...
+		LuaRef luaElem = luaArray.get(i);
+		PushIndex(i);
 		vOffsets.push_back(TableEncoder(m_rCtx).EncodeTable(elemObj, luaElem));
+		SafePopName();
 		if (Bad()) return 0;
 	}
-	m_idx = ILLEGAL_INDEX;
 
 	// Todo: Sort...
 	return Builder().CreateVector(vOffsets).o;
@@ -144,24 +140,33 @@ uoffset_t VectorEncoder::EncodeTableVector(
 template<typename T>
 uoffset_t VectorEncoder::CreateScalarVector(const LuaRef& luaArray)
 {
-	assert(ILLEGAL_INDEX == m_idx);
 	std::vector<T> v;
 	int len = luaArray.len();
-	for (m_idx = 1; m_idx <= len; ++m_idx)
+	for (int i = 1; i <= len; ++i)
 	{
-		LuaRef luaElem = luaArray.get(m_idx);
+		PushIndex(i);
+		LuaRef luaElem = luaArray.get(i);
 		v.push_back(LuaToNumber<T>(luaElem));
+		SafePopName();
 		if (Bad()) return 0;
 	}
-	m_idx = ILLEGAL_INDEX;
 	return Builder().CreateVector(v).o;
 }
 
-std::string VectorEncoder::GetVectorIndex() const
+void VectorEncoder::PushIndex(int idx)
 {
-	if (ILLEGAL_INDEX == m_idx) return "";
+	PushName(GetIndexStr(idx));
+}
+
+std::string VectorEncoder::GetIndexStr(int idx) const
+{
 	std::ostringstream oss;
-	oss << "[" << m_idx << "]";
+	oss << "[" << idx << "]";
 	return oss.str();
+}
+
+std::string VectorEncoder::PopFullItemName(int idx)
+{
+	return PopFullName() + GetIndexStr(idx);
 }
 

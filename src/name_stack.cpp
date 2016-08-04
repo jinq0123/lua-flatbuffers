@@ -11,11 +11,13 @@ std::string NameStack::PopFullName()
 {
 	if (m_stack.empty()) return "";
 
-	std::string sResult(m_stack.top());
-	m_stack.pop();
+	std::string sResult;
 	while (!m_stack.empty())
 	{
-		sResult.insert(0, m_stack.top() + ".");
+		// No '.' for vector index. Like: VecFld[n], not VecFld.[n]
+		if (!sResult.empty() && '[' != sResult[0])
+			sResult.insert(0, ".");
+		sResult.insert(0, m_stack.top());
 		m_stack.pop();
 	}
 	return sResult;

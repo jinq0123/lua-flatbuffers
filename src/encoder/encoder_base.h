@@ -64,7 +64,6 @@ protected:
 private:
 	void SetLuaToNumError(const LuaRef& luaValue, bool bToInt);
 	int64_t LuaToInt64(const LuaRef& luaValue);
-	virtual string GetVectorIndex() const { return ""; }  // for error msg
 
 protected:
 	EncoderContext& m_rCtx;

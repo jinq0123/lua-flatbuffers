@@ -11,12 +11,12 @@ void EncoderBase::SetError(const string& sError)
 
 std::string EncoderBase::PopFullName()
 {
-	return m_rCtx.nameStack.PopFullName() + GetVectorIndex();
+	return m_rCtx.nameStack.PopFullName();
 }
 
 std::string EncoderBase::PopFullFieldName(const string& sFieldName)
 {
-	return m_rCtx.nameStack.PopFullFieldName(sFieldName) + GetVectorIndex();
+	return m_rCtx.nameStack.PopFullFieldName(sFieldName);
 }
 
 std::string EncoderBase::PopFullFieldName(const reflection::Field& field)
