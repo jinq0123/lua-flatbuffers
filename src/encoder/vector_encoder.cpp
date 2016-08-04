@@ -41,7 +41,7 @@ uoffset_t VectorEncoder::EncodeScalarVector(
 	switch (elemType)
 	{
 	case UType:
-	case Bool:  // XXX true -> 1
+	case Bool:  // true -> 1
 	case UByte:
 		return CreateScalarVector<uint8_t>(luaArray);
 	case Byte:

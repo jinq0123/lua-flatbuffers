@@ -159,6 +159,10 @@ function test_bool_vector()
 	buf = assert(lfb.encode("Monster", {name="", testarrayofbools={[1]=true}}))
 	t = assert(lfb.decode("Monster", buf))
 	assert(true == t.testarrayofbools[1])
+	buf = assert(lfb.encode("Monster", {name="", testarrayofbools={1,0,1,0}}))
+	t = assert(lfb.decode("Monster", buf))
+	local a = t.testarrayofbools
+	assert(true == a[1] and false == a[2] and a[3] and not a[4])
 end  -- test_bool_vector()
 
 function test_all()

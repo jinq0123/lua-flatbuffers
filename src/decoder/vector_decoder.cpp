@@ -36,20 +36,20 @@ LuaRef VectorDecoder::DecodeVector(
 LuaRef VectorDecoder::DecodeScalarVector(
 	reflection::BaseType elemType, const VectorOfAny& v)
 {
-	assert(elemType <= reflection::Double);
+	using namespace reflection;
+	assert(elemType <= Double);
 
 	LuaRef luaArray = CreateLuaTable();
 	const VectorOfAny* pVec = &v;
-	if (elemType <= reflection::Long)
+	if (elemType == Bool)
+	{
+		for (size_t i = 0; i < v.size(); ++i)
+			luaArray[i+1] = (0 != GetAnyVectorElemI(pVec, elemType, i));
+	}
+	else if (elemType <= ULong)
 	{
 		for (size_t i = 0; i < v.size(); ++i)
 			luaArray[i+1] = GetAnyVectorElemI(pVec, elemType, i);
-	}
-	else if (elemType == reflection::ULong)
-	{
-		for (size_t i = 0; i < v.size(); ++i)
-			luaArray[i+1] = static_cast<uint64_t>(
-				GetAnyVectorElemI(pVec, elemType, i));
 	}
 	else
 	{
