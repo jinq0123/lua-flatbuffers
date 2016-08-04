@@ -18,7 +18,7 @@ function test_required()
 	buf = assert(lfb.encode("Monster", {}))
 	-- XXX required name?
 	t, err = lfb.decode("Monster", buf)
-	assert(err == "illegal required field Monster.name")
+	assert(err == "missing required field Monster.name")
 
 	buf = assert(lfb.encode("Monster", {name="abc"}))
 	t = assert(lfb.decode("Monster", buf))

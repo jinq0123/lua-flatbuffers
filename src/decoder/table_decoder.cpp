@@ -208,7 +208,10 @@ bool TableDecoder::VerifyFieldOfTable(const Table& fbTable, const Field &field)
 		if (fbTable.VerifyFieldRequired<T>(Verifier(), field.offset()))
 			return true;
 
-		SetError("illegal required field " + PopFullFieldName(field));
+		if (fbTable.VerifyField<T>(Verifier(), field.offset()))
+			SetError("missing required field " + PopFullFieldName(field));
+		else
+			SetError("illegal field " + PopFullFieldName(field));
 		return false;
 	}
 
