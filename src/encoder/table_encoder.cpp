@@ -187,7 +187,7 @@ void TableEncoder::EncodeScalar(const Field& field, const LuaRef& luaValue)
 	switch (eType)
 	{
 	case UType:
-	case Bool:
+	case Bool:  // XXX true -> 1
 	case UByte: return AddElement<uint8_t>(offset, luaValue, defInt);
 	case Byte: return AddElement<int8_t>(offset, luaValue, defInt);
 	case Short: return AddElement<int16_t>(offset, luaValue, defInt);
@@ -214,7 +214,7 @@ void TableEncoder::EncodeStringEnum(const Field& field, const LuaRef& luaValue)
 	switch (type.base_type())
 	{
 	case UType:
-	case Bool:
+	case Bool:  // XXX true -> 1
 	case UByte: return AddIntElement<uint8_t>(offset, lEnumVal, defInt);
 	case Byte: return AddIntElement<int8_t>(offset, lEnumVal, defInt);
 	case Short: return AddIntElement<int16_t>(offset, lEnumVal, defInt);

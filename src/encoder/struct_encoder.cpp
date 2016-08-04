@@ -96,7 +96,7 @@ void StructEncoder::EncodeScalarToBuf(reflection::BaseType eType,
 	switch (eType)
 	{
 	case UType:
-	case Bool:
+	case Bool:  // XXX true -> 1
 	case UByte: return CopyScalarToBuf<uint8_t>(luaValue, pDest);
 	case Byte: return CopyScalarToBuf<int8_t>(luaValue, pDest);
 	case Short: return CopyScalarToBuf<int16_t>(luaValue, pDest);

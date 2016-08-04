@@ -89,7 +89,7 @@ LuaRef TableDecoder::DecodeScalarField(
 	switch (field.type()->base_type())
 	{
 	case UType:
-	case Bool:
+	case Bool:  // XXX 0 -> false
 	case UByte:
 		return DecodeFieldI<uint8_t>(fbTable, field);
 	case Byte:
