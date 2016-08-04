@@ -186,12 +186,17 @@ function test_struct_vector()
 end  -- test_struct_vector()
 
 function test_table_vector()
+	buf = assert(lfb.encode("Monster", {name="abcde", testarrayoftables={{name="xyz"}}}))
+	t = assert(lfb.decode("Monster", buf))
+	a = t.testarrayoftables
+	assert("xyz" == a[1].name)
+
 	buf = assert(lfb.encode("Monster", {name="",
 		testarrayoftables={{name="a"}, {name="b"}}}))
 	t = assert(lfb.decode("Monster", buf))
 	a = t.testarrayoftables
-	assert("a" == t[1].name)
-	assert("b" == t[1].name)
+	assert("a" == a[1].name)
+	assert("b" == a[2].name)
 end  -- test_table_vector()
 
 function test_all()

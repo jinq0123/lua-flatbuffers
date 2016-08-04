@@ -123,7 +123,7 @@ uoffset_t VectorEncoder::EncodeTableVector(
 {
 	assert(!elemObj.is_struct());
 	int len = luaArray.len();
-	std::vector<uoffset_t> vOffsets;
+	std::vector<flatbuffers::Offset<void>> vOffsets;
 	for (int i = 1; i <= len; ++i)
 	{
 		LuaRef luaElem = luaArray.get(i);
