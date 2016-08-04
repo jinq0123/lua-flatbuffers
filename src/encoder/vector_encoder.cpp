@@ -3,7 +3,7 @@
 #include "struct_encoder.h"  // for StructEncoder
 #include "table_encoder.h"  // for TableEncoder
 
-// XXX: check luaArray is array
+// Lua array index is 1..n. Other elements are ignored.
 
 using flatbuffers::uoffset_t;
 
