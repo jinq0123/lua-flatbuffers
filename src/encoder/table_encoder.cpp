@@ -4,7 +4,7 @@
 #include "union_encoder.h"  // for UnionEncoder
 #include "vector_encoder.h"  // for VectorEncoder
 
-// Todo: check required fields.
+// XXX check required fields.
 
 flatbuffers::uoffset_t TableEncoder::EncodeTable(
 	const Object& obj, const LuaRef& luaTable)

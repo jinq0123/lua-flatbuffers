@@ -11,7 +11,12 @@ function test_no_type()
 end
 
 function test_required()
+	buf = assert(lfb.encode("TestSimpleTableWithEnum", {}))
+	t = assert(lfb.decode("TestSimpleTableWithEnum", buf))
+	assert(t.color == 2)
+	
 	buf = assert(lfb.encode("Monster", {}))
+	-- XXX required name?
 	t, err = lfb.decode("Monster", buf)
 	assert(err == "illegal required field Monster.name")
 
