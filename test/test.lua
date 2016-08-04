@@ -185,6 +185,15 @@ function test_struct_vector()
 	assert(err == "missing struct field Monster.test4[1].b")
 end  -- test_struct_vector()
 
+function test_table_vector()
+	buf = assert(lfb.encode("Monster", {name="",
+		testarrayoftables={{name="a"}, {name="b"}}}))
+	t = assert(lfb.decode("Monster", buf))
+	a = t.testarrayoftables
+	assert("a" == t[1].name)
+	assert("b" == t[1].name)
+end  -- test_table_vector()
+
 function test_all()
 	test_no_type()
 	test_required()
@@ -204,6 +213,7 @@ function test_all()
 	test_bool_vector()
 	test_string_vector()
 	test_struct_vector()
+	test_table_vector()
 	print("All test passed.")
 end  -- test_all()
 
