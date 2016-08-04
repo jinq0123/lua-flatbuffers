@@ -39,6 +39,10 @@ private:
 	template <typename ElementType, typename DefaultValueType>
 	inline void AddElement(uint16_t offset, const LuaRef& elementValue,
 		DefaultValueType defaultValue);
+	template <typename ElementType>
+	void AddIntElement(uint16_t offset, int64_t lValue, int64_t lDefault);
+
+	int64_t GetEnumFromLuaStr(const reflection::Enum& enu, const string& sEnumVal);
 
 private:
 	// Cache to map before StartTable().

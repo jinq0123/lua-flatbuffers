@@ -187,40 +187,18 @@ void TableEncoder::EncodeScalar(const Field& field, const LuaRef& luaValue)
 	{
 	case UType:
 	case Bool:
-	case UByte:
-		AddElement<uint8_t>(offset, luaValue, defInt);
-		break;
-	case Byte:
-		AddElement<int8_t>(offset, luaValue, defInt);
-		break;
-	case Short:
-		AddElement<int16_t>(offset, luaValue, defInt);
-		break;
-	case UShort:
-		AddElement<uint16_t>(offset, luaValue, defInt);
-		break;
-	case Int:
-		AddElement<int32_t>(offset, luaValue, defInt);
-		break;
-	case UInt:
-		AddElement<uint32_t>(offset, luaValue, defInt);
-		break;
-	case Long:
-		AddElement<int64_t>(offset, luaValue, defInt);
-		break;
-	case ULong:
-		AddElement<uint64_t>(offset, luaValue, defInt);
-		break;
-	case Float:
-		AddElement<float>(offset, luaValue, defReal);
-		break;
-	case Double:
-		AddElement<double>(offset, luaValue, defReal);
-		break;
-	default:
-		assert(!"Illegal type.");
-		break;
+	case UByte: return AddElement<uint8_t>(offset, luaValue, defInt);
+	case Byte: return AddElement<int8_t>(offset, luaValue, defInt);
+	case Short: return AddElement<int16_t>(offset, luaValue, defInt);
+	case UShort: return AddElement<uint16_t>(offset, luaValue, defInt);
+	case Int: return AddElement<int32_t>(offset, luaValue, defInt);
+	case UInt: return AddElement<uint32_t>(offset, luaValue, defInt);
+	case Long: return AddElement<int64_t>(offset, luaValue, defInt);
+	case ULong: return AddElement<uint64_t>(offset, luaValue, defInt);
+	case Float: return AddElement<float>(offset, luaValue, defReal);
+	case Double: return AddElement<double>(offset, luaValue, defReal);
 	}
+	assert(!"Illegal type.");
 }
 
 void TableEncoder::EncodeStringEnum(const Field& field, const LuaRef& luaValue)
@@ -234,22 +212,25 @@ void TableEncoder::EncodeStringEnum(const Field& field, const LuaRef& luaValue)
 
 	const reflection::Enum* pEnum = (*m_rCtx.schema.enums())[type.index()];
 	assert(pEnum);
-	for (const EnumVal* pEnumVal : *pEnum->values())
+	int64_t lEnumVal = GetEnumFromLuaStr(type, luaValue);
+	if (Bad()) return;
+
+	int64_t defInt = field.default_integer();
+	uint16_t offset = field.offset();
+	switch (type.base_type())
 	{
-		assert(pEnumVal);
-		if (pEnumVal->name()->c_str() != sEnumVal)
-			continue;
-
-		int64_t defInt = field.default_integer();
-		uint16_t offset = field.offset();
-
-		// XXX for base_type()...
-		Builder().AddElement(offset, pEnumVal->value(),
-			static_cast<ElementType>(defaultValue));
+	case UType:
+	case Bool:
+	case UByte: return AddIntElement<uint8_t>(offset, lEnumVal, defInt);
+	case Byte: return AddIntElement<int8_t>(offset, lEnumVal, defInt);
+	case Short: return AddIntElement<int16_t>(offset, lEnumVal, defInt);
+	case UShort: return AddIntElement<uint16_t>(offset, lEnumVal, defInt);
+	case Int: return AddIntElement<int32_t>(offset, lEnumVal, defInt);
+	case UInt: return AddIntElement<uint32_t>(offset, lEnumVal, defInt);
+	case Long: return AddIntElement<int64_t>(offset, lEnumVal, defInt);
+	case ULong: return AddIntElement<uint64_t>(offset, lEnumVal, defInt);
 	}
-
-	SetError("illegal enum " + pEnum->name() + " field " + PopFullName()
-		+ "(" + sEnumVal + ")");
+	assert(!"Illegal type.");
 }
 
 void TableEncoder::EncodeCachedOffsets()
@@ -277,3 +258,30 @@ inline void TableEncoder::AddElement(uint16_t offset,
 	Builder().AddElement(offset, val,
 		static_cast<ElementType>(defaultValue));
 }
+
+template <typename ElementType>
+inline void TableEncode::AddIntElement(uint16_t offset,
+	int64_t lValue, int64_t lDefault)
+{
+	static_assert(std::is_scalar<ElementType>::value,
+		"AddIntElement() is only for int types.");
+	Builder().AddElement(offset,
+		static_cast<ElementType>(lValue),
+		static_cast<ElementType>(lDefault));
+}
+
+int64_t TableEncoder::GetEnumFromLuaStr(const reflection::Enum& enu, const string& sEnumVal)
+{
+	// XXX
+
+	for (const EnumVal* pEnumVal : *enu.values())
+	{
+		assert(pEnumVal);
+		if (pEnumVal->name()->c_str() == sEnumVal)
+			pEnumVal->value();
+
+	}
+	SetError("illegal enum " + pEnum->name() + " field " + PopFullName()
+		+ "(" + sEnumVal + ")");
+}
+
