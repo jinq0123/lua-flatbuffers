@@ -83,7 +83,7 @@ void TableEncoder::CacheVectorField(const Field& field, const LuaRef& luaValue)
 {
 	const reflection::Type& type = *field.type();
 	assert(reflection::Vector == type.base_type());
-	PushName(field);  // Todo: Need array index.
+	PushName(field);
 	m_mapOffsets[&field] = VectorEncoder(m_rCtx).EncodeVector(type, luaValue);
 	SafePopName();
 }
