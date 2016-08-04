@@ -33,6 +33,7 @@ private:
 	void EncodeStruct(const Field& field, const LuaRef& luaValue);
 	void EncodeCachedScalars();
 	void EncodeScalar(const Field& field, const LuaRef& luaValue);
+	void EncodeStringEnum(const Field& field, const LuaRef& luaValue);
 	void EncodeCachedOffsets();
 
 	template <typename ElementType, typename DefaultValueType>

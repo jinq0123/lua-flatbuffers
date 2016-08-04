@@ -62,7 +62,6 @@ void TableEncoder::CacheField(const Field& field, const LuaRef& luaValue)
 	case Union: return CacheUnionField(field, luaValue);
 	}  // switch
 
-	// Allow enum field using string value. Enum fields? XXX
 	m_mapScalars[&field] = luaValue;
 }
 
@@ -166,16 +165,25 @@ void TableEncoder::EncodeCachedScalars()
 	}
 }
 
+static bool IsEnumType(const reflection::Type& type)
+{
+	return type.index() >= 0 && type.base_type() < reflection::Float;
+}
+
 void TableEncoder::EncodeScalar(const Field& field, const LuaRef& luaValue)
 {
 	using namespace reflection;
 	const Type& type = *field.type();
+	if (IsEnumType(type) && luaValue.type() == LuaIntf::LuaTypeID::STRING)
+		return EncodeStringEnum(field, luaValue);  // Allow string eunm.
+
 	int64_t defInt = field.default_integer();
 	double defReal = field.default_real();
 	uint16_t offset = field.offset();
 
-	assert(type.base_type() <= Double);  // Only scalar.
-	switch (type.base_type())
+	BaseType eType = type.base_type();
+	assert(eType <= Double);  // Only scalar.
+	switch (eType)
 	{
 	case UType:
 	case Bool:
@@ -213,6 +221,35 @@ void TableEncoder::EncodeScalar(const Field& field, const LuaRef& luaValue)
 		assert(!"Illegal type.");
 		break;
 	}
+}
+
+void TableEncoder::EncodeStringEnum(const Field& field, const LuaRef& luaValue)
+{
+	using namespace reflection;
+	const Type& type = *field.type();
+	assert(type.base_type() < Float);  // enum must be int
+	assert(type.index() >= 0);
+	assert(luaValue.type() == LuaIntf::LuaTypeID::STRING);
+	string sEnumVal = luaValue.toValue<string>();
+
+	const reflection::Enum* pEnum = (*m_rCtx.schema.enums())[type.index()];
+	assert(pEnum);
+	for (const EnumVal* pEnumVal : *pEnum->values())
+	{
+		assert(pEnumVal);
+		if (pEnumVal->name()->c_str() != sEnumVal)
+			continue;
+
+		int64_t defInt = field.default_integer();
+		uint16_t offset = field.offset();
+
+		// XXX for base_type()...
+		Builder().AddElement(offset, pEnumVal->value(),
+			static_cast<ElementType>(defaultValue));
+	}
+
+	SetError("illegal enum " + pEnum->name() + " field " + PopFullName()
+		+ "(" + sEnumVal + ")");
 }
 
 void TableEncoder::EncodeCachedOffsets()
