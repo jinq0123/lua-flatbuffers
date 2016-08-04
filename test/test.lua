@@ -93,9 +93,18 @@ end  -- test_to_num()
 
 function test_enum()
 	local name = "TestSimpleTableWithEnum"
+	buf = assert(lfb.encode(name, {}))
+	t = assert(lfb.decode(name, buf))
+	assert(2 == t.color)
 	buf = assert(lfb.encode(name, {color = 123}))
 	t = assert(lfb.decode(name, buf))
 	assert(123 == t.color)
+	buf = assert(lfb.encode(name, {color = "Green"}))
+	t = assert(lfb.decode(name, buf))
+	assert(2 == t.color)
+	buf = assert(lfb.encode(name, {color = "Blue"}))
+	t = assert(lfb.decode(name, buf))
+	assert(8 == t.color)
 end
 
 function test_all()
@@ -109,6 +118,7 @@ function test_all()
 	test_encode_nested_struct()
 	test_to_num()
 	test_enum()
+	print("All test passed.")
 end  -- test_all()
 
 test_all()

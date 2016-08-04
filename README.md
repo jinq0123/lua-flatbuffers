@@ -91,6 +91,18 @@ true
 * Number will be converted to string if necessary. 
 * Number will be converted from one type to another, such as from float to byte.
 
+Enum is integer, and converts string enum to integer automatically.
+```
+	local name = "TestSimpleTableWithEnum"
+	buf = assert(lfb.encode(name, {color = 123}))
+	t = assert(lfb.decode(name, buf))
+	assert(123 == t.color)
+
+	buf = assert(lfb.encode(name, {color = "Blue"}))
+	t = assert(lfb.decode(name, buf))
+	assert(8 == t.color)
+```
+
 Todo
 ------
 * Support namespace.
