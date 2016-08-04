@@ -17,6 +17,7 @@ function test_required()
 	
 	buf, err = lfb.encode("Monster", {})
 	assert(err == "missing required field Monster.name")
+	-- If disable required fields check in encoding:
 	-- t, err = lfb.decode("Monster", buf)
 	-- assert(err == "missing required field Monster.name")
 
