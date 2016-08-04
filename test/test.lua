@@ -166,9 +166,12 @@ function test_bool_vector()
 end  -- test_bool_vector()
 
 function test_string_vector()
-	buf = assert(lfb.encode("Monster", {name="", testarrayofstring={"abcd"}}))
+	buf = assert(lfb.encode("Monster", {name="", testarrayofstring={"abcd", 1234}}))
 	t = assert(lfb.decode("Monster", buf))
 	assert("abcd" == t.testarrayofstring[1])
+	assert("1234" == t.testarrayofstring[2])
+	buf, err = lfb.encode("Monster", {name="", testarrayofstring={print}})
+	assert(err == "string vector item Monster.testarrayofstring[1] is function")
 end  -- test_string_vector()
 
 function test_all()

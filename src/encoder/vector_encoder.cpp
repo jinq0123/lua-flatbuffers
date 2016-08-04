@@ -69,8 +69,25 @@ uoffset_t VectorEncoder::EncodeScalarVector(
 
 uoffset_t VectorEncoder::EncodeStringVector(const LuaRef& luaArray)
 {
-	auto vStr = luaArray.toValue<std::vector<string>>();  // ? XXX
-	return Builder().CreateVectorOfStrings(vStr).o;
+	assert(ILLEGAL_INDEX == m_idx);
+	std::vector<string> v;
+	int len = luaArray.len();
+	for (m_idx = 1; m_idx <= len; ++m_idx)
+	{
+		using LuaIntf::LuaTypeID;
+		LuaRef luaElem = luaArray.get(m_idx);
+		LuaTypeID luaTypeId = luaElem.type();
+		if (LuaTypeID::STRING != luaTypeId && LuaTypeID::NUMBER != luaTypeId)
+		{
+			SetError("string vector item " + PopFullName()
+				+ " is " + luaElem.typeName());
+			return 0;
+		}
+		v.push_back(luaElem.toValue<string>());
+	}
+	m_idx = ILLEGAL_INDEX;
+	
+	return Builder().CreateVectorOfStrings(v).o;
 }
 
 uoffset_t VectorEncoder::EncoderObjectVector(
