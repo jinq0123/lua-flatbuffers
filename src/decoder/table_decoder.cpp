@@ -88,8 +88,9 @@ LuaRef TableDecoder::DecodeScalarField(
 	using namespace reflection;
 	switch (field.type()->base_type())
 	{
+	case Bool:  // 0 -> false
+		return DecodeFieldBool(fbTable, field);
 	case UType:
-	case Bool:  // XXX 0 -> false
 	case UByte:
 		return DecodeFieldI<uint8_t>(fbTable, field);
 	case Byte:
@@ -169,6 +170,14 @@ LuaRef TableDecoder::DecodeUnionField(
 	LuaRef luaRef = UnionDecoder(m_rCtx).DecodeUnion(type, nUnionType, pData);
 	SafePopName();
 	return luaRef;
+}
+
+LuaRef TableDecoder::DecodeFieldBool(const Table& fbTable, const Field &field)
+{
+	if (!VerifyFieldOfTable<uint8_t>(fbTable, field))
+		return Nil();
+	uint8_t u = flatbuffers::GetFieldI<uint8_t>(fbTable, field);
+	return LuaRef::fromValue(LuaState(), (0 != u));
 }
 
 template<typename T>

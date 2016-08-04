@@ -25,6 +25,8 @@ private:
 	LuaRef DecodeObjectField(const Table& fbTable, const Field& field);
 	LuaRef DecodeUnionField(const Table& fbTable, const Field& field);
 
+	LuaRef DecodeFieldBool(const Table& fbTable, const Field &field);
+
 	template<typename T>
 	LuaRef DecodeFieldI(const Table& fbTable, const Field &field);
 	template<typename T>
