@@ -11,8 +11,15 @@ uoffset_t VectorEncoder::EncodeVector(
 	const reflection::Type& type, const LuaRef& luaArray)
 {
 	using namespace reflection;
-	assert(luaArray.isTable());  // Todo: check array...
 	assert(type.base_type() == Vector);
+
+	if (!luaArray.isTable())
+	{
+		SetError("array field " + PopFullName() + " is not array but "
+			+ luaArray.typeName());
+		return 0;
+	}
+
 	BaseType elemType = type.element();
 	if (elemType <= Double)
 		return EncodeScalarVector(elemType, luaArray);
@@ -62,7 +69,7 @@ uoffset_t VectorEncoder::EncodeScalarVector(
 
 uoffset_t VectorEncoder::EncodeStringVector(const LuaRef& luaArray)
 {
-	auto vStr = luaArray.toValue<std::vector<string>>();  // ?
+	auto vStr = luaArray.toValue<std::vector<string>>();  // ? XXX
 	return Builder().CreateVectorOfStrings(vStr).o;
 }
 
@@ -116,6 +123,6 @@ uoffset_t VectorEncoder::EncodeTableVector(
 template<typename T>
 uoffset_t VectorEncoder::CreateScalarVector(const LuaRef& luaArray)
 {
-	auto v = luaArray.toValue<std::vector<T>>();  // ?
+	auto v = luaArray.toValue<std::vector<T>>();  // ? XXX
 	return Builder().CreateVector(v).o;
 }
