@@ -48,10 +48,10 @@ local monster = {
 }
 
 -- Build a buffer.
-local buf = assert(lfb:encode("Monster", monster))
+local buf = assert(lfb.encode("Monster", monster))
 
 -- Decode a flatbuffer string back to a Lua table.
-local monster2 = assert(lfbs:decode("Monster", buf))
+local monster2 = assert(lfb.decode("Monster", buf))
 ```
 
 Test
@@ -63,16 +63,17 @@ Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
 > lfb = require("lfb")
 > lfb.load_bfbs_file("../third_party/flatbuffers/tests/monster_test.bfbs")
 true
-> buf = lfb.encode("Monster", {hp = 1234})
-> t = lfb.decode("Monster", buf)
+> buf = assert(lfb.encode("Monster", {name="N", hp=1234}))
+> t = assert(lfb.decode("Monster", buf))
 > inspect = require("inspect")
 > inspect(t)
 {
   color = 8,
   hp = 1234,
   mana = 150,
+  name = "N",
   test_type = 0,
-  testbool = 0,
+  testbool = false,
   testf = 3.1415901184082,
   testf2 = 3.0,
   testf3 = 0.0,
@@ -103,7 +104,7 @@ Enum is integer, and converts string enum to integer automatically.
 	assert(8 == t.color)
 ```
 
-Array only read from index 1 to len, ignore others.
+Array only read from index 1 to len, ignoring others.
 ```
 	buf = assert(lfb.encode("Monster", {name="", inventory={
 		1,2, [-1]=-1, [100]=100, x=101}}))
