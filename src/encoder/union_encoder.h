@@ -18,6 +18,9 @@ private:
 	const EnumVal* GetEnumVal(const Enum& enu, const LuaRef& luaType);
 	const EnumVal* GetEnumValFromNum(const Enum& enu, int64_t qwType);
 	const EnumVal* GetEnumValFromName(const Enum& enu, const string& sType);
+
+private:
+	string PopFullUnionTypeName();
 };  // class UnionEncoder
 
 #endif  // LUA_FLATBUFFERS_ENCODER_UNION_ENCODER_H_

@@ -28,7 +28,7 @@ const EnumVal* UnionEncoder::GetEnumVal(
 {
 	if (!luaType)
 	{
-		SetError("missing type of union " + PopFullName());
+		SetError("missing union type field " + PopFullUnionTypeName());
 		return nullptr;
 	}
 
@@ -47,7 +47,7 @@ const EnumVal* UnionEncoder::GetEnumVal(
 		return GetEnumValFromName(enu, sType);
 	}
 
-	SetError("union " + PopFullName() + "'s type is " + luaType.typeName());
+	SetError("union type " + PopFullUnionTypeName() + " is " + luaType.typeName());
 	return nullptr;
 }
 
@@ -57,7 +57,8 @@ const EnumVal* UnionEncoder::GetEnumValFromNum(
 	const EnumVal* pEnumVal = enu.values()->LookupByKey(qwType);
 	if (pEnumVal) return pEnumVal;
 	std::ostringstream oss;
-	oss << "illegal union " << PopFullName() << "'s type value " << qwType;
+	oss << "illegal union type " << PopFullUnionTypeName()
+		<< "(" << qwType << ")";
 	SetError(oss.str());
 	return nullptr;
 }
@@ -71,7 +72,13 @@ const EnumVal* UnionEncoder::GetEnumValFromName(
 		if (pEnumVal->name()->c_str() == sType)
 			return pEnumVal;
 	}
-	SetError("illegal union " + PopFullName() + "'s type '" + sType + "'");
+	SetError("illegal union type name " + PopFullUnionTypeName()
+		+ "(" + sType + ")");
 	return nullptr;
+}
+
+std::string UnionEncoder::PopFullUnionTypeName()
+{
+	return PopFullName() + flatbuffers::UnionTypeFieldSuffix();
 }
 

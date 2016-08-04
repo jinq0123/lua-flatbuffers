@@ -208,13 +208,56 @@ function test_vector_field()
 end  -- test_vector_field()
 
 function test_table_field()
-	buf = assert(lfb.encode("Monster", {name="abcde",
+	buf = assert(lfb.encode("Monster", {name="",
 		testempty={id="test", val=9223372036854775807}}))
 	t = assert(lfb.decode("Monster", buf))
 	assert("test" == t.testempty.id)
 	assert(9223372036854775807 == t.testempty.val)
 	assert(0 == t.testempty.count)
+
+	buf, err = lfb.encode("Monster", {name="", testempty=print})
+	assert(err == "object Monster.testempty is not a table but function")
 end  -- test_table_field()
+
+function test_union_field()
+	buf, err = lfb.encode("Monster", {name="", test={}})
+	assert(err == "missing union type field Monster.test_type")
+	buf, err = lfb.encode("Monster", {name="", test={}, test_type=1234})
+	assert(err == "illegal union type Monster.test_type(1234)")
+	buf, err = lfb.encode("Monster", {name="", test={}, test_type="Abcd"})
+	assert(err == "illegal union type name Monster.test_type(Abcd)")
+	buf, err = lfb.encode("Monster", {name="", test={}, test_type=print})
+	assert(err == "union type Monster.test_type is function")
+
+	buf = assert(lfb.encode("Monster", {name="", test={name="aaa"}, test_type="Monster"}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(t.test_type == 1)
+	assert(t.test.name == "aaa")
+	-- Union type starts from 1?
+	buf = assert(lfb.encode("Monster", {name="", test={name="aaa"}, test_type=1}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(t.test_type == 1)
+
+	buf = assert(lfb.encode("Monster", {name="",
+		test={}, test_type="TestSimpleTableWithEnum"}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(t.test_type == 2)
+	assert(t.test.color == 2)  -- Green
+	buf = assert(lfb.encode("Monster", {name="",
+		test={color="Red"}, test_type="TestSimpleTableWithEnum"}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(t.test_type == 2)
+	assert(t.test.color == 1)  -- Red
+
+	buf, err = lfb.encode("Monster", {name="",
+		test={}, test_type="MyGame.Example2.Monster"})
+	assert(err == "illegal union type name Monster.test_type(MyGame.Example2.Monster)")
+	buf = assert(lfb.encode("Monster", {name="",
+		test={}, test_type="MyGame_Example2_Monster"}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(t.test_type == 3)
+	assert(t.test.name == nil)
+end  -- test_union_field()
 
 function test_all()
 	test_no_type()
@@ -233,6 +276,7 @@ function test_all()
 	test_bool_field()
 	test_vector_field()
 	test_table_field()
+	test_union_field()
 	print("All test passed.")
 end  -- test_all()
 
