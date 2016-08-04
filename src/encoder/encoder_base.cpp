@@ -11,24 +11,17 @@ void EncoderBase::SetError(const string& sError)
 
 std::string EncoderBase::PopFullName()
 {
-	return m_rCtx.nameStack.PopFullName();
+	return m_rCtx.nameStack.PopFullName() + GetVectorIndex();
 }
 
 std::string EncoderBase::PopFullFieldName(const string& sFieldName)
 {
-	return m_rCtx.nameStack.PopFullFieldName(sFieldName);
+	return m_rCtx.nameStack.PopFullFieldName(sFieldName) + GetVectorIndex();
 }
 
 std::string EncoderBase::PopFullFieldName(const reflection::Field& field)
 {
 	return PopFullFieldName(field.name()->c_str());
-}
-
-std::string EncoderBase::PopFullVectorName(size_t index)
-{
-	std::ostringstream oss;
-	oss << "[" << index << "]";
-	return PopFullName() + oss.str();
 }
 
 int64_t EncoderBase::LuaToInt64(const LuaRef& luaValue)

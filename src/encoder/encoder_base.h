@@ -60,11 +60,11 @@ protected:
 	string PopFullName();
 	string PopFullFieldName(const string& sFieldName);
 	string PopFullFieldName(const reflection::Field& field);
-	string PopFullVectorName(size_t index);
 
 private:
 	void SetLuaToNumError(const LuaRef& luaValue, bool bToInt);
 	int64_t LuaToInt64(const LuaRef& luaValue);
+	virtual string GetVectorIndex() const { return ""; }  // for error msg
 
 protected:
 	EncoderContext& m_rCtx;
