@@ -167,6 +167,7 @@ void TableEncoder::EncodeCachedScalars()
 
 static bool IsEnumType(const reflection::Type& type)
 {
+	// enum must be int
 	return type.index() >= 0 && type.base_type() < reflection::Float;
 }
 
@@ -205,13 +206,6 @@ void TableEncoder::EncodeStringEnum(const Field& field, const LuaRef& luaValue)
 {
 	using namespace reflection;
 	const Type& type = *field.type();
-	assert(type.base_type() < Float);  // enum must be int
-	assert(type.index() >= 0);
-	assert(luaValue.type() == LuaIntf::LuaTypeID::STRING);
-	string sEnumVal = luaValue.toValue<string>();
-
-	const reflection::Enum* pEnum = (*m_rCtx.schema.enums())[type.index()];
-	assert(pEnum);
 	int64_t lEnumVal = GetEnumFromLuaStr(type, luaValue);
 	if (Bad()) return;
 
@@ -230,7 +224,7 @@ void TableEncoder::EncodeStringEnum(const Field& field, const LuaRef& luaValue)
 	case Long: return AddIntElement<int64_t>(offset, lEnumVal, defInt);
 	case ULong: return AddIntElement<uint64_t>(offset, lEnumVal, defInt);
 	}
-	assert(!"Illegal type.");
+	assert(!"Illegal enum type.");
 }
 
 void TableEncoder::EncodeCachedOffsets()
@@ -260,7 +254,7 @@ inline void TableEncoder::AddElement(uint16_t offset,
 }
 
 template <typename ElementType>
-inline void TableEncode::AddIntElement(uint16_t offset,
+inline void TableEncoder::AddIntElement(uint16_t offset,
 	int64_t lValue, int64_t lDefault)
 {
 	static_assert(std::is_scalar<ElementType>::value,
@@ -270,18 +264,22 @@ inline void TableEncode::AddIntElement(uint16_t offset,
 		static_cast<ElementType>(lDefault));
 }
 
-int64_t TableEncoder::GetEnumFromLuaStr(const reflection::Enum& enu, const string& sEnumVal)
+int64_t TableEncoder::GetEnumFromLuaStr(
+	const reflection::Type& type, const LuaRef& luaValue)
 {
-	// XXX
-
-	for (const EnumVal* pEnumVal : *enu.values())
+	assert(IsEnumType(type));
+	assert(luaValue.type() == LuaIntf::LuaTypeID::STRING);
+	string sEnumVal = luaValue.toValue<string>();
+	const reflection::Enum* pEnum = (*m_rCtx.schema.enums())[type.index()];
+	assert(pEnum);
+	for (const reflection::EnumVal* pEnumVal : *pEnum->values())
 	{
 		assert(pEnumVal);
 		if (pEnumVal->name()->c_str() == sEnumVal)
-			pEnumVal->value();
-
+			return pEnumVal->value();
 	}
-	SetError("illegal enum " + pEnum->name() + " field " + PopFullName()
-		+ "(" + sEnumVal + ")");
+	SetError(string("illegal enum ") + pEnum->name()->str() + " field "
+		+ PopFullName() + "(" + sEnumVal + ")");
+	return 0;
 }
 
