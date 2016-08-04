@@ -207,6 +207,15 @@ function test_vector_field()
 	test_table_vector()
 end  -- test_vector_field()
 
+function test_table_field()
+	buf = assert(lfb.encode("Monster", {name="abcde",
+		testempty={id="test", val=9223372036854775807}}))
+	t = assert(lfb.decode("Monster", buf))
+	assert("test" == t.testempty.id)
+	assert(9223372036854775807 == t.testempty.val)
+	assert(0 == t.testempty.count)
+end  -- test_table_field()
+
 function test_all()
 	test_no_type()
 	test_required()
@@ -223,6 +232,7 @@ function test_all()
 	test_encode_depricated_field()
 	test_bool_field()
 	test_vector_field()
+	test_table_field()
 	print("All test passed.")
 end  -- test_all()
 
