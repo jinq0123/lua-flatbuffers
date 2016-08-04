@@ -31,6 +31,7 @@ public:
 	using string = std::string;
 
 protected:
+	// Convert string/number/boolean to number. Set error if failed.
 	template <typename T>
 	T LuaToNumber(const LuaRef& luaValue);
 

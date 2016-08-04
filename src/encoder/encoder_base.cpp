@@ -33,6 +33,10 @@ std::string EncoderBase::PopFullVectorName(size_t index)
 
 int64_t EncoderBase::LuaToInt64(const LuaRef& luaValue)
 {
+	LuaIntf::LuaTypeID luaTypeId = luaValue.type();
+	if (LuaIntf::LuaTypeID::BOOLEAN == luaTypeId)
+		return luaValue.toValue<bool>() ? 1 : 0;
+
 	// Directly toValue<int64_t>() may throw.
 	// And toValue<double>() is wrong for 9223372036854775807.1 (maxinteger + 0.1).
 	LuaRef toInt(luaValue.state(), "math.tointeger");
@@ -61,10 +65,10 @@ template <> double EncoderBase::LuaToNumber<double>(const LuaRef& luaValue)
 
 void EncoderBase::SetLuaToNumError(const LuaRef& luaValue, bool bToInt)
 {
-	LuaIntf::LuaTypeID luaTypeId = luaValue.type();
+	using LuaIntf::LuaTypeID;
+	LuaTypeID luaTypeId = luaValue.type();
 	std::string sValue;
-	if (luaTypeId == LuaIntf::LuaTypeID::STRING ||
-		luaTypeId == LuaIntf::LuaTypeID::NUMBER)
+	if (luaTypeId == LuaTypeID::STRING || luaTypeId == LuaTypeID::NUMBER)
 		sValue = luaValue.toValue<string>();
 	else
 		sValue = luaValue.typeName();
