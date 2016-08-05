@@ -20,6 +20,12 @@ static inline bool IsLuaNumber(const LuaIntf::LuaRef& luaValue)
 	return luaValue.type() == LuaIntf::LuaTypeID::NUMBER;
 }
 
+static inline bool IsEnumType(const reflection::Type& type)
+{
+	// enum must be int
+	return type.index() >= 0 && type.base_type() < reflection::Float;
+}
+
 class EncoderBase
 {
 public:
@@ -34,6 +40,9 @@ protected:
 	// Convert string/number/boolean to number. Set error if failed.
 	template <typename T>
 	T LuaToNumber(const LuaRef& luaValue);
+
+	int64_t GetEnumFromLuaStr(const reflection::Type& type,
+		const LuaRef& luaValue);
 
 protected:
 	const flatbuffers::Vector<flatbuffers::Offset<reflection::Object>>&

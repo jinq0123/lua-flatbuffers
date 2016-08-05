@@ -69,3 +69,24 @@ void EncoderBase::SetLuaToNumError(const LuaRef& luaValue, bool bToInt)
 	SetError("can not convert field " + PopFullName() +
 		"(" + sValue + ") to " + (bToInt ? "integer" : "float"));
 }
+
+int64_t EncoderBase::GetEnumFromLuaStr(
+	const reflection::Type& type, const LuaRef& luaValue)
+{
+	assert(IsEnumType(type));
+	assert(luaValue.type() == LuaIntf::LuaTypeID::STRING);
+	string sEnumVal = luaValue.toValue<string>();
+	const reflection::Enum* pEnum = (*m_rCtx.schema.enums())[type.index()];
+	assert(pEnum);
+	for (const reflection::EnumVal* pEnumVal : *pEnum->values())
+	{
+		assert(pEnumVal);
+		if (pEnumVal->name()->c_str() == sEnumVal)
+			return pEnumVal->value();
+	}
+	SetError(string("illegal enum ") + pEnum->name()->str() + " field "
+		+ PopFullName() + "(" + sEnumVal + ")");
+	return 0;
+}
+
+

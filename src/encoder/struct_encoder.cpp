@@ -60,10 +60,13 @@ void StructEncoder::EncodeStructFieldToBuf(const Field& field,
 
 	uint16_t offset = field.offset();
 	uint8_t* pDest = pBuf + offset;
+	if (IsEnumType(type))
+		return EncodeEnumToBuf(type, luaValue, pDest);
+
 	reflection::BaseType eBaseType = type.base_type();
 	if (eBaseType <= reflection::Double)
 	{
-		EncodeScalarToBuf(eBaseType, luaValue, pBuf + offset);
+		EncodeScalarToBuf(eBaseType, luaValue, pDest);
 		return;
 	}
 
@@ -110,3 +113,36 @@ void StructEncoder::EncodeScalarToBuf(reflection::BaseType eType,
 	}  // switch
 	assert(!"Illegal type.");
 }  // EncodeScalarToBuf()
+
+template <typename T>
+void CopyIntToBuf(int64_t l, uint8_t* pDest)
+{
+	*reinterpret_cast<T*>(pDest) = static_cast<T>(l);
+}
+
+void StructEncoder::EncodeEnumToBuf(const reflection::Type& type,
+	const LuaRef& luaValue, uint8_t* pDest)
+{
+	assert(pDest);
+	assert(IsEnumType(type));
+	using namespace reflection;
+	if (luaValue.type() != LuaIntf::LuaTypeID::STRING)
+		return EncodeScalarToBuf(type.base_type(), luaValue, pDest);
+
+	int64_t lEnumVal = GetEnumFromLuaStr(type, luaValue);
+	if (Bad()) return;
+	switch (type.base_type())
+	{
+	case UType:
+	case Bool:
+	case UByte: return CopyIntToBuf<uint8_t>(lEnumVal, pDest);
+	case Byte: return CopyIntToBuf<int8_t>(lEnumVal, pDest);
+	case Short: return CopyIntToBuf<int16_t>(lEnumVal, pDest);
+	case UShort: return CopyIntToBuf<uint16_t>(lEnumVal, pDest);
+	case Int: return CopyIntToBuf<int32_t>(lEnumVal, pDest);
+	case UInt: return CopyIntToBuf<uint32_t>(lEnumVal, pDest);
+	case Long: return CopyIntToBuf<int64_t>(lEnumVal, pDest);
+	case ULong: return CopyIntToBuf<uint64_t>(lEnumVal, pDest);
+	}
+	assert(!"Illegal enum type.");
+}

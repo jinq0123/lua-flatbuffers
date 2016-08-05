@@ -140,6 +140,11 @@ function test_enum()
 	buf = assert(lfb.encode(name, {color = "Blue"}))
 	t = assert(lfb.decode(name, buf))
 	assert(8 == t.color)
+	
+	buf = assert(lfb.encode("Vec3", {x=1,y=2,z=3,
+		test1=1, test2="Red", test3={a=1,b=2}}))
+	t = assert(lfb.decode("Vec3", buf))
+	assert(1 == t.test2)
 end  -- test_enum()
 
 function test_encode_illegal_field()

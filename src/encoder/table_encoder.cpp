@@ -165,12 +165,6 @@ void TableEncoder::EncodeCachedScalars()
 	}
 }
 
-static bool IsEnumType(const reflection::Type& type)
-{
-	// enum must be int
-	return type.index() >= 0 && type.base_type() < reflection::Float;
-}
-
 void TableEncoder::EncodeScalar(const Field& field, const LuaRef& luaValue)
 {
 	using namespace reflection;
@@ -262,25 +256,6 @@ inline void TableEncoder::AddIntElement(uint16_t offset,
 	Builder().AddElement(offset,
 		static_cast<ElementType>(lValue),
 		static_cast<ElementType>(lDefault));
-}
-
-int64_t TableEncoder::GetEnumFromLuaStr(
-	const reflection::Type& type, const LuaRef& luaValue)
-{
-	assert(IsEnumType(type));
-	assert(luaValue.type() == LuaIntf::LuaTypeID::STRING);
-	string sEnumVal = luaValue.toValue<string>();
-	const reflection::Enum* pEnum = (*m_rCtx.schema.enums())[type.index()];
-	assert(pEnum);
-	for (const reflection::EnumVal* pEnumVal : *pEnum->values())
-	{
-		assert(pEnumVal);
-		if (pEnumVal->name()->c_str() == sEnumVal)
-			return pEnumVal->value();
-	}
-	SetError(string("illegal enum ") + pEnum->name()->str() + " field "
-		+ PopFullName() + "(" + sEnumVal + ")");
-	return 0;
 }
 
 void TableEncoder::CheckRequiredFields(const Object& obj)

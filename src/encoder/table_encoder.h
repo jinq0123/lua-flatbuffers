@@ -42,8 +42,6 @@ private:
 	template <typename ElementType>
 	void AddIntElement(uint16_t offset, int64_t lValue, int64_t lDefault);
 
-	int64_t GetEnumFromLuaStr(const reflection::Type& type,
-		const LuaRef& luaValue);
 	void CheckRequiredFields(const Object& obj);
 
 private:
