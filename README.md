@@ -99,7 +99,7 @@ true
 Type Convertion
 --------------------
 Number will be converted to string if necessary. 
-```
+```lua
 	buf = assert(lfb.encode("Monster", {name=123}))
 	t = assert(lfb.decode("Monster", buf))
 	assert("123" == t.name)
@@ -107,14 +107,14 @@ Number will be converted to string if necessary.
 
 Integer will be converted from one type to another.
   Such as from int 256 to byte 0:
-```
+```lua
 	buf = assert(lfb.encode("Test", {a=1, b=256}))  -- Test.b is byte
 	t = assert(lfb.decode("Test", buf))
 	assert(1 == t.a and 0 == t.b)
 ```
 
 String can convert to integer or float:
-```
+```lua
 	buf = assert(lfb.encode("Test", {a=1, b="25"}))
 	t = assert(lfb.decode("Test", buf))
 	assert(1 == t.a and 25 == t.b)
@@ -125,13 +125,13 @@ String can convert to integer or float:
 ```
 
 Can not convert float to integer.
-```
+```lua
 	buf, err = lfb.encode("Test", {a=1.2, b=2})
 	assert(err == "can not convert field Test.a(1.2) to integer")
 ```
 
 Enum is integer, but input string enum will be converted to integer.
-```
+```lua
 	local name = "TestSimpleTableWithEnum"
 	buf = assert(lfb.encode(name, {color = 123}))
 	t = assert(lfb.decode(name, buf))
@@ -143,7 +143,7 @@ Enum is integer, but input string enum will be converted to integer.
 ```
 
 Array only read from index 1 to len, ignoring others.
-```
+```lua
 	buf = assert(lfb.encode("Monster", {name="", inventory={
 		1,2, [-1]=-1, [100]=100, x=101}}))
 	t = assert(lfb.decode("Monster", buf))
