@@ -311,13 +311,14 @@ function bytes_to_str(arr)
 	return string.char(table.unpack(arr))
 end  -- bytes_to_str()
 
--- Return a modified buffer copy.
-function mod(buf, idx)
+-- Return a modified buffer copy. Set [idx] to new_value(0..255).
+function mod(buf, idx, new_value)
 	assert("string" == type(buf))
 	assert("integer" == math.type(idx))
 	assert(idx > 0 and idx <= #buf)
+	new_value = new_value or 255
 	local b = str_to_bytes(buf)
-	b[idx] = 255
+	b[idx] = new_value
 	return bytes_to_str(b)
 end  -- mod()
 

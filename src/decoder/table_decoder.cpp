@@ -210,22 +210,21 @@ bool TableDecoder::VerifyFieldOfTable(const Table& fbTable, const Field &field)
 {
 	static_assert(std::is_scalar<T>::value, "T must be a scalar type");
 
-	if (field.required())
+	if (!field.required())
 	{
-		if (fbTable.VerifyFieldRequired<T>(Verifier(), field.offset()))
-			return true;
-
 		if (fbTable.VerifyField<T>(Verifier(), field.offset()))
-			SetError("missing required field " + PopFullFieldName(field));
-		else
-			SetError("illegal field " + PopFullFieldName(field));
+			return true;
+		SetError("illegal offset of field " + PopFullFieldName(field));
 		return false;
 	}
 
-	if (fbTable.VerifyField<T>(Verifier(), field.offset()))
+	if (fbTable.VerifyFieldRequired<T>(Verifier(), field.offset()))
 		return true;
 
-	SetError("illegal offset of field " + PopFullFieldName(field));
+	if (fbTable.VerifyField<T>(Verifier(), field.offset()))
+		SetError("missing required field " + PopFullFieldName(field));
+	else
+		SetError("illegal field " + PopFullFieldName(field));
 	return false;
 }
 
