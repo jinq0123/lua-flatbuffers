@@ -118,6 +118,9 @@ Todo
 ------
 * Support namespace.
   Reflection schema does not support namespaces #3899 ( https://github.com/google/flatbuffers/issues/3899 )
+* Sort key.
+* Verify key order.
+* Add file_identifier if root_type.  
 
 DavidFeng/lua-flatbuffers
 -------------------------
