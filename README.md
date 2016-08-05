@@ -1,8 +1,6 @@
 # lua-flatbuffers
 FlatBuffers library for Lua.
 
-(Not ready.)
-
 Build
 ------
 Need submodule:
@@ -89,10 +87,39 @@ true
 >
 </pre>
 
-* Number will be converted to string if necessary. 
-* Number will be converted from one type to another, such as from float to byte.
+Number will be converted to string if necessary. 
+```
+	buf = assert(lfb.encode("Monster", {name=123}))
+	t = assert(lfb.decode("Monster", buf))
+	assert("123" == t.name)
+```
 
-Enum is integer, and converts string enum to integer automatically.
+Integer will be converted from one type to another.
+  Such as from int 256 to byte 0:
+```
+	buf = assert(lfb.encode("Test", {a=1, b=256}))  -- Test.b is byte
+	t = assert(lfb.decode("Test", buf))
+	assert(1 == t.a and 0 == t.b)
+```
+
+String can convert to integer or float:
+```
+	buf = assert(lfb.encode("Test", {a=1, b="25"}))
+	t = assert(lfb.decode("Test", buf))
+	assert(1 == t.a and 25 == t.b)
+	buf = assert(lfb.encode("Monster", {name="", testf="1.2"}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(math.type(t.testf) == "float")
+	assert(tostring(t.testf) == "1.2000000476837")
+```
+
+Can not convert float to integer.
+```
+	buf, err = lfb.encode("Test", {a=1.2, b=2})
+	assert(err == "can not convert field Test.a(1.2) to integer")
+```
+
+Enum is integer, but input string enum will be converted to integer automatically.
 ```
 	local name = "TestSimpleTableWithEnum"
 	buf = assert(lfb.encode(name, {color = 123}))
