@@ -159,6 +159,7 @@ Todo
 * Sort key.
 * Verify key order.
 * Add file_identifier if root_type.  
+* Load fbs file directly.
 
 DavidFeng/lua-flatbuffers
 -------------------------
