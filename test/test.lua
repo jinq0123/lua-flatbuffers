@@ -303,7 +303,7 @@ function test_struct_field()
 end  -- test_struct_field()
 
 function test_all()
-	-- test_monster()
+	test_monster()
 
 	test_no_type()
 	test_required()
