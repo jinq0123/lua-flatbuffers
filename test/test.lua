@@ -295,8 +295,15 @@ function test_union_field()
 	assert(t.test.name == nil)
 end  -- test_union_field()
 
+function test_struct_field()
+	buf = assert(lfb.encode("Monster", {name="abcde", pos={
+		x=1.23,y=1.23,z=1.233,test1=1.23,test2=1,test3={a=1234,b=123}}}))
+	t = assert(lfb.decode("Monster", buf))
+	assert(1234 == t.pos.test3.a)
+end  -- test_struct_field()
+
 function test_all()
-	test_monster()
+	-- test_monster()
 
 	test_no_type()
 	test_required()
@@ -315,6 +322,7 @@ function test_all()
 	test_vector_field()
 	test_table_field()
 	test_union_field()
+	test_struct_field()
 	print("All test passed.")
 end  -- test_all()
 

@@ -146,9 +146,16 @@ LuaRef TableDecoder::DecodeObjectField(
 	const Table& fbTable, const Field& field)
 {
 	assert(VerifyFieldOfTable<flatbuffers::uoffset_t>(fbTable, field));
-	const void* pData = fbTable.GetPointer<const void*>(field.offset());
-	return ObjectDecoder(m_rCtx).DecodeObject(
-		*Objects()[field.type()->index()], pData);
+	const reflection::Object* pObj = Objects()[field.type()->index()];
+	assert(pObj);
+	uint16_t off = field.offset();
+	const void* pData;
+	if (pObj->is_struct())
+		pData = fbTable.GetStruct<const void*>(off);
+	else
+		pData = fbTable.GetPointer<const void*>(off);
+
+	return ObjectDecoder(m_rCtx).DecodeObject(*pObj, pData);
 }
 
 LuaRef TableDecoder::DecodeUnionField(
