@@ -311,6 +311,16 @@ function bytes_to_str(arr)
 	return string.char(table.unpack(arr))
 end  -- bytes_to_str()
 
+-- Return a modified buffer copy.
+function mod(buf, idx)
+	assert("string" == type(buf))
+	assert("integer" == math.type(idx))
+	assert(idx > 0 and idx <= #buf)
+	local b = str_to_bytes(buf)
+	b[idx] = 255
+	return bytes_to_str(b)
+end  -- mod()
+
 function verify_random(name, tbl, count)
 	assert("string" == type(name))
 	assert("table" == type(tbl))
@@ -371,7 +381,7 @@ function test_all()
 	test_union_field()
 	test_struct_field()
 
-	test_decode_verify()
+	-- test_decode_verify() is slow. Run manually.
 	print("All test passed.")
 end  -- test_all()
 
