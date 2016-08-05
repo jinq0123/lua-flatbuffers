@@ -55,6 +55,13 @@ local monster2 = assert(lfb.decode("Monster", buf))
 Test
 --------
 <pre>
+E:\Git\Lua\lua-flatbuffers_jinq0123\test>lua53pp.exe test.lua
+All test passed.
+
+E:\Git\Lua\lua-flatbuffers_jinq0123\test>
+</pre>
+
+<pre>
 E:\Git\Lua\lua-flatbuffers_jinq0123\test>lua53pp.exe
 Lua 5.3.2  Copyright (C) 1994-2015 Lua.org, PUC-Rio
 > package.cpath = package.cpath .. ";../bin/Debug/?.dll"
@@ -87,6 +94,8 @@ true
 >
 </pre>
 
+Type Convertion
+--------------------
 Number will be converted to string if necessary. 
 ```
 	buf = assert(lfb.encode("Monster", {name=123}))
@@ -119,7 +128,7 @@ Can not convert float to integer.
 	assert(err == "can not convert field Test.a(1.2) to integer")
 ```
 
-Enum is integer, but input string enum will be converted to integer automatically.
+Enum is integer, but input string enum will be converted to integer.
 ```
 	local name = "TestSimpleTableWithEnum"
 	buf = assert(lfb.encode(name, {color = 123}))
