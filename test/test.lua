@@ -311,19 +311,23 @@ function bytes_to_str(arr)
 	return string.char(table.unpack(arr))
 end  -- bytes_to_str()
 
-function test_decode_verify()
-	result = ""
-	buf = assert(lfb.encode("Monster", monster));
-	assert(lfb.decode("Monster", buf))
-	bytes = str_to_bytes(buf)
-	assert(lfb.decode("Monster", bytes_to_str(bytes)))
+function verify(name, tbl)
+	assert("string" == type(name))
+	assert("table" == type(tbl))
+	local result = ""
+	buf = assert(lfb.encode(name, tbl))
+	assert(lfb.decode(name, buf))
 	for i = 1, #buf do
-		local b = str_to_bytes(buf)
+		local b = str_to_bytes(buf);
 		b[i] = 255
-		t, err = lfb.decode("Monster", bytes_to_str(b))
+		t, err = lfb.decode(name, bytes_to_str(b))
 		result = result .. string.format("[%d] %s\n", i, err)
 	end  -- for
 	return result
+end  -- verify()
+
+function test_decode_verify()
+	verify("Monster", monster);
 end  -- test_decode_verify()
 
 function test_all()
