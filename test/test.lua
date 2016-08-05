@@ -311,6 +311,24 @@ function bytes_to_str(arr)
 	return string.char(table.unpack(arr))
 end  -- bytes_to_str()
 
+function verify_random(name, tbl, count)
+	assert("string" == type(name))
+	assert("table" == type(tbl))
+	assert("number" == type(count))
+	buf = assert(lfb.encode(name, tbl))
+	assert(lfb.decode(name, buf))
+	local result = {}
+	for i = 1, count do
+		local idx = math.random(1, #buf)
+		local b = str_to_bytes(buf)
+		local v = math.random(0, 255) 
+		b[idx] = v
+		t, err = lfb.decode(name, bytes_to_str(b))
+		result[err] = string.format("[%d]->%d", idx, v)
+	end
+	return result
+end  -- verify_random
+
 function verify(name, tbl)
 	assert("string" == type(name))
 	assert("table" == type(tbl))
@@ -328,6 +346,7 @@ end  -- verify()
 
 function test_decode_verify()
 	verify("Monster", monster);
+	verify_random("Monster", monster, 1000);
 end  -- test_decode_verify()
 
 function test_all()

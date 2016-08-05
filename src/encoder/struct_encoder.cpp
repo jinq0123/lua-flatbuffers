@@ -56,8 +56,6 @@ void StructEncoder::EncodeStructFieldToBuf(const Field& field,
 		ERR_RET("missing struct field " + PopFullName());
 
 	const reflection::Type& type = *field.type();
-	// Todo: check type of value...
-
 	uint16_t offset = field.offset();
 	uint8_t* pDest = pBuf + offset;
 	if (IsEnumType(type))
