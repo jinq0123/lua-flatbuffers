@@ -5,6 +5,31 @@ inspect = require("inspect")
 
 assert(lfb.load_bfbs_file("../third_party/flatbuffers/tests/monster_test.bfbs"))
 
+monster = {
+	pos = {x=1,y=2.2,z=3.3,test1=111.222,test2="Red",test3={a=1,b=2}},
+	name = "my_monster",
+	inventory = {1,2,3},
+	testarrayoftables = {{name="M1"}, {name="M2"}},
+	testarrayofstring = {"s1", "s2", "s3"},
+	testarrayofstring2 = {"22"},
+	testarrayofbools = {true, false, 1, 0, 2, 0},
+	-- Todo: enemy = {},  missing required field Monster.enemy.name?
+	test_type = "TestSimpleTableWithEnum",
+	test = {color = "Red"},
+	test4 = {{a=1,b=2},{a=3,b=4}},
+	testnestedflatbuffer = {1,2},
+	testempty = {},
+	testbool = true,
+	testhashu64_fnv1a = 123456789,
+}
+
+function test_monster()
+	buf = assert(lfb.encode("Monster", monster))
+	t = assert(lfb.decode("Monster", buf))
+	assert("my_monster" == t.name)
+	assert(t.testhashu64_fnv1a == 123456789)
+end  -- test_monster()
+
 function test_no_type()
 	buf, err = lfb.encode("Abcd", {})
 	assert(err == "no type Abcd")
@@ -266,6 +291,8 @@ function test_union_field()
 end  -- test_union_field()
 
 function test_all()
+	test_monster()
+
 	test_no_type()
 	test_required()
 	test_too_short()
