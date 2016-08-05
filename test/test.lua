@@ -13,7 +13,7 @@ monster = {
 	testarrayofstring = {"s1", "s2", "s3"},
 	testarrayofstring2 = {"22"},
 	testarrayofbools = {true, false, 1, 0, 2, 0},
-	-- Todo: enemy = {},  missing required field Monster.enemy.name?
+	enemy = {name="enemy"},
 	test_type = "TestSimpleTableWithEnum",
 	test = {color = "Red"},
 	test4 = {{a=1,b=2},{a=3,b=4}},
@@ -28,6 +28,7 @@ function test_monster()
 	t = assert(lfb.decode("Monster", buf))
 	assert("my_monster" == t.name)
 	assert(t.testhashu64_fnv1a == 123456789)
+	assert("enemy" == t.enemy.name)
 end  -- test_monster()
 
 function test_no_type()
