@@ -21,9 +21,13 @@ you can define LUAINTF_LINK_LUA_COMPILED_IN_CXX to 0 in build/premake5.lua.
 defines { "LUAINTF_LINK_LUA_COMPILED_IN_CXX=0" }
 ```
 
-Copy lua lib. Copy liblua.a to lua532/lib/.
-For Windows, copy lua.lib debug to lua532/lib/Debug,
-and lua.lib release to lua532/lib/Release.
+### lua lib
+* For Linus, copy liblua.a to third_party/lib/.
+* For Windows, copy lua.lib debug and release to third_party/lib/Debug and Release dir.
+
+### flatbuffers lib
+* For Linux, build and install flatbuffers. Or copy lib to third_party/lib/.
+* For Windows, copy flatbuffers.lib debug and release to third_party/lib/Debug and Release dir.
 
 Usage Example
 --------------
@@ -50,7 +54,7 @@ local monster = {
 -- Build a buffer.
 local buf = assert(lfb.encode("Monster", monster))
 
--- Decode a flatbuffer string back to a Lua table.
+-- Decode a flatbuffers string back to a Lua table.
 local monster2 = assert(lfb.decode("Monster", buf))
 ```
 
