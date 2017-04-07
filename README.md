@@ -8,26 +8,26 @@ Need submodule:
  $ git submodule update --init
 ```
 
-Use premake5 to generate VS solution and linux Makefile. See premake5.bat.
+Use premake5 to generate VS solution and linux Makefile, see [here](build/premake5.bat).
 
 Vs2015 sln and Makefile are provided.
 
 By default, it expects the Lua library to build under C++.
 If you really want to use Lua library compiled under C,
-you can define LUAINTF_LINK_LUA_COMPILED_IN_CXX to 0 in build/premake5.lua.
+you can define `LUAINTF_LINK_LUA_COMPILED_IN_CXX` to 0 in [build/premake5.lua](build/premake5.lua).
 <br>See: https://github.com/SteveKChiu/lua-intf
 
 ```
 defines { "LUAINTF_LINK_LUA_COMPILED_IN_CXX=0" }
 ```
 
-### lua lib
-* For Linus, copy liblua.a to third_party/lib/.
-* For Windows, copy lua.lib debug and release to third_party/lib/Debug and Release dir.
+### Lua library
+* For Linux, copy `liblua.a` to `third_party/lib/`.
+* For Windows, copy `lua.lib` debug and release to `third_party/lib/Debug` and `Release` dir.
 
-### flatbuffers lib
-* For Linux, build and install flatbuffers. Or copy lib to third_party/lib/.
-* For Windows, copy flatbuffers.lib debug and release to third_party/lib/Debug and Release dir.
+### FlatBuffers library
+* For Linux, build and install `flatbuffers`. Or copy `lib` to `third_party/lib/`.
+* For Windows, copy `flatbuffers.lib` debug and release to `third_party/lib/Debug` and `Release dir`.
 
 Usage Example
 --------------
@@ -159,7 +159,7 @@ Array only read from index 1 to len, ignoring others.
 Todo
 ------
 * Support namespace.
-  Reflection schema does not support namespaces #3899 ( https://github.com/google/flatbuffers/issues/3899 )
+  Reflection schema does not support namespaces [#3899](https://github.com/google/flatbuffers/issues/3899).
 * Sort key.
 * Verify key order.
 * Add file_identifier if root_type.  
