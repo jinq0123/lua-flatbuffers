@@ -117,7 +117,7 @@ Integer will be converted from one type to another.
 	assert(1 == t.a and 0 == t.b)
 ```
 
-String can convert to integer or float:
+String can be converted to integer or float:
 ```lua
 	buf = assert(lfb.encode("Test", {a=1, b="25"}))
 	t = assert(lfb.decode("Test", buf))
