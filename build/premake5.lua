@@ -14,6 +14,7 @@ workspace "lfb"
 project "lfb"
 	kind "SharedLib"
 	targetdir "../bin/%{cfg.buildcfg}"
+	targetprefix ""  -- linux: lfb.so
 
 	--[[
 	From: https://github.com/SteveKChiu/lua-intf

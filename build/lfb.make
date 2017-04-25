@@ -13,7 +13,7 @@ endif
 ifeq ($(config),debug)
   RESCOMP = windres
   TARGETDIR = ../bin/Debug
-  TARGET = $(TARGETDIR)/liblfb.so
+  TARGET = $(TARGETDIR)/lfb.so
   OBJDIR = obj/Debug
   DEFINES +=
   INCLUDES += -I../src -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
@@ -40,7 +40,7 @@ endif
 ifeq ($(config),release)
   RESCOMP = windres
   TARGETDIR = ../bin/Release
-  TARGET = $(TARGETDIR)/liblfb.so
+  TARGET = $(TARGETDIR)/lfb.so
   OBJDIR = obj/Release
   DEFINES += -DNDEBUG
   INCLUDES += -I../src -I../third_party/lua-intf -I../third_party/flatbuffers/include -I../third_party/lua532/include
